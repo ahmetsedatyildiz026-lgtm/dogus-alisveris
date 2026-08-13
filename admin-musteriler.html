@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteriler - Doğuş Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-logo"><h1>DOĞUŞ</h1><span>Admin Paneli</span></div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="admin-depo.html" class="admin-nav-item"><i class="fas fa-warehouse"></i> Depo / Stok</a>
+            <a href="admin-markalar.html" class="admin-nav-item"><i class="fas fa-tags"></i> Markalar</a>
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item"><i class="fas fa-shopping-bag"></i> Siparişler</a>
+            <a href="admin-musteriler.html" class="admin-nav-item active"><i class="fas fa-users"></i> Müşteriler</a>
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Raporlar & Mesajlar</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a><br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2><i class="fas fa-users" style="color:var(--admin-accent);margin-right:.5rem"></i>Müşteriler</h2>
+            <div class="admin-topbar-right">
+                <span id="totalCount" class="badge badge-blue" style="font-size:.85rem;padding:.4rem .9rem"></span>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- Stats -->
+            <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.5rem">
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-label">Toplam Üye</div>
+                    <div class="stat-value" id="statTotal">0</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fab fa-google"></i></div>
+                    <div class="stat-label">Google ile Kayıt</div>
+                    <div class="stat-value" id="statGoogle">0</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="stat-label">E-posta ile Kayıt</div>
+                    <div class="stat-value" id="statEmail">0</div>
+                </div>
+                <div class="stat-card gold">
+                    <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="stat-label">Sipariş Veren</div>
+                    <div class="stat-value" id="statOrdered">0</div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="admin-toolbar">
+                <div class="admin-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Ad, e-posta, telefon..." oninput="renderCustomers()">
+                </div>
+                <select id="filterProvider" class="btn-admin btn-admin-ghost" onchange="renderCustomers()" style="padding:.6rem 1rem">
+                    <option value="">Tüm Kayıt Yöntemleri</option>
+                    <option value="email">E-posta</option>
+                    <option value="google">Google</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="admin-card">
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Ad Soyad</th>
+                                <th>E-posta</th>
+                                <th>Telefon</th>
+                                <th>Adres</th>
+                                <th>Kayıt Yöntemi</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Siparişler</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="admin-empty" style="display:none">
+                    <i class="fas fa-users"></i>
+                    <h3>Henüz kayıtlı müşteri yok</h3>
+                    <p>Müşteriler üye oldukça burada görünecek</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MÜŞTERİ DETAY MODAL -->
+<div class="admin-modal-overlay" id="customerModal">
+    <div class="admin-modal" style="max-width:580px">
+        <div class="admin-modal-header">
+            <h3>Müşteri Detayı</h3>
+            <button class="admin-modal-close" onclick="closeCustomerModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body" id="customerModalBody"></div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeCustomerModal()">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+checkAdminAuth();
+
+function renderCustomers() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const providerFilter = document.getElementById('filterProvider').value;
+    let customers = getCustomers();
+
+    if (search) customers = customers.filter(c =>
+        (c.name||'').toLowerCase().includes(search) ||
+        (c.email||'').toLowerCase().includes(search) ||
+        (c.phone||'').toLowerCase().includes(search)
+    );
+    if (providerFilter) customers = customers.filter(c => c.provider === providerFilter);
+
+    const orders = getOrders();
+    const tbody = document.getElementById('customersTableBody');
+    const empty = document.getElementById('emptyState');
+
+    // Stats
+    const all = getCustomers();
+    document.getElementById('statTotal').textContent = all.length;
+    document.getElementById('statGoogle').textContent = all.filter(c => c.provider === 'google').length;
+    document.getElementById('statEmail').textContent = all.filter(c => c.provider !== 'google').length;
+    document.getElementById('statOrdered').textContent = new Set(orders.map(o => o.customerId)).size;
+    document.getElementById('totalCount').textContent = customers.length + ' müşteri';
+
+    if (!customers.length) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = customers.map((c, i) => {
+        const custOrders = orders.filter(o => o.customerId === c.id || o.customerEmail === c.email);
+        const providerBadge = c.provider === 'google'
+            ? '<span class="badge badge-blue"><i class="fab fa-google"></i> Google</span>'
+            : '<span class="badge badge-gray"><i class="fas fa-envelope"></i> E-posta</span>';
+        return `<tr>
+            <td style="color:var(--admin-text-light);font-size:.8rem">${i + 1}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--admin-accent),#b8960c);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem;color:#1a1a1a;flex-shrink:0">
+                        ${(c.name||'?')[0].toUpperCase()}
+                    </div>
+                    <strong style="font-size:.875rem">${c.name}</strong>
+                </div>
+            </td>
+            <td style="font-size:.85rem">${c.email}</td>
+            <td style="font-size:.875rem">${c.phone || '<span style="color:var(--admin-text-light)">-</span>'}</td>
+            <td style="font-size:.8rem;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.address||''}">${c.address || '<span style="color:var(--admin-text-light)">-</span>'}</td>
+            <td>${providerBadge}</td>
+            <td style="font-size:.8rem;color:var(--admin-text-light)">${formatDate(c.createdAt)}</td>
+            <td>
+                <span class="${custOrders.length ? 'badge badge-green' : 'badge badge-gray'}">
+                    ${custOrders.length} sipariş
+                </span>
+            </td>
+            <td>
+                <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="showCustomerDetail('${c.id}')" title="Detay">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function showCustomerDetail(id) {
+    const c = getCustomers().find(u => u.id === id);
+    if (!c) return;
+    const orders = getOrders().filter(o => o.customerId === id || o.customerEmail === c.email);
+    const totalSpent = orders.reduce((sum, o) => {
+        const val = parseFloat((o.total||'0').replace(/[₺.,]/g,'')) || 0;
+        return sum + val;
+    }, 0);
+
+    document.getElementById('customerModalBody').innerHTML = `
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--admin-border)">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--admin-accent),#b8960c);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;color:#1a1a1a">
+                ${(c.name||'?')[0].toUpperCase()}
+            </div>
+            <div>
+                <h3 style="margin-bottom:.25rem">${c.name}</h3>
+                <p style="color:var(--admin-text-light);font-size:.875rem">${c.email}</p>
+                ${c.provider === 'google' ? '<span class="badge badge-blue"><i class="fab fa-google"></i> Google</span>' : '<span class="badge badge-gray">E-posta</span>'}
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div style="background:var(--admin-bg);border-radius:10px;padding:1rem">
+                <div style="font-size:.75rem;color:var(--admin-text-light);text-transform:uppercase;font-weight:600;margin-bottom:.5rem">Telefon</div>
+                <strong>${c.phone || '-'}</strong>
+            </div>
+            <div style="background:var(--admin-bg);border-radius:10px;padding:1rem">
+                <div style="font-size:.75rem;color:var(--admin-text-light);text-transform:uppercase;font-weight:600;margin-bottom:.5rem">Kayıt Tarihi</div>
+                <strong>${formatDate(c.createdAt)}</strong>
+            </div>
+            <div style="background:var(--admin-bg);border-radius:10px;padding:1rem;grid-column:1/-1">
+                <div style="font-size:.75rem;color:var(--admin-text-light);text-transform:uppercase;font-weight:600;margin-bottom:.5rem">Adres</div>
+                <strong>${c.address || 'Adres girilmemiş'}</strong>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div style="background:#f0fdf4;border-radius:10px;padding:1rem;text-align:center">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--admin-success)">${orders.length}</div>
+                <div style="font-size:.8rem;color:var(--admin-text-light)">Toplam Sipariş</div>
+            </div>
+            <div style="background:#fefce8;border-radius:10px;padding:1rem;text-align:center">
+                <div style="font-size:1.25rem;font-weight:800;color:var(--admin-accent)">${formatCurrency(totalSpent)}</div>
+                <div style="font-size:.8rem;color:var(--admin-text-light)">Toplam Harcama</div>
+            </div>
+        </div>
+        ${orders.length ? `
+        <h4 style="margin-bottom:1rem">Sipariş Geçmişi</h4>
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+            ${orders.map(o => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:var(--admin-bg);border-radius:8px">
+                    <div>
+                        <strong style="font-size:.875rem">${o.id || '-'}</strong>
+                        <br><small style="color:var(--admin-text-light)">${formatDate(o.createdAt)}</small>
+                    </div>
+                    <div style="text-align:right">
+                        <strong style="color:var(--admin-accent)">${o.total || '-'}</strong>
+                        <br><span class="badge ${o.status === 'delivered' ? 'badge-green' : o.status === 'pending' ? 'badge-yellow' : 'badge-blue'}">${o.status === 'pending' ? 'Bekliyor' : o.status === 'confirmed' ? 'Onaylandı' : o.status === 'delivered' ? 'Teslim Edildi' : o.status}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>` : '<p style="text-align:center;color:var(--admin-text-light);padding:1rem">Henüz sipariş verilmemiş</p>'}
+    `;
+    document.getElementById('customerModal').classList.add('show');
+}
+
+function closeCustomerModal() {
+    document.getElementById('customerModal').classList.remove('show');
+}
+
+document.getElementById('customerModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('customerModal')) closeCustomerModal();
+});
+
+renderCustomers();
+</script>
+</body>
+</html>

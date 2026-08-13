@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doğuş Alışveriş Merkezi — Modern E-ticaret | İstanbul</title>
+    <meta name="description" content="Doğuş Alışveriş Merkezi - Modern, sade ve güvenilir alışveriş deneyimi. Beyaz eşya, mobilya, küçük ev aletleri.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css?v=202412251225">
+    <link rel="stylesheet" href="css/auth.css?v=202412251225">
+</head>
+<body>
+    <!-- Skip to content for accessibility -->
+    <a href="#main-content" class="skip-link">Ana içeriğe geç</a>
+    
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <a href="#" class="logo">
+                    <h1>DOĞUŞ</h1>
+                    <span>ALIŞVERİŞ MERKEZİ</span>
+                </a>
+                
+                <!-- Navigation -->
+                <nav class="nav">
+                    <a href="#bestsellers" class="nav-link active">Ana Sayfa</a>
+                    <a href="#urunlerimiz" class="nav-link">Ürünlerimiz</a>
+                    <a href="#markalar" class="nav-link">Markalar</a>
+                    <a href="#iletisim" class="nav-link">İletişim</a>
+                </nav>
+                
+                <!-- User Actions -->
+                <div class="user-actions">
+                    <button class="cart-btn" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                    <a href="giris.html" class="btn btn-secondary">Giriş Yap</a>
+                    <a href="kayit.html" class="btn btn-primary">Üye Ol</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main" id="main-content">
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">DOĞUŞ</h1>
+                    <p class="hero-subtitle">ALIŞVERİŞ MERKEZİ</p>
+                    <div class="hero-buttons">
+                        <a href="#urunlerimiz" class="btn-hero-primary">
+                            Ürünleri Keşfet
+                        </a>
+                        <a href="#iletisim" class="btn-hero-secondary">
+                            Bize Ulaşın
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EN ÇOK SATANLAR SECTION -->
+        <section class="bestsellers-section section" id="bestsellers">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">En Çok Satanlar</h2>
+                    <p class="section-subtitle">Müşterilerimizin en çok tercih ettiği ürünler</p>
+                </div>
+                
+                <div class="bestsellers-grid" id="bestsellersGrid">
+                    <!-- Dinamik olarak yüklenecek - Admin panelinden yönetilen ürünler -->
+                    <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <p>Ürünler yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜRÜNLERİMİZ SECTION -->
+        <section class="category-section section" id="urunlerimiz">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Ürünlerimiz</h2>
+                    <p class="section-subtitle">Bir kategoriye tıklayarak ürünleri keşfedin - Satış fiyatlarımız taksitli fiyatlardır</p>
+                    <div class="pricing-info-banner">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Fiyatlarımız taksitli fiyatlardır</span>
+                    </div>
+                </div>
+                
+                <div class="categories-grid">
+                    <div class="category-card" data-category="beyaz-esya">
+                        <div class="category-icon">
+                            <i class="fas fa-snowflake"></i>
+                        </div>
+                        <h3 class="category-title">Beyaz Eşya</h3>
+                        <p class="category-description">Buzdolabı, çamaşır makinesi ve niceleri...</p>
+                        <a href="kategori-beyaz-esya.html" class="category-link">
+                            ÜRÜNLERİ GÖR <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="category-card" data-category="mobilya">
+                        <div class="category-icon">
+                            <i class="fas fa-couch"></i>
+                        </div>
+                        <h3 class="category-title">Mobilya</h3>
+                        <p class="category-description">Koltuk, yatak, dolap ve niceleri...</p>
+                        <a href="kategori-mobilya.html" class="category-link">
+                            ÜRÜNLERİ GÖR <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="category-card" data-category="kucuk-ev-aletleri">
+                        <div class="category-icon">
+                            <i class="fas fa-blender"></i>
+                        </div>
+                        <h3 class="category-title">Ev Aletleri</h3>
+                        <p class="category-description">Kahve makinesi, blender ve niceleri...</p>
+                        <a href="kategori-kucuk-ev-aletleri.html" class="category-link">
+                            ÜRÜNLERİ GÖR <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="category-card" data-category="klima-ventilator">
+                        <div class="category-icon">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <h3 class="category-title">Klima & Vantilatör</h3>
+                        <p class="category-description">Klima sistemleri ve niceleri...</p>
+                        <a href="kategori-klima-ventilator.html" class="category-link">
+                            ÜRÜNLERİ GÖR <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="category-card" data-category="kisisel-bakim">
+                        <div class="category-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h3 class="category-title">Bakım</h3>
+                        <p class="category-description">Saç kurutma, tıraş ve niceleri...</p>
+                        <a href="kategori-kisisel-bakim.html" class="category-link">
+                            ÜRÜNLERİ GÖR <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- KATALOGLARIMIZ SECTION -->
+        <section class="brands-section section" id="kataloglarimiz">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Kataloglarımız</h2>
+                    <p class="section-subtitle">Mağazada yoksa üzülmeyin! Aşağıdaki firmalardan istediğiniz ürünü seçin, sizin yerinize biz getirelim.</p>
+                </div>
+                
+                <div class="brands-grid" id="catalogBrandsGrid">
+                    <!-- Dinamik olarak yüklenecek -->
+                    <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <p>Markalar yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANLAŞMALI MARKALAR SECTION -->
+        <section class="accordion-section section" id="markalar">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Anlaşmalı Markalarımız</h2>
+                    <p class="section-subtitle">Güvenilir markaların yetkili satış noktasıyız</p>
+                </div>
+                
+                <div class="accordion-container" id="contractedBrandsAccordion">
+                    <!-- Admin'den dinamik yüklenecek -->
+                    <div class="loading-state" style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <p>Markalar yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- İLETİŞİM SECTION -->
+        <section class="contact-section section" id="iletisim">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">İletişim</h2>
+                    <p class="section-subtitle">Bize ulaşın, yardımcı olmaktan memnuniyet duyarız</p>
+                </div>
+                
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 class="contact-title">Konumumuz</h3>
+                        <div class="contact-info">
+                            Sultan Selim Mahallesi Sultan Selim Caddesi<br>
+                            Sonbahar Sok No:13, İstanbul
+                        </div>
+                        <a href="https://goo.gl/maps/example" target="_blank" class="contact-action">
+                            HARİTADA AÇ <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="contact-title">Cep Telefonu</h3>
+                        <div class="contact-info">
+                            +90 535 879 73 76
+                        </div>
+                        <a href="tel:+905358797376" class="contact-action">
+                            HEMEN ARA <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h3 class="contact-title">Sabit Hat</h3>
+                        <div class="contact-info">
+                            +90 212 264 49 07
+                        </div>
+                        <a href="tel:+902122644907" class="contact-action">
+                            HEMEN ARA <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <h3 class="contact-title">WhatsApp</h3>
+                        <div class="contact-info">
+                            +90 537 942 94 37
+                        </div>
+                        <a href="https://wa.me/905379429437" target="_blank" class="contact-action">
+                            MESAJ GÖNDER <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MINIMAL FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Sol Sütun - Hakkımızda -->
+                <div class="footer-section">
+                    <h3>DOĞUŞ ALIŞVERİŞ MERKEZİ</h3>
+                    <p><strong>Memnuniyetiniz Kazancımızdır</strong></p>
+                    <p>
+                        Sultan Selim Mahallesi Sultan Selim Caddesi<br>
+                        Sonbahar Sok No:13, İstanbul<br>
+                        <strong>2001'den Bu Yana</strong>
+                    </p>
+                </div>
+                
+                <!-- Orta Sütun - Kategoriler -->
+                <div class="footer-section">
+                    <h3>Kategoriler</h3>
+                    <ul class="footer-links">
+                        <li><a href="#urunlerimiz"><i class="fas fa-snowflake"></i> Beyaz Eşya</a></li>
+                        <li><a href="#urunlerimiz"><i class="fas fa-couch"></i> Mobilya</a></li>
+                        <li><a href="#urunlerimiz"><i class="fas fa-utensils"></i> Züccaciye</a></li>
+                        <li><a href="#urunlerimiz"><i class="fas fa-blender"></i> Küçük Ev Aletleri</a></li>
+                        <li><a href="#urunlerimiz"><i class="fas fa-wind"></i> Klima & Vantilatör</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Sağ Sütun - İletişim -->
+                <div class="footer-section">
+                    <h3>İletişim</h3>
+                    <ul class="footer-links">
+                        <li><a href="tel:+905358797376"><i class="fas fa-mobile-alt"></i> +90 535 879 73 76</a></li>
+                        <li><a href="tel:+902122644907"><i class="fas fa-phone"></i> +90 212 264 49 07</a></li>
+                        <li><a href="https://wa.me/905379429437" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+                        <li><a href="https://goo.gl/maps/example" target="_blank"><i class="fas fa-map-marker-alt"></i> Konum</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Doğuş Alışveriş Merkezi. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PRODUCT DETAIL MODAL -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Ürün Detayı</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-product-image">
+                    <div class="image-gallery">
+                        <div class="gallery-main-image">
+                            <img id="modalMainImage" src="" alt="Ürün Resmi">
+                            <button class="gallery-nav prev" onclick="previousImage()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="gallery-nav next" onclick="nextImage()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="gallery-indicators" id="galleryIndicators">
+                                <!-- Indicators will be generated here -->
+                            </div>
+                        </div>
+                        <div class="gallery-thumbnails" id="galleryThumbnails">
+                            <!-- Thumbnails will be generated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-product-info">
+                    <h3 id="modalProductTitle">Ürün Adı</h3>
+                    <p id="modalProductDescription">Ürün açıklaması...</p>
+                    <div class="modal-product-price" id="modalProductPrice">₺0</div>
+                    <div class="modal-actions">
+                        <button class="btn-add-cart" onclick="addToCart(currentProduct.title)">Sepete Ekle</button>
+                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)">Teklif Al</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CATEGORY PRODUCTS MODAL - REMOVED -->
+    <!-- Artık ayrı sayfalar kullanıyoruz -->
+
+    <!-- SHOPPING CART MODAL -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content cart-modal">
+            <div class="modal-header">
+                <h2 id="cartModalTitle">Sepetim</h2>
+                <span class="close" onclick="closeCart()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="cart-items" id="cartItems">
+                    <!-- Sepet ürünleri buraya gelecek -->
+                    <div class="empty-cart" id="emptyCart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Sepetiniz boş</p>
+                        <small>Ürün eklemek için kategori sayfalarını ziyaret edin</small>
+                    </div>
+                </div>
+                <div class="cart-summary" id="cartSummary" style="display: none;">
+                    <div class="cart-total">
+                        <div class="total-row">
+                            <span>Toplam:</span>
+                            <span class="total-price" id="totalPrice">₺0</span>
+                        </div>
+                        <div class="installment-info">
+                            <small>Vade farksız taksit imkanı</small>
+                        </div>
+                    </div>
+                    <div class="cart-actions">
+                        <button class="btn-installments" onclick="showInstallmentTable()">
+                            <i class="fas fa-credit-card"></i> Taksit Seçenekleri
+                        </button>
+                        <button class="btn-order" onclick="sendWhatsAppOrder()">
+                            <i class="fab fa-whatsapp"></i> Sipariş Ver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INSTALLMENT TABLE MODAL -->
+    <div id="installmentModal" class="modal">
+        <div class="modal-content installment-modal">
+            <div class="modal-header">
+                <h2>Taksit Seçenekleri</h2>
+                <span class="close" onclick="closeInstallmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="installment-table-container">
+                    <table class="installment-table">
+                        <thead>
+                            <tr>
+                                <th>Taksit Sayısı</th>
+                                <th>Aylık Tutar</th>
+                                <th>Toplam Tutar</th>
+                                <th>Faiz Oranı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="installmentTableBody">
+                            <!-- Taksit seçenekleri buraya gelecek -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="installment-note">
+                    <p><i class="fas fa-info-circle"></i> 5000 TL'ye kadar 6 aya kadar, 5000 TL üstü alışverişlerde 9 aya kadar vade farksız taksit.</p>
+                    <p><small>Siparişinizi WhatsApp üzerinden tamamladıktan sonra ödeme detayları paylaşılacaktır.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODERN JAVASCRIPT -->
+    <script>
+        // Global değişkenler
+        let currentProduct = {};
+
+        // Gallery sistem değişkenleri
+        let currentImageIndex = 0;
+        let productImages = [];
+
+        // Ürün detay modal göster
+        function showProductDetail(productId, title, description, price, mainImage) {
+            // Her ürün için 5-6 fotoğraf oluştur (ana fotoğraf + varyasyonlar)
+            productImages = [
+                mainImage,
+                mainImage.replace('w=400&h=300', 'w=600&h=400&sat=-0.3'), // Desaturated version
+                mainImage.replace('w=400&h=300', 'w=600&h=400&brightness=1.1'), // Brighter version  
+                mainImage.replace('w=400&h=300', 'w=600&h=400&contrast=1.1'), // More contrast
+                mainImage.replace('w=400&h=300', 'w=600&h=400&blur=0.5'), // Slight blur for detail
+                mainImage.replace('w=400&h=300', 'w=600&h=400&sepia=0.3') // Sepia effect
+            ];
+            
+            currentProduct = { id: productId, title, description, price, images: productImages };
+            currentImageIndex = 0;
+            
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalProductTitle').textContent = title;
+            document.getElementById('modalProductDescription').textContent = description;
+            document.getElementById('modalProductPrice').textContent = price;
+            
+            // Ana resmi ve gallery'i yükle
+            loadGallery();
+            
+            document.getElementById('productModal').style.display = 'block';
+        }
+
+        // Gallery yükleme fonksiyonu
+        function loadGallery() {
+            const mainImage = document.getElementById('modalMainImage');
+            const thumbnailsContainer = document.getElementById('galleryThumbnails');
+            const indicatorsContainer = document.getElementById('galleryIndicators');
+            
+            // Ana resmi ayarla
+            mainImage.src = productImages[currentImageIndex];
+            mainImage.alt = currentProduct.title;
+            
+            // Thumbnail'ları oluştur
+            thumbnailsContainer.innerHTML = '';
+            productImages.forEach((image, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = `gallery-thumbnail ${index === currentImageIndex ? 'active' : ''}`;
+                thumbnail.innerHTML = `<img src="${image}" alt="${currentProduct.title} - Fotoğraf ${index + 1}">`;
+                thumbnail.onclick = () => goToImage(index);
+                thumbnailsContainer.appendChild(thumbnail);
+            });
+            
+            // Indicator'ları oluştur
+            indicatorsContainer.innerHTML = '';
+            productImages.forEach((_, index) => {
+                const indicator = document.createElement('div');
+                indicator.className = `gallery-indicator ${index === currentImageIndex ? 'active' : ''}`;
+                indicator.onclick = () => goToImage(index);
+                indicatorsContainer.appendChild(indicator);
+            });
+        }
+
+        // Belirli resme git
+        function goToImage(index) {
+            currentImageIndex = index;
+            loadGallery();
+        }
+
+        // Sonraki resim
+        function nextImage() {
+            currentImageIndex = (currentImageIndex + 1) % productImages.length;
+            loadGallery();
+        }
+
+        // Önceki resim  
+        function previousImage() {
+            currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
+            loadGallery();
+        }
+
+        // Klavye navigasyonu
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('productModal');
+            if (modal.style.display === 'block') {
+                if (e.key === 'ArrowLeft') {
+                    previousImage();
+                } else if (e.key === 'ArrowRight') {
+                    nextImage();
+                } else if (e.key === 'Escape') {
+                    closeModal();
+                }
+            }
+        });
+
+        // Modal kapat
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        // Teklif al - WhatsApp'a yönlendir
+        function requestOffer(productName, price) {
+            const message = `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`;
+            const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Sepete ekle
+        function addToCart(productName) {
+            // Buton animasyonu
+            event.target.style.background = 'var(--success)';
+            event.target.textContent = 'Eklendi!';
+            
+            setTimeout(() => {
+                event.target.style.background = 'var(--secondary)';
+                event.target.textContent = 'Sepete Ekle';
+            }, 2000);
+            
+            showNotification(`${productName} sepete eklendi!`, 'success');
+        }
+
+        // Modal dışına tıklayınca kapat
+        window.onclick = function(event) {
+            const productModal = document.getElementById('productModal');
+            if (event.target === productModal) {
+                closeModal();
+            }
+        }
+
+        // Modern Accordion functionality
+        function toggleAccordion(header) {
+            const item = header.parentElement;
+            const content = item.querySelector('.accordion-content');
+            const isActive = header.classList.contains('active');
+            
+            // Close all accordions
+            document.querySelectorAll('.accordion-item').forEach(otherItem => {
+                const otherHeader = otherItem.querySelector('.accordion-header');
+                const otherContent = otherItem.querySelector('.accordion-content');
+                
+                otherHeader.classList.remove('active');
+                otherContent.classList.remove('active');
+            });
+            
+            // Toggle current accordion if it wasn't active
+            if (!isActive) {
+                header.classList.add('active');
+                content.classList.add('active');
+            }
+        }
+
+        // Smooth scroll for navigation and hero buttons
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (this.onclick) return; // Skip if has custom onclick
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const target = document.querySelector(targetId);
+                if (target) {
+                    const headerHeight = 80;
+                    const targetPosition = target.offsetTop - headerHeight;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Update active navigation on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Simple notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--${type === 'success' ? 'success' : 'secondary'});
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-lg);
+                z-index: 1000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sepeti kontrol et ve temizle
+            checkAndClearCart();
+            
+            // Admin'den eklenen ürünleri yükle
+            loadFeaturedProducts();
+            
+            // Kategori sayfalarından gelen cart güncellemelerini dinle
+            window.addEventListener('cartUpdated', function(event) {
+                console.log('Ana sayfa: Sepet güncellemesi alındı:', event.detail);
+                cart.items = event.detail.cart || [];
+                updateCartCount();
+                updateCartDisplay();
+            });
+            
+            // Add loading animation to cards
+            const cards = document.querySelectorAll('.category-card, .product-card, .contact-card, .brand-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Initialize cart
+            updateCartCount();
+        });
+
+        // ===== ADMIN ÜRÜN ENTEGRASYONU =====
+        
+        // LocalStorage'dan ürünleri al
+        function getAdminProducts() {
+            try {
+                const products = localStorage.getItem('dogusAdminProducts');
+                return products ? JSON.parse(products) : [];
+            } catch (error) {
+                console.error('Ürünler yüklenemedi:', error);
+                return [];
+            }
+        }
+
+        // En çok satanları (featured) yükle
+        function loadFeaturedProducts() {
+            const grid = document.getElementById('bestsellersGrid');
+            if (!grid) return;
+
+            const allProducts = getAdminProducts();
+            
+            // İlk olarak isFeatured=true olanları al
+            let featuredProducts = allProducts.filter(p => 
+                p.isFeatured === true && 
+                p.status === 'active' && 
+                (p.stock || 0) > 0
+            );
+
+            // Eğer featured ürün yoksa veya 4'ten azsa, son eklenen aktif ürünleri ekle
+            if (featuredProducts.length < 4) {
+                const activeProducts = allProducts.filter(p => 
+                    p.status === 'active' && 
+                    (p.stock || 0) > 0 &&
+                    !p.isFeatured
+                ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                featuredProducts = [...featuredProducts, ...activeProducts].slice(0, 4);
+            } else {
+                featuredProducts = featuredProducts.slice(0, 4);
+            }
+
+            if (featuredProducts.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+                        <p style="color: var(--text-light);">Henüz ürün eklenmemiş</p>
+                        <small style="color: var(--text-light);">Admin panelinden ürün ekleyebilirsiniz</small>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = featuredProducts.map(product => {
+                const mainImage = product.images && product.images[0] 
+                    ? product.images[0] 
+                    : (product.image || 'https://via.placeholder.com/400x300?text=Ürün+Görseli');
+                
+                const categoryIcons = {
+                    'beyaz-esya': 'fa-snowflake',
+                    'mobilya': 'fa-couch',
+                    'kucuk-ev-aletleri': 'fa-blender',
+                    'klima-ventilator': 'fa-wind',
+                    'kisisel-bakim': 'fa-user-check'
+                };
+                
+                const icon = categoryIcons[product.category] || 'fa-box';
+                
+                const allImages = product.images && product.images.length > 0 
+                    ? product.images 
+                    : [mainImage];
+
+                return `
+                    <div class="product-card" onclick='showProductDetailFromAdmin(${JSON.stringify(product).replace(/'/g, "&#39;")})'>
+                        <div class="product-image">
+                            <img src="${mainImage}" alt="${product.title}" 
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas ${icon}\\' style=\\'font-size: 3rem; color: var(--secondary);\\'></i>';">
+                            ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
+                            ${product.originalPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">${product.title}</h3>
+                            <p class="product-description">${(product.description || '').substring(0, 80)}${product.description && product.description.length > 80 ? '...' : ''}</p>
+                            <div class="product-pricing">
+                                ${product.originalPrice ? `<span class="original-price">${product.originalPrice}</span>` : ''}
+                                <div class="product-price">${product.price}</div>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', '${product.price}', '${product.id}')">Sepete Ekle</button>
+                                <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${product.price}')">Teklif Al</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Admin ürününü detaylı göster
+        function showProductDetailFromAdmin(product) {
+            const images = product.images && product.images.length > 0 
+                ? product.images 
+                : (product.image ? [product.image] : ['https://via.placeholder.com/600x400?text=Ürün+Görseli']);
+            
+            productImages = images;
+            currentProduct = {
+                id: product.id,
+                title: product.title,
+                description: product.description || '',
+                price: product.price,
+                originalPrice: product.originalPrice || '',
+                brand: product.brand || '',
+                specifications: product.specifications || {},
+                images: images
+            };
+            currentImageIndex = 0;
+            
+            document.getElementById('modalTitle').textContent = product.title;
+            document.getElementById('modalProductTitle').textContent = product.title;
+            
+            // Detaylı açıklama oluştur
+            let detailHtml = `<div class="product-detail-description">`;
+            detailHtml += `<p>${product.description || 'Ürün açıklaması bulunmuyor.'}</p>`;
+            
+            // Özellikler
+            if (product.specifications && Object.keys(product.specifications).length > 0) {
+                detailHtml += `<h4 style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1rem;">Ürün Özellikleri:</h4>`;
+                detailHtml += `<ul style="list-style: none; padding: 0;">`;
+                Object.entries(product.specifications).forEach(([key, value]) => {
+                    detailHtml += `<li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+                        <strong>${key}:</strong> <span>${value}</span>
+                    </li>`;
+                });
+                detailHtml += `</ul>`;
+            }
+            detailHtml += `</div>`;
+            
+            document.getElementById('modalProductDescription').innerHTML = detailHtml;
+            
+            // Fiyat
+            let priceHtml = '';
+            if (product.originalPrice) {
+                priceHtml = `
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span style="text-decoration: line-through; color: var(--text-light); font-size: 1rem;">${product.originalPrice}</span>
+                        <span style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${product.price}</span>
+                        <span style="color: var(--success); font-size: 0.875rem;">
+                            <i class="fas fa-tag"></i> İndirimli Fiyat
+                        </span>
+                    </div>
+                `;
+            } else {
+                priceHtml = product.price;
+            }
+            document.getElementById('modalProductPrice').innerHTML = priceHtml;
+            
+            // Gallery'i yükle
+            loadGallery();
+            
+            document.getElementById('productModal').style.display = 'block';
+        }
+
+        // Sepete ekle fonksiyonunu güncelle (ID desteği ile)
+        const originalAddToCart = window.addToCart;
+        window.addToCart = function(productName, productPrice, productId) {
+            // Fiyat parametresi yoksa, orijinal fonksiyonu çağır
+            if (!productPrice) {
+                return originalAddToCart.call(this, productName);
+            }
+            
+            // Yeni versiyon - fiyat ve ID ile
+            cart.addItem(productName, productPrice, 1);
+
+            // Buton animasyonu
+            if (window.event && window.event.target) {
+                const btn = window.event.target;
+                const originalText = btn.textContent;
+                const originalBg = btn.style.background;
+                
+                btn.style.background = 'var(--success)';
+                btn.textContent = 'Eklendi!';
+                
+                setTimeout(() => {
+                    btn.style.background = originalBg;
+                    btn.textContent = originalText;
+                }, 2000);
+            }
+            
+            showNotification(`${productName} sepete eklendi!`, 'success');
+        };
+
+        // Admin'den ürün güncellemelerini dinle
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'dogusAdminProducts') {
+                console.log('Ürünler güncellendi, yeniden yükleniyor...');
+                loadFeaturedProducts();
+            }
+        });
+
+        // ===== KATALOG MARKALARI YÜKLEME =====
+        function loadCatalogBrands() {
+            const grid = document.getElementById('catalogBrandsGrid');
+            if (!grid) return;
+
+            // Sabit katalog markaları (URL'li)
+            const catalogBrands = [
+                { name: 'SUNA SANDALYE', url: 'https://sunasandalye.com.tr' },
+                { name: 'ALTUS', url: 'https://www.altus.com.tr' },
+                { name: 'HOOVER', url: 'https://www.hoover-home.com/tr_TR/' },
+                { name: 'MASSA', url: 'https://massamobilya.com/' },
+                { name: 'RAVIZZA', url: 'https://www.ravizzayatak.com' },
+                { name: 'AKYOL MOBİLYA', url: 'https://www.akyolmobilya.com' },
+                { name: 'ASRASAN', url: 'https://www.facebook.com/asrasan.panel.mobilya/' },
+                { name: 'ÇINARCA', url: 'https://cinarcamobilya.com' },
+                { name: 'SIES', url: 'https://siesuykusistemleri.com' },
+                { name: 'TUTKU', url: 'https://www.tutkuyatak.com.tr' },
+                { name: 'BODE', url: 'https://www.bode.com.tr' },
+                { name: 'HOMESET', url: 'https://homeset.com.tr' },
+                { name: 'EVONA', url: 'https://www.evonahome.com.tr/' }
+            ];
+
+            grid.innerHTML = catalogBrands.map(brand => `
+                <a href="${brand.url}" target="_blank" class="brand-card">${brand.name.replace(' ', '<br>')}</a>
+            `).join('') + '<a href="#" class="brand-card">DİĞER<br>MARKALAR</a>';
+        }
+
+        // Sayfa yüklendiğinde katalog markalarını da yükle
+        loadCatalogBrands();
+
+        // ===== ANLAŞMALI MARKALAR YÜKLEME =====
+        function loadContractedBrands() {
+            const container = document.getElementById('contractedBrandsAccordion');
+            if (!container) return;
+
+            try {
+                // Admin'den markaları al
+                const brandsData = localStorage.getItem('dogusBrands');
+                let brands = brandsData ? JSON.parse(brandsData) : null;
+
+                // Eğer admin'de marka yoksa, varsayılan markaları kullan
+                if (!brands || Object.keys(brands).length === 0) {
+                    brands = {
+                        'Beyaz Eşya': ['ALTUS', 'HOOVER', 'GRUNDİG', 'SUNNY', 'ÇETİNTAŞ', 'TEKA', 'VENTİNO', 'SİMFER', 'REGAL', 'TELEFUNKEN'],
+                        'Küçük Ev Aletleri': ['FANTOM', 'FAKİR', 'ONVO', 'APRİLLA', 'SİNBO', 'İNOVA', 'ARÇELİK', 'CVS', 'KİWİ', 'ARZUM', 'KORKMAZ', 'PHİLİPS', 'DUBBO', 'VEVANDİN', 'SAREX', 'SUNNY', 'RANGE', 'ARNİCA', 'CONTİ', 'AKSU', 'İTİMAT', 'ALTUS', 'KİNG'],
+                        'Klima & Vantilatör': ['RAKS', 'İNOVA', 'ALTUS', 'REGAL'],
+                        'Mobilya': ['PUFFY', 'AKYOL MOBİLYA', 'SUNA SANDALYE', 'MASSA', 'HOMESET', 'BODE', 'TUTKU', 'EVONA', 'SİES', 'RAVİZZA', 'ÇINARCA', 'ASRASAN'],
+                        'Kişisel Bakım': ['REMİNGTON', 'APRİLLA', 'BABYLİSS', 'FAKİR', 'BRAUN', 'İNOVA', 'RAKS', 'POWERTEC'],
+                        'Tekstil': ['COTTONBOX', 'ALTINBAŞAK', 'TAC', 'KRİSTAL', 'HOBBY'],
+                        'Züccaciye': ['TAÇ', 'SCHAFER', 'AKPA', 'FALEZ', 'KORKMAZ', 'İMZA', 'TEFAL']
+                    };
+                    
+                    // Varsayılan markaları localStorage'a kaydet
+                    localStorage.setItem('dogusBrands', JSON.stringify(brands));
+                }
+
+                if (Object.keys(brands).length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+                            <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>Henüz marka eklenmemiş</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = Object.entries(brands).map(([category, brandList]) => {
+                    if (!Array.isArray(brandList) || brandList.length === 0) return '';
+                    
+                    return `
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <h3 class="accordion-title">${category}</h3>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="accordion-brands">
+                                    ${brandList.map(brand => `<div class="brand-item">${brand}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).filter(Boolean).join('');
+
+            } catch (error) {
+                console.error('Markalar yüklenemedi:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+                        <p>Markalar yüklenirken bir hata oluştu</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Storage değişikliklerini dinle (farklı tab'lar için)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'dogusBrands' || e.key === 'dogusBrandsUpdated') {
+                console.log('🔄 Markalar güncellendi (storage event)');
+                loadContractedBrands();
+            }
+        });
+
+        // Aynı tab için periyodik kontrol (admin ile aynı tab'da çalışırsa)
+        let lastBrandsUpdate = localStorage.getItem('dogusBrandsUpdated') || '0';
+        setInterval(() => {
+            const currentUpdate = localStorage.getItem('dogusBrandsUpdated') || '0';
+            if (currentUpdate !== lastBrandsUpdate) {
+                console.log('🔄 Markalar güncellendi (polling)');
+                lastBrandsUpdate = currentUpdate;
+                loadContractedBrands();
+            }
+        }, 2000); // Her 2 saniyede bir kontrol et
+
+        // İlk yükleme
+        loadContractedBrands();
+
+        // ===== PROFESSIONAL SEPET SİSTEMİ =====
+        class ShoppingCart {
+            constructor() {
+                this.storageKey = 'dogusSepet';
+                this.listeners = [];
+                // Sepeti temiz başlat
+                this.items = [];
+                this.clearOldCart(); // Eski verileri temizle
+                this.notifyListeners();
+            }
+
+            // Eski sepet verilerini temizle
+            clearOldCart() {
+                try {
+                    localStorage.removeItem(this.storageKey);
+                    console.log('Sepet temizlendi - temiz başlangıç');
+                } catch (error) {
+                    console.error('Sepet temizleme hatası:', error);
+                }
+            }
+
+            // Sepeti localStorage'dan yükle (sadece valid veri varsa)
+            loadCart() {
+                try {
+                    const savedCart = localStorage.getItem(this.storageKey);
+                    if (savedCart) {
+                        const parsed = JSON.parse(savedCart);
+                        // Sadece valid array ise yükle
+                        if (Array.isArray(parsed)) {
+                            this.items = parsed;
+                        } else {
+                            this.items = [];
+                        }
+                    } else {
+                        this.items = [];
+                    }
+                } catch (error) {
+                    console.error('Sepet yükleme hatası:', error);
+                    this.items = [];
+                }
+                this.notifyListeners();
+            }
+
+            // Sepeti localStorage'a kaydet
+            saveCart() {
+                try {
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.items));
+                    this.notifyListeners();
+                } catch (error) {
+                    console.error('Sepet kaydetme hatası:', error);
+                }
+            }
+
+            // Event listener ekle
+            addListener(callback) {
+                this.listeners.push(callback);
+            }
+
+            // Tüm listener'ları bilgilendir
+            notifyListeners() {
+                this.listeners.forEach(callback => callback(this.items));
+            }
+
+            // Ürün ekle
+            addItem(name, price, quantity = 1) {
+                const existingItem = this.items.find(item => item.name === name);
+                
+                if (existingItem) {
+                    existingItem.quantity += quantity;
+                } else {
+                    this.items.push({
+                        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                        name: name,
+                        price: price,
+                        quantity: quantity
+                    });
+                }
+                
+                this.saveCart();
+                return true;
+            }
+
+            // Miktar güncelle
+            updateQuantity(itemId, newQuantity) {
+                const item = this.items.find(item => item.id === itemId);
+                if (item) {
+                    if (newQuantity <= 0) {
+                        this.removeItem(itemId);
+                    } else {
+                        item.quantity = newQuantity;
+                        this.saveCart();
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            // Ürün kaldır
+            removeItem(itemId) {
+                this.items = this.items.filter(item => item.id !== itemId);
+                this.saveCart();
+            }
+
+            // Sepeti temizle
+            clearCart() {
+                this.items = [];
+                this.saveCart();
+            }
+
+            // Toplam ürün sayısı
+            getTotalItems() {
+                return this.items.reduce((total, item) => total + item.quantity, 0);
+            }
+
+            // Toplam fiyat
+            getTotalPrice() {
+                return this.items.reduce((total, item) => {
+                    const price = parseFloat(item.price.replace('₺', '').replace('.', ''));
+                    return total + (price * item.quantity);
+                }, 0);
+            }
+
+            // Tüm ürünleri getir
+            getItems() {
+                return [...this.items];
+            }
+        }
+
+        // Global sepet instance'ı
+        const cart = new ShoppingCart();
+
+        // Sepete ürün ekle (güncellenmiş)
+        function addToCart(productName) {
+            // Fiyatı bul
+            let price = '₺0';
+            
+            // Önce modal'daki currentProduct'ı kontrol et
+            if (window.currentProduct && window.currentProduct.title === productName) {
+                price = window.currentProduct.price;
+            } else {
+                // DOM'dan ara
+                const productCards = document.querySelectorAll('.product-card');
+                for (const card of productCards) {
+                    const titleEl = card.querySelector('.product-title');
+                    if (titleEl && titleEl.textContent.trim() === productName) {
+                        const priceEl = card.querySelector('.product-price');
+                        if (priceEl) {
+                            price = priceEl.textContent.trim();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Sepete ekle
+            cart.addItem(productName, price, 1);
+
+            // Buton animasyonu
+            if (window.event && window.event.target) {
+                const btn = window.event.target;
+                const originalText = btn.textContent;
+                const originalBg = btn.style.background;
+                
+                btn.style.background = 'var(--success)';
+                btn.textContent = 'Eklendi!';
+                
+                setTimeout(() => {
+                    btn.style.background = originalBg;
+                    btn.textContent = originalText;
+                }, 2000);
+            }
+            
+            showNotification(`${productName} sepete eklendi!`, 'success');
+        }
+
+        // Sepet sayısını güncelle
+        function updateCartCount() {
+            const countEl = document.getElementById('cartCount');
+            if (countEl) {
+                countEl.textContent = cart.getTotalItems();
+            }
+        }
+
+        // Sepet modal'ını aç/kapat
+        function toggleCart() {
+            const modal = document.getElementById('cartModal');
+            if (modal) {
+                modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+                updateCartDisplay();
+            }
+        }
+
+        function closeCart() {
+            const modal = document.getElementById('cartModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Sepet içeriğini güncelle
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const cartSummary = document.getElementById('cartSummary');
+            
+            if (!cartItems) return;
+
+            const items = cart.getItems();
+
+            if (items.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Sepetiniz boş</p>
+                        <small>Ürün eklemek için kategori sayfalarını ziyaret edin</small>
+                    </div>
+                `;
+                if (cartSummary) cartSummary.style.display = 'none';
+                return;
+            }
+
+            if (cartSummary) cartSummary.style.display = 'block';
+
+            let cartHTML = '';
+            items.forEach(item => {
+                const priceNum = parseFloat(item.price.replace('₺', '').replace('.', ''));
+                const itemTotal = priceNum * item.quantity;
+
+                cartHTML += `
+                    <div class="cart-item">
+                        <div class="item-info" onclick="goToProduct('${item.name}')" style="cursor: pointer;">
+                            <h4>${item.name}</h4>
+                            <span class="item-price">${item.price}</span>
+                            <small class="product-link">Ürün detayını gör</small>
+                        </div>
+                        <div class="item-controls">
+                            <button onclick="updateQuantity('${item.id}', ${item.quantity - 1})">-</button>
+                            <span class="quantity">${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                            <button class="remove-item" onclick="removeFromCart('${item.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="item-total">₺${itemTotal.toLocaleString('tr-TR')}</div>
+                    </div>
+                `;
+            });
+
+            cartItems.innerHTML = cartHTML;
+            
+            const totalPriceEl = document.getElementById('totalPrice');
+            if (totalPriceEl) {
+                totalPriceEl.textContent = `₺${cart.getTotalPrice().toLocaleString('tr-TR')}`;
+            }
+        }
+
+        // Ürüne git fonksiyonu
+        function goToProduct(productName) {
+            // Önce modal'ı kapat
+            closeCart();
+            
+            // Ana sayfadaysa ürün modal'ını aç
+            if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+                // Ana sayfada ürün ara ve modal aç
+                const productCards = document.querySelectorAll('.product-card');
+                for (const card of productCards) {
+                    const titleEl = card.querySelector('.product-title');
+                    if (titleEl && titleEl.textContent.trim() === productName) {
+                        card.click(); // Ürün kartına tıkla
+                        return;
+                    }
+                }
+            } else {
+                // Kategori sayfasındaysa ilgili kategoriye git
+                const productMapping = {
+                    // Beyaz Eşya
+                    'Samsung Buzdolabı': 'kategori-beyaz-esya.html',
+                    'LG Çamaşır Makinesi': 'kategori-beyaz-esya.html',
+                    'Bosch Bulaşık Makinesi': 'kategori-beyaz-esya.html',
+                    'Samsung RT38K5400S8 Buzdolabı': 'kategori-beyaz-esya.html',
+                    'LG GR-B429PZQZ Buzdolabı': 'kategori-beyaz-esya.html',
+                    'LG F4J6QY0W Çamaşır Makinesi': 'kategori-beyaz-esya.html',
+                    'Bosch SMS46KI01T Bulaşık Makinesi': 'kategori-beyaz-esya.html',
+                    
+                    // Mobilya
+                    'İstikbal Koltuk Takımı': 'kategori-mobilya.html',
+                    'İstikbal Vera Koltuk Takımı': 'kategori-mobilya.html',
+                    'Bellona Yatak Odası Takımı': 'kategori-mobilya.html',
+                    
+                    // Ev Aletleri
+                    'Tefal Express Kahve Makinesi': 'kategori-kucuk-ev-aletleri.html',
+                    'Philips HR3655 Blender Seti': 'kategori-kucuk-ev-aletleri.html',
+                    
+                    // Klima
+                    'Daikin FTX25J3 Split Klima': 'kategori-klima-ventilator.html',
+                    'Mitsubishi MSZ-LN25VGV Klima': 'kategori-klima-ventilator.html'
+                };
+                
+                const categoryPage = productMapping[productName];
+                if (categoryPage) {
+                    window.location.href = categoryPage;
+                } else {
+                    // Genel arama - beyaz eşya kategorisine git
+                    window.location.href = 'kategori-beyaz-esya.html';
+                }
+            }
+        }
+
+        // Ürün miktarını güncelle
+        function updateQuantity(itemId, newQuantity) {
+            cart.updateQuantity(itemId, newQuantity);
+            updateCartDisplay();
+        }
+
+        // Sepetten ürün kaldır
+        function removeFromCart(itemId) {
+            cart.removeItem(itemId);
+            updateCartDisplay();
+        }
+
+        // Sepet değişikliklerini dinle
+        cart.addListener(() => {
+            updateCartCount();
+        });
+
+        // WhatsApp sipariş gönder
+        function sendWhatsAppOrder() {
+            const items = cart.getItems();
+            
+            if (items.length === 0) {
+                showNotification('Sepetinizde ürün bulunmuyor!', 'error');
+                return;
+            }
+
+            let message = 'Merhaba! Aşağıdaki ürünler için sipariş vermek istiyorum:\n\n';
+            
+            items.forEach((item, index) => {
+                const priceNum = parseFloat(item.price.replace('₺', '').replace('.', ''));
+                const itemTotal = priceNum * item.quantity;
+
+                message += `${index + 1}. ${item.name}\n`;
+                message += `   Adet: ${item.quantity}\n`;
+                message += `   Birim Fiyat: ${item.price}\n`;
+                message += `   Toplam: ₺${itemTotal.toLocaleString('tr-TR')}\n\n`;
+            });
+
+            message += `GENEL TOPLAM: ₺${cart.getTotalPrice().toLocaleString('tr-TR')}\n\n`;
+            message += 'Vade farksız taksit seçenekleri ve ödeme detayları için bilgi verebilir misiniz?';
+
+            const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Taksit tablosunu göster
+        function showInstallmentTable() {
+            const totalPrice = cart.getTotalPrice();
+
+            if (totalPrice === 0) {
+                showNotification('Sepetinizde ürün bulunmuyor!', 'error');
+                return;
+            }
+
+            const tableBody = document.getElementById('installmentTableBody');
+            if (!tableBody) return;
+            
+            let tableHTML = '';
+            let maxMonths = 6; // Varsayılan: 6 ay
+            
+            // 5000 TL üstü ise 9 ay taksit göster
+            if (totalPrice > 5000) {
+                maxMonths = 9;
+            }
+
+            // Taksit seçeneklerini oluştur
+            for (let month = 1; month <= maxMonths; month++) {
+                const monthlyPayment = totalPrice / month;
+                
+                tableHTML += `
+                    <tr ${month <= 3 ? 'class="recommended"' : ''}>
+                        <td>${month} Ay ${month <= 3 ? '<span class="badge">Önerilen</span>' : ''}</td>
+                        <td>₺${monthlyPayment.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
+                        <td>₺${totalPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
+                        <td class="no-interest">Vade Farksız</td>
+                    </tr>
+                `;
+            }
+
+            tableBody.innerHTML = tableHTML;
+            
+            // Modal başlığını güncelleyin 
+            const modalTitle = document.querySelector('#installmentModal .modal-header h2');
+            if (modalTitle) {
+                modalTitle.textContent = `Taksit Seçenekleri (${totalPrice <= 5000 ? '6 Aya Kadar' : '9 Aya Kadar'})`;
+            }
+            
+            document.getElementById('installmentModal').style.display = 'block';
+        }
+
+        function closeInstallmentModal() {
+            document.getElementById('installmentModal').style.display = 'none';
+        }
+
+        // Sepeti temizle (debugging için)
+        function clearCartCompletely() {
+            localStorage.removeItem('dogusSepet');
+            cart.items = [];
+            cart.saveCart();
+            updateCartCount();
+            updateCartDisplay();
+            showNotification('Sepet tamamen temizlendi!', 'success');
+            console.log('Sepet temizlendi ve sıfırlandı');
+        }
+
+        // Sayfa yüklendiğinde sepeti kontrol et
+        function checkAndClearCart() {
+            try {
+                const saved = localStorage.getItem('dogusSepet');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    console.log('Mevcut sepet:', parsed);
+                    
+                    // Eğer bozuk veri varsa temizle
+                    if (!Array.isArray(parsed)) {
+                        clearCartCompletely();
+                    }
+                }
+            } catch (error) {
+                console.error('Sepet kontrolü hatası:', error);
+                clearCartCompletely();
+            }
+        }
+
+        // Debug: Konsol komutları
+        window.clearCart = clearCartCompletely;
+        window.cartDebug = cart;
+        window.checkCart = checkAndClearCart;
+    </script>
+    <script src="js/auth.js?v=202412251225"></script>
+</body>
+</html>

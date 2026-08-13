@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Doğuş</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-sidebar-logo">
+            <h1>DOĞUŞ</h1>
+            <span>Admin Paneli</span>
+        </div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item active">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item">
+                <i class="fas fa-box"></i> Ürünler
+            </a>
+            <a href="admin-depo.html" class="admin-nav-item">
+                <i class="fas fa-warehouse"></i> Depo / Stok
+            </a>
+            <a href="admin-markalar.html" class="admin-nav-item">
+                <i class="fas fa-tags"></i> Markalar
+            </a>
+
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item">
+                <i class="fas fa-shopping-bag"></i> Siparişler
+            </a>
+            <a href="admin-musteriler.html" class="admin-nav-item">
+                <i class="fas fa-users"></i> Müşteriler
+            </a>
+            
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item">
+                <i class="fas fa-chart-line"></i> Raporlar & Mesajlar
+            </a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a>
+            <br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2>Dashboard</h2>
+            <div class="admin-topbar-right">
+                <span id="topbarDate"></span>
+                <span style="font-weight:600;color:var(--admin-accent)">
+                    <i class="fas fa-user-shield"></i> Admin
+                </span>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- STATS GRID -->
+            <div class="stats-grid" id="statsGrid">
+                <!-- Dinamik olarak doldurulacak -->
+            </div>
+
+            <!-- 2 KOLON LAYOUT -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+
+                <!-- Son Siparişler -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h3><i class="fas fa-shopping-bag" style="color:var(--admin-accent);margin-right:.5rem"></i>Son Siparişler</h3>
+                        <a href="admin-siparisler.html" class="btn-admin btn-admin-ghost btn-admin-sm">Tümü</a>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Müşteri</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentOrdersBody">
+                                <tr><td colspan="3" style="text-align:center;color:var(--admin-text-light);padding:2rem">Henüz sipariş yok</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Son Kayıt Olan Müşteriler -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h3><i class="fas fa-users" style="color:var(--admin-accent);margin-right:.5rem"></i>Son Üyeler</h3>
+                        <a href="admin-musteriler.html" class="btn-admin btn-admin-ghost btn-admin-sm">Tümü</a>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Ad Soyad</th>
+                                    <th>Telefon</th>
+                                    <th>Kayıt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentCustomersBody">
+                                <tr><td colspan="3" style="text-align:center;color:var(--admin-text-light);padding:2rem">Henüz üye yok</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Düşük Stok Uyarısı -->
+            <div class="admin-card" style="margin-top:1.5rem">
+                <div class="admin-card-header">
+                    <h3><i class="fas fa-exclamation-triangle" style="color:var(--admin-warning);margin-right:.5rem"></i>Düşük Stok Uyarısı</h3>
+                    <a href="admin-depo.html" class="btn-admin btn-admin-ghost btn-admin-sm">Depoya Git</a>
+                </div>
+                <div id="lowStockBody" style="padding:1.5rem">
+                    <p style="color:var(--admin-text-light);text-align:center">Stok bilgisi yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+    checkAdminAuth();
+
+    // Tarih
+    document.getElementById('topbarDate').textContent =
+        new Date().toLocaleDateString('tr-TR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    // Stats
+    function renderStats() {
+        const s = getDashboardStats();
+        const grid = document.getElementById('statsGrid');
+        grid.innerHTML = `
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <div class="stat-label">Ürünler</div>
+                <div class="stat-value">${s.totalProducts}</div>
+                <div class="stat-sub">Aktif ürün sayısı</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-label">Müşteriler</div>
+                <div class="stat-value">${s.totalCustomers}</div>
+                <div class="stat-sub">Kayıtlı üye</div>
+            </div>
+            <div class="stat-card yellow">
+                <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+                <div class="stat-label">Siparişler</div>
+                <div class="stat-value">${s.totalOrders}</div>
+                <div class="stat-sub">${s.pendingOrders} bekliyor</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="stat-icon"><i class="fas fa-tags"></i></div>
+                <div class="stat-label">Markalar</div>
+                <div class="stat-value">${s.totalBrands}</div>
+                <div class="stat-sub">${s.brandCategories} kategori</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
+                <div class="stat-label">Depo Değeri</div>
+                <div class="stat-value" style="font-size:1.2rem">${formatCurrency(s.stockValue)}</div>
+                <div class="stat-sub">Fiili depo stoku</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon"><i class="fas fa-store"></i></div>
+                <div class="stat-label">Mağaza Değeri</div>
+                <div class="stat-value" style="font-size:1.2rem">${formatCurrency(s.storeValue)}</div>
+                <div class="stat-sub">Toplam: ${formatCurrency(s.totalValue)}</div>
+            </div>
+        `;
+    }
+
+    // Son siparişler
+    function renderRecentOrders() {
+        const orders = getOrders().slice(-5).reverse();
+        const tbody = document.getElementById('recentOrdersBody');
+        if (!orders.length) return;
+        tbody.innerHTML = orders.map(o => `
+            <tr>
+                <td>${o.customerName || 'Misafir'}</td>
+                <td><strong>${o.total || '-'}</strong></td>
+                <td><span class="badge ${o.status === 'pending' ? 'badge-yellow' : o.status === 'delivered' ? 'badge-green' : 'badge-blue'}">
+                    ${o.status === 'pending' ? 'Bekliyor' : o.status === 'confirmed' ? 'Onaylandı' : o.status === 'delivered' ? 'Teslim' : o.status}
+                </span></td>
+            </tr>
+        `).join('');
+    }
+
+    // Son müşteriler
+    function renderRecentCustomers() {
+        const customers = getCustomers().slice(-5).reverse();
+        const tbody = document.getElementById('recentCustomersBody');
+        if (!customers.length) return;
+        tbody.innerHTML = customers.map(c => `
+            <tr>
+                <td><strong>${c.name}</strong><br><small style="color:var(--admin-text-light)">${c.email}</small></td>
+                <td>${c.phone || '-'}</td>
+                <td style="font-size:0.8rem;color:var(--admin-text-light)">${formatDate(c.createdAt)}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Düşük stok
+    function renderLowStock() {
+        const stock = getStock().filter(s => (s.quantity || 0) <= 3);
+        const el = document.getElementById('lowStockBody');
+        if (!stock.length) {
+            el.innerHTML = '<p style="color:var(--admin-success);text-align:center"><i class="fas fa-check-circle"></i> Tüm stoklar yeterli</p>';
+            return;
+        }
+        el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:.75rem">` +
+            stock.map(s => `
+                <div style="background:#fef3c7;border-radius:8px;padding:.75rem 1rem;border-left:3px solid var(--admin-warning)">
+                    <strong style="font-size:.875rem">${s.name}</strong><br>
+                    <span style="color:var(--admin-warning);font-weight:700">Stok: ${s.quantity}</span>
+                </div>
+            `).join('') + `</div>`;
+    }
+
+    renderStats();
+    renderRecentOrders();
+    renderRecentCustomers();
+    renderLowStock();
+</script>
+</body>
+</html>

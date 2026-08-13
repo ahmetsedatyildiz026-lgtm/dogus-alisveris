@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depo / Stok - Doğuş Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-logo"><h1>DOĞUŞ</h1><span>Admin Paneli</span></div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="admin-depo.html" class="admin-nav-item active"><i class="fas fa-warehouse"></i> Depo / Stok</a>
+            <a href="admin-markalar.html" class="admin-nav-item"><i class="fas fa-tags"></i> Markalar</a>
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item"><i class="fas fa-shopping-bag"></i> Siparişler</a>
+            <a href="admin-musteriler.html" class="admin-nav-item"><i class="fas fa-users"></i> Müşteriler</a>
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Raporlar & Mesajlar</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a><br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2><i class="fas fa-warehouse" style="color:var(--admin-accent);margin-right:.5rem"></i>Sanal Depo & Stok</h2>
+            <div class="admin-topbar-right">
+                <button class="btn-admin btn-admin-primary" onclick="openStockModal()">
+                    <i class="fas fa-plus"></i> Stok Girişi Yap
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- Stats -->
+            <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.5rem">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                    <div class="stat-label">Toplam Ürün Çeşidi</div>
+                    <div class="stat-value" id="statTypes">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-cubes"></i></div>
+                    <div class="stat-label">Toplam Adet</div>
+                    <div class="stat-value" id="statUnits">0</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-label">Kritik Stok (≤3)</div>
+                    <div class="stat-value" id="statCritical">0</div>
+                </div>
+                <div class="stat-card gold">
+                    <div class="stat-icon"><i class="fas fa-lira-sign"></i></div>
+                    <div class="stat-label">Depo Değeri</div>
+                    <div class="stat-value" id="statValue" style="font-size:1.1rem">₺0</div>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div style="display:flex;gap:.5rem;margin-bottom:1.5rem">
+                <button class="btn-admin btn-admin-primary" id="tabDepoBtn" onclick="switchTab('depo')">
+                    <i class="fas fa-warehouse"></i> Fiili Depo
+                </button>
+                <button class="btn-admin btn-admin-ghost" id="tabMagazaBtn" onclick="switchTab('magaza')">
+                    <i class="fas fa-store"></i> Sanal Mağaza Stoku
+                </button>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="admin-toolbar">
+                <div class="admin-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Ürün adı, kategori, marka..." oninput="renderStock()">
+                </div>
+                <select id="filterCategory" class="btn-admin btn-admin-ghost" onchange="renderStock()" style="padding:.6rem 1rem">
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="beyaz-esya">Beyaz Eşya</option>
+                    <option value="kucuk-ev-aletleri">Küçük Ev Aletleri</option>
+                    <option value="klima-ventilator">Klima & Vantilatör</option>
+                    <option value="mobilya">Mobilya</option>
+                    <option value="kisisel-bakim">Kişisel Bakım</option>
+                    <option value="tekstil">Tekstil</option>
+                    <option value="zucaciye">Züccaciye</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="admin-card">
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Ürün Adı</th>
+                                <th>Marka</th>
+                                <th>Kategori</th>
+                                <th>Birim Fiyat</th>
+                                <th>Adet</th>
+                                <th>Toplam Değer</th>
+                                <th>Durum</th>
+                                <th>Giriş Tarihi</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="admin-empty" style="display:none">
+                    <i class="fas fa-warehouse"></i>
+                    <h3>Depo boş</h3>
+                    <p>"Stok Girişi Yap" ile ürün ekleyin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STOK MODAL -->
+<div class="admin-modal-overlay" id="stockModal">
+    <div class="admin-modal" style="max-width:600px">
+        <div class="admin-modal-header">
+            <h3 id="stockModalTitle">Stok Girişi</h3>
+            <button class="admin-modal-close" onclick="closeStockModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body">
+            <form id="stockForm" class="admin-form">
+                <div class="form-grid-2">
+                    <div class="admin-form-group">
+                        <label>Ürün Adı *</label>
+                        <input type="text" id="stockName" required placeholder="Örn: ALTUS AL370NX Buzdolabı">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Marka *</label>
+                        <input type="text" id="stockBrand" required placeholder="Örn: ALTUS">
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="admin-form-group">
+                        <label>Kategori</label>
+                        <select id="stockCategory">
+                            <option value="">Seçin...</option>
+                            <option value="beyaz-esya">Beyaz Eşya</option>
+                            <option value="kucuk-ev-aletleri">Küçük Ev Aletleri</option>
+                            <option value="klima-ventilator">Klima & Vantilatör</option>
+                            <option value="mobilya">Mobilya</option>
+                            <option value="kisisel-bakim">Kişisel Bakım</option>
+                            <option value="tekstil">Tekstil</option>
+                            <option value="zucaciye">Züccaciye</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Depo Tipi</label>
+                        <select id="stockType">
+                            <option value="depo">Fiili Depo</option>
+                            <option value="magaza">Sanal Mağaza</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="admin-form-group">
+                        <label>Birim Fiyat (₺) *</label>
+                        <input type="number" id="stockPrice" required min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Adet *</label>
+                        <input type="number" id="stockQty" required min="1" value="1">
+                    </div>
+                </div>
+                <div class="admin-form-group">
+                    <label>Notlar</label>
+                    <textarea id="stockNotes" rows="2" placeholder="Stok notu (isteğe bağlı)"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeStockModal()">İptal</button>
+            <button class="btn-admin btn-admin-primary" onclick="saveStock()">
+                <i class="fas fa-save"></i> Kaydet
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ADET GÜNCELLE MODAL -->
+<div class="admin-modal-overlay" id="updateQtyModal">
+    <div class="admin-modal" style="max-width:400px">
+        <div class="admin-modal-header">
+            <h3>Stok Güncelle</h3>
+            <button class="admin-modal-close" onclick="closeUpdateQtyModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body">
+            <p id="updateQtyProductName" style="font-weight:600;margin-bottom:1rem"></p>
+            <div class="admin-form-group">
+                <label>İşlem Tipi</label>
+                <select id="qtyOperation">
+                    <option value="set">Adet Belirle</option>
+                    <option value="add">Adet Ekle</option>
+                    <option value="subtract">Adet Çıkar</option>
+                </select>
+            </div>
+            <div class="admin-form-group" style="margin-top:1rem">
+                <label>Adet</label>
+                <input type="number" id="qtyAmount" min="0" value="1">
+            </div>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeUpdateQtyModal()">İptal</button>
+            <button class="btn-admin btn-admin-primary" onclick="confirmUpdateQty()">
+                <i class="fas fa-save"></i> Güncelle
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+checkAdminAuth();
+
+const CATEGORIES = {
+    'beyaz-esya': 'Beyaz Eşya', 'kucuk-ev-aletleri': 'Küçük Ev Aletleri',
+    'klima-ventilator': 'Klima & Vantilatör', 'mobilya': 'Mobilya',
+    'kisisel-bakim': 'Kişisel Bakım', 'tekstil': 'Tekstil', 'zucaciye': 'Züccaciye'
+};
+
+let currentTab = 'depo';
+let editingStockId = null;
+let updatingStockId = null;
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabDepoBtn').className = 'btn-admin ' + (tab === 'depo' ? 'btn-admin-primary' : 'btn-admin-ghost');
+    document.getElementById('tabMagazaBtn').className = 'btn-admin ' + (tab === 'magaza' ? 'btn-admin-primary' : 'btn-admin-ghost');
+    renderStock();
+}
+
+function renderStats(all) {
+    document.getElementById('statTypes').textContent = all.length;
+    document.getElementById('statUnits').textContent = all.reduce((s, i) => s + (i.quantity||0), 0);
+    document.getElementById('statCritical').textContent = all.filter(i => (i.quantity||0) <= 3).length;
+    const val = all.reduce((s, i) => {
+        const p = parseFloat((i.price||'0').toString().replace(/[₺.,]/g,'')) || 0;
+        return s + p * (i.quantity||0);
+    }, 0);
+    document.getElementById('statValue').textContent = formatCurrency(val);
+}
+
+function renderStock() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const catFilter = document.getElementById('filterCategory').value;
+    const allStock = getStock();
+    renderStats(allStock);
+
+    let items = allStock.filter(s => (s.type || 'depo') === currentTab);
+    if (search) items = items.filter(s =>
+        (s.name||'').toLowerCase().includes(search) ||
+        (s.brand||'').toLowerCase().includes(search)
+    );
+    if (catFilter) items = items.filter(s => s.category === catFilter);
+
+    const tbody = document.getElementById('stockTableBody');
+    const empty = document.getElementById('emptyState');
+
+    if (!items.length) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = items.map(s => {
+        const price = parseFloat((s.price||'0').toString().replace(/[₺.,]/g,'')) || 0;
+        const total = price * (s.quantity||0);
+        const qty = s.quantity || 0;
+        const statusBadge = qty === 0
+            ? '<span class="badge badge-red">Tükendi</span>'
+            : qty <= 3
+                ? '<span class="badge badge-yellow">Kritik</span>'
+                : '<span class="badge badge-green">Yeterli</span>';
+
+        return `<tr>
+            <td><strong style="font-size:.875rem">${s.name}</strong>
+                ${s.notes ? `<br><small style="color:var(--admin-text-light)">${s.notes}</small>` : ''}
+            </td>
+            <td><strong>${s.brand || '-'}</strong></td>
+            <td><span class="badge badge-blue">${CATEGORIES[s.category] || s.category || '-'}</span></td>
+            <td><strong style="color:var(--admin-accent)">${formatCurrency(price)}</strong></td>
+            <td>
+                <div style="display:flex;align-items:center;gap:.5rem">
+                    <strong style="font-size:1rem">${qty}</strong>
+                    <button class="btn-admin btn-admin-ghost btn-admin-icon btn-admin-sm" onclick="openUpdateQty('${s.id}','${s.name}')" title="Güncelle">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </div>
+            </td>
+            <td><strong>${formatCurrency(total)}</strong></td>
+            <td>${statusBadge}</td>
+            <td style="font-size:.8rem;color:var(--admin-text-light);white-space:nowrap">${formatDate(s.addedAt)}</td>
+            <td>
+                <div style="display:flex;gap:.4rem">
+                    <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="openEditStock('${s.id}')" title="Düzenle">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-admin btn-admin-danger btn-admin-icon btn-admin-sm" onclick="removeStock('${s.id}')" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function openStockModal(id = null) {
+    editingStockId = id;
+    if (id) {
+        const s = getStock().find(s => s.id === id);
+        if (!s) return;
+        document.getElementById('stockModalTitle').textContent = 'Stok Düzenle';
+        document.getElementById('stockName').value = s.name || '';
+        document.getElementById('stockBrand').value = s.brand || '';
+        document.getElementById('stockCategory').value = s.category || '';
+        document.getElementById('stockType').value = s.type || 'depo';
+        document.getElementById('stockPrice').value = parseFloat((s.price||'0').toString().replace(/[₺.,]/g,'')) || '';
+        document.getElementById('stockQty').value = s.quantity || 1;
+        document.getElementById('stockNotes').value = s.notes || '';
+    } else {
+        document.getElementById('stockModalTitle').textContent = 'Stok Girişi';
+        document.getElementById('stockForm').reset();
+        document.getElementById('stockType').value = currentTab;
+    }
+    document.getElementById('stockModal').classList.add('show');
+}
+
+function openEditStock(id) { openStockModal(id); }
+
+function closeStockModal() {
+    document.getElementById('stockModal').classList.remove('show');
+    editingStockId = null;
+}
+
+function saveStock() {
+    const name = document.getElementById('stockName').value.trim();
+    const price = document.getElementById('stockPrice').value;
+    const qty = document.getElementById('stockQty').value;
+    if (!name || !price || !qty) {
+        showAdminNotification('Zorunlu alanları doldurun!', 'error');
+        return;
+    }
+    const data = {
+        name, price: '₺' + parseFloat(price).toLocaleString('tr-TR'),
+        brand: document.getElementById('stockBrand').value.trim(),
+        category: document.getElementById('stockCategory').value,
+        type: document.getElementById('stockType').value,
+        quantity: parseInt(qty),
+        notes: document.getElementById('stockNotes').value.trim()
+    };
+    if (editingStockId) {
+        updateStockItem(editingStockId, data);
+        showAdminNotification('Stok güncellendi!');
+    } else {
+        addStockItem(data);
+        showAdminNotification('Stok girişi yapıldı!');
+    }
+    closeStockModal();
+    renderStock();
+}
+
+function removeStock(id) {
+    if (!confirm('Bu stok kaydını silmek istediğinize emin misiniz?')) return;
+    deleteStockItem(id);
+    renderStock();
+    showAdminNotification('Stok silindi!', 'error');
+}
+
+let updatingName = '';
+function openUpdateQty(id, name) {
+    updatingStockId = id;
+    updatingName = name;
+    document.getElementById('updateQtyProductName').textContent = name;
+    document.getElementById('qtyAmount').value = 1;
+    document.getElementById('qtyOperation').value = 'add';
+    document.getElementById('updateQtyModal').classList.add('show');
+}
+
+function closeUpdateQtyModal() {
+    document.getElementById('updateQtyModal').classList.remove('show');
+    updatingStockId = null;
+}
+
+function confirmUpdateQty() {
+    const s = getStock().find(s => s.id === updatingStockId);
+    if (!s) return;
+    const op = document.getElementById('qtyOperation').value;
+    const amt = parseInt(document.getElementById('qtyAmount').value) || 0;
+    let newQty = s.quantity || 0;
+    if (op === 'set') newQty = amt;
+    else if (op === 'add') newQty = newQty + amt;
+    else if (op === 'subtract') newQty = Math.max(0, newQty - amt);
+    updateStockItem(updatingStockId, { quantity: newQty });
+    closeUpdateQtyModal();
+    renderStock();
+    showAdminNotification('Stok miktarı güncellendi!');
+}
+
+['stockModal', 'updateQtyModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+        if (e.target.id === id) document.getElementById(id).classList.remove('show');
+    });
+});
+
+renderStock();
+</script>
+</body>
+</html>

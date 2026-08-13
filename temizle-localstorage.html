@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorage Temizleme Aracı</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 2.5rem;
+        }
+        h1 {
+            font-size: 1.75rem;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        .info-box h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
+        }
+        .info-box ul {
+            margin-left: 1.5rem;
+            color: #555;
+            font-size: 0.875rem;
+        }
+        .info-box li {
+            margin: 0.25rem 0;
+        }
+        .storage-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        .storage-info strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #856404;
+        }
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #1a1a1a;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span style="font-size: 2rem;">🧹</span>
+            LocalStorage Temizleme
+        </h1>
+        <p class="subtitle">Doğuş Alışveriş Merkezi - Veri Yönetimi</p>
+
+        <div class="info-box">
+            <h3>⚠️ Ne zaman temizlemelisiniz?</h3>
+            <ul>
+                <li><strong>"quota exceeded"</strong> hatası alıyorsanız</li>
+                <li>Ürünler kaydedilmiyorsa</li>
+                <li>Fotoğraflar yüklenirken hata alıyorsanız</li>
+                <li>Eski/bozuk verileri silmek istiyorsanız</li>
+            </ul>
+        </div>
+
+        <div class="storage-info" id="storageInfo">
+            <strong>📊 Mevcut Durum Yükleniyor...</strong>
+        </div>
+
+        <button class="btn btn-warning" onclick="showProducts()">
+            📦 Ürünleri Görüntüle
+        </button>
+
+        <button class="btn btn-danger" onclick="clearProducts()">
+            🗑️ Sadece Ürünleri Temizle
+        </button>
+
+        <button class="btn btn-danger" onclick="clearAll()">
+            💥 TÜM VERİLERİ TEMİZLE (Markalar + Ürünler + Sepet)
+        </button>
+
+        <button class="btn btn-success" onclick="compressProducts()">
+            🗜️ Ürünleri Sıkıştır (Fotoğrafları Optimize Et)
+        </button>
+
+        <button class="btn btn-secondary" onclick="location.href='admin.html'">
+            ← Admin Panele Dön
+        </button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde bilgileri göster
+        window.onload = function() {
+            updateStorageInfo();
+        };
+
+        function updateStorageInfo() {
+            const products = JSON.parse(localStorage.getItem('dogusAdminProducts') || '[]');
+            const brands = JSON.parse(localStorage.getItem('dogusBrands') || '{}');
+            const cart = JSON.parse(localStorage.getItem('dogusSepet') || '[]');
+            
+            const productsSize = new Blob([localStorage.getItem('dogusAdminProducts') || '']).size;
+            const brandsSize = new Blob([localStorage.getItem('dogusBrands') || '']).size;
+            const cartSize = new Blob([localStorage.getItem('dogusSepet') || '']).size;
+            const totalSize = productsSize + brandsSize + cartSize;
+            
+            const maxSize = 5 * 1024 * 1024; // 5MB tahmini limit
+            const usagePercent = ((totalSize / maxSize) * 100).toFixed(1);
+            
+            document.getElementById('storageInfo').innerHTML = `
+                <strong>📊 Mevcut Veri Durumu:</strong>
+                <div style="margin-top: 0.5rem;">
+                    • Ürünler: ${products.length} adet (${(productsSize / 1024).toFixed(2)} KB)<br>
+                    • Markalar: ${Object.keys(brands).length} kategori (${(brandsSize / 1024).toFixed(2)} KB)<br>
+                    • Sepet: ${cart.length} ürün (${(cartSize / 1024).toFixed(2)} KB)<br>
+                    <br>
+                    <strong>Toplam: ${(totalSize / 1024).toFixed(2)} KB (~${usagePercent}% kullanım)</strong>
+                    ${usagePercent > 80 ? '<br><span style="color: #dc3545;">⚠️ Veri dolmak üzere!</span>' : ''}
+                </div>
+            `;
+        }
+
+        function showProducts() {
+            const products = JSON.parse(localStorage.getItem('dogusAdminProducts') || '[]');
+            
+            if (products.length === 0) {
+                showResult('Hiç ürün bulunamadı.', 'error');
+                return;
+            }
+
+            let html = `<strong>📦 Toplam ${products.length} Ürün:</strong><br><br>`;
+            products.forEach((p, i) => {
+                const imageCount = (p.images || []).filter(Boolean).length;
+                const imageSize = (p.images || []).reduce((sum, img) => sum + (img?.length || 0), 0);
+                html += `${i+1}. ${p.title} - ${imageCount} fotoğraf (${(imageSize / 1024).toFixed(2)} KB)<br>`;
+            });
+
+            showResult(html, 'success');
+        }
+
+        function clearProducts() {
+            if (!confirm('⚠️ TÜM ÜRÜNLERİ silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!')) {
+                return;
+            }
+
+            try {
+                localStorage.removeItem('dogusAdminProducts');
+                updateStorageInfo();
+                showResult('✅ Tüm ürünler başarıyla silindi!', 'success');
+            } catch (error) {
+                showResult('❌ Hata: ' + error.message, 'error');
+            }
+        }
+
+        function clearAll() {
+            if (!confirm('⚠️⚠️⚠️ TÜM VERİLERİ (Ürünler + Markalar + Sepet) silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!')) {
+                return;
+            }
+
+            if (!confirm('Son kez soruyorum: Gerçekten TÜM VERİLERİ silmek istiyor musunuz?')) {
+                return;
+            }
+
+            try {
+                localStorage.removeItem('dogusAdminProducts');
+                localStorage.removeItem('dogusBrands');
+                localStorage.removeItem('dogusSepet');
+                localStorage.removeItem('dogusBrandsUpdated');
+                updateStorageInfo();
+                showResult('✅ Tüm veriler başarıyla silindi! Sayfa 3 saniye içinde yenilenecek...', 'success');
+                setTimeout(() => location.reload(), 3000);
+            } catch (error) {
+                showResult('❌ Hata: ' + error.message, 'error');
+            }
+        }
+
+        function compressProducts() {
+            try {
+                const products = JSON.parse(localStorage.getItem('dogusAdminProducts') || '[]');
+                
+                if (products.length === 0) {
+                    showResult('❌ Sıkıştırılacak ürün bulunamadı!', 'error');
+                    return;
+                }
+
+                let compressedCount = 0;
+                let savedSize = 0;
+
+                products.forEach(product => {
+                    if (product.images && product.images.length > 0) {
+                        const originalSize = JSON.stringify(product.images).length;
+                        
+                        // Boş resimleri filtrele
+                        product.images = product.images.filter(img => img && img.length > 0);
+                        
+                        // İlk resmi image alanına koy
+                        if (product.images.length > 0) {
+                            product.image = product.images[0];
+                        }
+
+                        const newSize = JSON.stringify(product.images).length;
+                        if (originalSize > newSize) {
+                            savedSize += (originalSize - newSize);
+                            compressedCount++;
+                        }
+                    }
+                });
+
+                // Kaydet
+                localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
+                updateStorageInfo();
+
+                showResult(`✅ Optimizasyon tamamlandı!<br><br>
+                    • ${compressedCount} ürün işlendi<br>
+                    • ${(savedSize / 1024).toFixed(2)} KB boşaltıldı`, 'success');
+            } catch (error) {
+                showResult('❌ Hata: ' + error.message, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.className = 'result ' + type;
+            result.innerHTML = message;
+            result.style.display = 'block';
+            
+            // 10 saniye sonra otomatik kapat
+            setTimeout(() => {
+                result.style.display = 'none';
+            }, 10000);
+        }
+    </script>
+</body>
+</html>

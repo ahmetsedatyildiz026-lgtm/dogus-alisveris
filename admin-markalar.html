@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markalar - Doğuş Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-logo"><h1>DOĞUŞ</h1><span>Admin Paneli</span></div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="admin-depo.html" class="admin-nav-item"><i class="fas fa-warehouse"></i> Depo / Stok</a>
+            <a href="admin-markalar.html" class="admin-nav-item active"><i class="fas fa-tags"></i> Markalar</a>
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item"><i class="fas fa-shopping-bag"></i> Siparişler</a>
+            <a href="admin-musteriler.html" class="admin-nav-item"><i class="fas fa-users"></i> Müşteriler</a>
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Raporlar & Mesajlar</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a><br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2><i class="fas fa-tags" style="color:var(--admin-accent);margin-right:.5rem"></i>Anlaşmalı Markalar</h2>
+            <div class="admin-topbar-right">
+                <button class="btn-admin btn-admin-ghost btn-admin-sm" onclick="openAddCategoryModal()">
+                    <i class="fas fa-folder-plus"></i> Yeni Kategori
+                </button>
+                <button class="btn-admin btn-admin-primary" onclick="saveAllBrands()">
+                    <i class="fas fa-save"></i> Değişiklikleri Kaydet
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- Özet stats -->
+            <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem">
+                <div class="stat-card gold">
+                    <div class="stat-icon"><i class="fas fa-tags"></i></div>
+                    <div class="stat-label">Toplam Marka</div>
+                    <div class="stat-value" id="statTotalBrands">0</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="stat-label">Kategori Sayısı</div>
+                    <div class="stat-value" id="statCategories">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div class="stat-label">Ortalama Marka/Kategori</div>
+                    <div class="stat-value" id="statAvg">0</div>
+                </div>
+            </div>
+
+            <!-- Kategoriler grid -->
+            <div id="brandsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1.5rem">
+                <!-- JS ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- YENİ KATEGORİ MODAL -->
+<div class="admin-modal-overlay" id="addCategoryModal">
+    <div class="admin-modal" style="max-width:440px">
+        <div class="admin-modal-header">
+            <h3>Yeni Kategori Ekle</h3>
+            <button class="admin-modal-close" onclick="closeAddCategoryModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body">
+            <div class="admin-form-group">
+                <label>Kategori Adı *</label>
+                <input type="text" id="newCategoryName" placeholder="Örn: Elektronik" maxlength="50">
+            </div>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeAddCategoryModal()">İptal</button>
+            <button class="btn-admin btn-admin-primary" onclick="addCategory()">
+                <i class="fas fa-plus"></i> Ekle
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MARKA EKLE MODAL -->
+<div class="admin-modal-overlay" id="addBrandModal">
+    <div class="admin-modal" style="max-width:440px">
+        <div class="admin-modal-header">
+            <h3 id="addBrandModalTitle">Marka Ekle</h3>
+            <button class="admin-modal-close" onclick="closeAddBrandModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body">
+            <div class="admin-form-group">
+                <label>Marka Adı *</label>
+                <input type="text" id="newBrandName" placeholder="Örn: SAMSUNG" maxlength="50" style="text-transform:uppercase">
+            </div>
+            <input type="hidden" id="addBrandCategory">
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeAddBrandModal()">İptal</button>
+            <button class="btn-admin btn-admin-primary" onclick="addBrand()">
+                <i class="fas fa-plus"></i> Ekle
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+checkAdminAuth();
+
+let brands = getBrands();
+
+function updateStats() {
+    const categories = Object.keys(brands);
+    const total = Object.values(brands).reduce((s, arr) => s + arr.length, 0);
+    document.getElementById('statTotalBrands').textContent = total;
+    document.getElementById('statCategories').textContent = categories.length;
+    document.getElementById('statAvg').textContent = categories.length ? (total / categories.length).toFixed(1) : 0;
+}
+
+function renderBrands() {
+    updateStats();
+    const grid = document.getElementById('brandsGrid');
+
+    const colorMap = {
+        'Beyaz Eşya': 'blue', 'Küçük Ev Aletleri': 'yellow', 'Klima & Vantilatör': 'green',
+        'Mobilya': 'gold', 'Kişisel Bakım': 'purple', 'Tekstil': 'red', 'Züccaciye': 'blue'
+    };
+
+    grid.innerHTML = Object.entries(brands).map(([category, brandList]) => {
+        const color = colorMap[category] || 'blue';
+        return `
+        <div class="admin-card" style="margin-bottom:0">
+            <div class="admin-card-header" style="align-items:center">
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <div class="stat-icon ${color}" style="width:36px;height:36px;border-radius:8px">
+                        <i class="fas fa-tags" style="font-size:.875rem"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size:.95rem;margin-bottom:.1rem">${category}</h3>
+                        <span style="font-size:.75rem;color:var(--admin-text-light)">${brandList.length} marka</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:.4rem">
+                    <button class="btn-admin btn-admin-primary btn-admin-sm" onclick="openAddBrandModal('${category}')">
+                        <i class="fas fa-plus"></i> Marka Ekle
+                    </button>
+                    <button class="btn-admin btn-admin-danger btn-admin-icon btn-admin-sm" onclick="deleteCategory('${category}')" title="Kategoriyi Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body" style="padding:1rem">
+                <div class="brand-tags" id="tags-${CSS.escape(category)}">
+                    ${brandList.length === 0
+                        ? `<span style="color:var(--admin-text-light);font-size:.8rem;padding:.25rem">Henüz marka yok</span>`
+                        : brandList.map(brand => `
+                            <span class="brand-tag">
+                                ${brand}
+                                <button onclick="removeBrand('${category}','${brand}')" title="Kaldır">×</button>
+                            </span>
+                        `).join('')
+                    }
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ─── KATEGORİ ─────────────────────────────────────────────────
+function openAddCategoryModal() {
+    document.getElementById('newCategoryName').value = '';
+    document.getElementById('addCategoryModal').classList.add('show');
+    setTimeout(() => document.getElementById('newCategoryName').focus(), 100);
+}
+
+function closeAddCategoryModal() {
+    document.getElementById('addCategoryModal').classList.remove('show');
+}
+
+function addCategory() {
+    const name = document.getElementById('newCategoryName').value.trim();
+    if (!name) { showAdminNotification('Kategori adı boş olamaz!', 'error'); return; }
+    if (brands[name]) { showAdminNotification('Bu kategori zaten mevcut!', 'error'); return; }
+    brands[name] = [];
+    
+    // Hemen localStorage'a kaydet
+    saveBrands(brands);
+    localStorage.setItem('dogusBrandsUpdated', Date.now().toString());
+    
+    renderBrands();
+    closeAddCategoryModal();
+    showAdminNotification(`"${name}" kategorisi eklendi ve kaydedildi!`);
+}
+
+function deleteCategory(category) {
+    if (!confirm(`"${category}" kategorisini ve tüm markalarını silmek istediğinize emin misiniz?`)) return;
+    delete brands[category];
+    renderBrands();
+    showAdminNotification(`"${category}" kategorisi silindi!`, 'error');
+}
+
+// ─── MARKA ────────────────────────────────────────────────────
+function openAddBrandModal(category) {
+    document.getElementById('addBrandModalTitle').textContent = `"${category}" — Marka Ekle`;
+    document.getElementById('addBrandCategory').value = category;
+    document.getElementById('newBrandName').value = '';
+    document.getElementById('addBrandModal').classList.add('show');
+    setTimeout(() => document.getElementById('newBrandName').focus(), 100);
+}
+
+function closeAddBrandModal() {
+    document.getElementById('addBrandModal').classList.remove('show');
+}
+
+function addBrand() {
+    const category = document.getElementById('addBrandCategory').value;
+    const name = document.getElementById('newBrandName').value.trim().toUpperCase();
+    if (!name) { showAdminNotification('Marka adı boş olamaz!', 'error'); return; }
+    if (!brands[category]) brands[category] = [];
+    if (brands[category].includes(name)) { showAdminNotification('Bu marka zaten ekli!', 'error'); return; }
+    brands[category].push(name);
+    
+    // Hemen localStorage'a kaydet
+    saveBrands(brands);
+    localStorage.setItem('dogusBrandsUpdated', Date.now().toString());
+    
+    renderBrands();
+    document.getElementById('newBrandName').value = '';
+    closeAddBrandModal();
+    showAdminNotification(`"${name}" markası eklendi ve kaydedildi!`);
+}
+
+function removeBrand(category, brand) {
+    brands[category] = brands[category].filter(b => b !== brand);
+    
+    // Hemen localStorage'a kaydet
+    saveBrands(brands);
+    localStorage.setItem('dogusBrandsUpdated', Date.now().toString());
+    
+    renderBrands();
+    showAdminNotification(`"${brand}" markası silindi!`, 'error');
+}
+
+// ─── KAYDET ──────────────────────────────────────────────────
+function saveAllBrands() {
+    saveBrands(brands);
+    showAdminNotification('Markalar kaydedildi! Site güncellendi.');
+    
+    // Ana sayfayı güncellemek için custom event trigger et
+    // (storage event sadece farklı tab'larda çalışır, bu yüzden timestamp ekliyoruz)
+    localStorage.setItem('dogusBrandsUpdated', Date.now().toString());
+    
+    console.log('✅ Markalar kaydedildi ve güncelleme sinyali gönderildi');
+}
+
+// Enter ile marka ekle
+document.getElementById('newBrandName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addBrand(); }
+});
+document.getElementById('newCategoryName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addCategory(); }
+});
+
+// Modal dışına tıklayınca kapat
+['addCategoryModal', 'addBrandModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+        if (e.target.id === id) document.getElementById(id).classList.remove('show');
+    });
+});
+
+renderBrands();
+</script>
+</body>
+</html>

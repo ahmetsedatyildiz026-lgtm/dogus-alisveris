@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siparişler - Doğuş Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-logo"><h1>DOĞUŞ</h1><span>Admin Paneli</span></div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="admin-depo.html" class="admin-nav-item"><i class="fas fa-warehouse"></i> Depo / Stok</a>
+            <a href="admin-markalar.html" class="admin-nav-item"><i class="fas fa-tags"></i> Markalar</a>
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item active"><i class="fas fa-shopping-bag"></i> Siparişler</a>
+            <a href="admin-musteriler.html" class="admin-nav-item"><i class="fas fa-users"></i> Müşteriler</a>
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Raporlar & Mesajlar</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a><br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2><i class="fas fa-shopping-bag" style="color:var(--admin-accent);margin-right:.5rem"></i>Siparişler</h2>
+            <div class="admin-topbar-right">
+                <button class="btn-admin btn-admin-ghost btn-admin-sm" onclick="addDemoOrder()">
+                    <i class="fas fa-plus"></i> Demo Sipariş Ekle
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- Stats -->
+            <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:1.5rem">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="stat-label">Toplam</div>
+                    <div class="stat-value" id="statTotal">0</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-label">Bekleyen</div>
+                    <div class="stat-value" id="statPending">0</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-check"></i></div>
+                    <div class="stat-label">Onaylanan</div>
+                    <div class="stat-value" id="statConfirmed">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-truck"></i></div>
+                    <div class="stat-label">Teslim Edilen</div>
+                    <div class="stat-value" id="statDelivered">0</div>
+                </div>
+                <div class="stat-card gold">
+                    <div class="stat-icon"><i class="fas fa-lira-sign"></i></div>
+                    <div class="stat-label">Toplam Ciro</div>
+                    <div class="stat-value" id="statRevenue" style="font-size:1.1rem">₺0</div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="admin-toolbar">
+                <div class="admin-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Müşteri adı, sipariş no..." oninput="renderOrders()">
+                </div>
+                <select id="filterStatus" class="btn-admin btn-admin-ghost" onchange="renderOrders()" style="padding:.6rem 1rem">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="pending">Bekleyen</option>
+                    <option value="confirmed">Onaylanan</option>
+                    <option value="shipped">Kargoda</option>
+                    <option value="delivered">Teslim Edildi</option>
+                    <option value="cancelled">İptal</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="admin-card">
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Müşteri</th>
+                                <th>Ürünler</th>
+                                <th>Tutar</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="admin-empty" style="display:none">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>Henüz sipariş yok</h3>
+                    <p>WhatsApp'tan gelen siparişler burada görünecek</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SİPARİŞ DETAY MODAL -->
+<div class="admin-modal-overlay" id="orderModal">
+    <div class="admin-modal" style="max-width:600px">
+        <div class="admin-modal-header">
+            <h3>Sipariş Detayı</h3>
+            <button class="admin-modal-close" onclick="closeOrderModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body" id="orderModalBody"></div>
+        <div class="admin-modal-footer" id="orderModalFooter"></div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+checkAdminAuth();
+
+const STATUS_MAP = {
+    pending:   { label: 'Bekleyen',      badge: 'badge-yellow' },
+    confirmed: { label: 'Onaylandı',     badge: 'badge-blue'   },
+    shipped:   { label: 'Kargoda',       badge: 'badge-blue'   },
+    delivered: { label: 'Teslim Edildi', badge: 'badge-green'  },
+    cancelled: { label: 'İptal',         badge: 'badge-red'    }
+};
+
+function renderStats(orders) {
+    document.getElementById('statTotal').textContent = orders.length;
+    document.getElementById('statPending').textContent = orders.filter(o => o.status === 'pending').length;
+    document.getElementById('statConfirmed').textContent = orders.filter(o => o.status === 'confirmed').length;
+    document.getElementById('statDelivered').textContent = orders.filter(o => o.status === 'delivered').length;
+    const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => {
+        return s + (parseFloat((o.total||'0').replace(/[₺.,]/g,'')) || 0);
+    }, 0);
+    document.getElementById('statRevenue').textContent = formatCurrency(revenue);
+}
+
+function renderOrders() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('filterStatus').value;
+    let orders = getOrders().slice().reverse();
+
+    if (search) orders = orders.filter(o =>
+        (o.customerName||'').toLowerCase().includes(search) ||
+        (o.id||'').toLowerCase().includes(search)
+    );
+    if (statusFilter) orders = orders.filter(o => o.status === statusFilter);
+
+    renderStats(getOrders());
+
+    const tbody = document.getElementById('ordersTableBody');
+    const empty = document.getElementById('emptyState');
+
+    if (!orders.length) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = orders.map(o => {
+        const s = STATUS_MAP[o.status] || STATUS_MAP.pending;
+        const items = (o.items || []);
+        const previewItems = items.slice(0, 2).map(i => i.name).join(', ');
+        const moreCount = items.length > 2 ? ` +${items.length - 2}` : '';
+        return `<tr>
+            <td><strong style="font-family:monospace;font-size:.8rem">${(o.id||'-').slice(-8).toUpperCase()}</strong></td>
+            <td>
+                <strong style="font-size:.875rem">${o.customerName || 'Misafir'}</strong>
+                <br><small style="color:var(--admin-text-light)">${o.customerPhone || o.customerEmail || ''}</small>
+            </td>
+            <td style="max-width:200px;font-size:.8rem;color:var(--admin-text-light)">
+                ${previewItems}${moreCount ? `<span class="badge badge-gray" style="margin-left:.25rem">${moreCount} daha</span>` : ''}
+            </td>
+            <td><strong style="color:var(--admin-accent)">${o.total || '-'}</strong></td>
+            <td><span class="badge ${s.badge}">${s.label}</span></td>
+            <td style="font-size:.8rem;color:var(--admin-text-light);white-space:nowrap">${formatDate(o.createdAt)}</td>
+            <td>
+                <div style="display:flex;gap:.4rem">
+                    <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="showOrderDetail('${o.id}')" title="Detay">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function showOrderDetail(id) {
+    const o = getOrders().find(o => o.id === id);
+    if (!o) return;
+    const s = STATUS_MAP[o.status] || STATUS_MAP.pending;
+    document.getElementById('orderModalBody').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--admin-border)">
+            <div>
+                <div style="font-size:.75rem;color:var(--admin-text-light);margin-bottom:.25rem">Sipariş No</div>
+                <strong style="font-family:monospace;font-size:1rem">${(o.id||'-').toUpperCase()}</strong>
+            </div>
+            <span class="badge ${s.badge}" style="font-size:.875rem;padding:.4rem 1rem">${s.label}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div style="background:var(--admin-bg);border-radius:10px;padding:1rem">
+                <div style="font-size:.75rem;color:var(--admin-text-light);font-weight:600;text-transform:uppercase;margin-bottom:.5rem">Müşteri</div>
+                <strong>${o.customerName || 'Misafir'}</strong><br>
+                <small>${o.customerPhone || '-'}</small><br>
+                <small>${o.customerEmail || '-'}</small>
+            </div>
+            <div style="background:var(--admin-bg);border-radius:10px;padding:1rem">
+                <div style="font-size:.75rem;color:var(--admin-text-light);font-weight:600;text-transform:uppercase;margin-bottom:.5rem">Sipariş Tarihi</div>
+                <strong>${formatDate(o.createdAt)}</strong>
+            </div>
+        </div>
+        <h4 style="margin-bottom:.75rem">Ürünler</h4>
+        <div style="border:1px solid var(--admin-border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem">
+            ${(o.items||[]).map((item, i) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.875rem 1rem;${i > 0 ? 'border-top:1px solid var(--admin-border)' : ''}">
+                    <div>
+                        <strong style="font-size:.875rem">${item.name}</strong>
+                        <br><small style="color:var(--admin-text-light)">Adet: ${item.quantity}</small>
+                    </div>
+                    <strong style="color:var(--admin-accent)">${item.price}</strong>
+                </div>
+            `).join('')}
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;background:var(--admin-bg);border-top:2px solid var(--admin-border)">
+                <strong>TOPLAM</strong>
+                <strong style="color:var(--admin-accent);font-size:1.1rem">${o.total}</strong>
+            </div>
+        </div>
+        ${o.notes ? `<div style="background:#fefce8;border-radius:10px;padding:1rem;border-left:3px solid var(--admin-warning)"><strong>Not:</strong> ${o.notes}</div>` : ''}
+    `;
+    document.getElementById('orderModalFooter').innerHTML = `
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            ${o.status !== 'confirmed'  ? `<button class="btn-admin btn-admin-info btn-admin-sm" onclick="changeStatus('${o.id}','confirmed')"><i class="fas fa-check"></i> Onayla</button>` : ''}
+            ${o.status !== 'shipped'    ? `<button class="btn-admin btn-admin-ghost btn-admin-sm" onclick="changeStatus('${o.id}','shipped')"><i class="fas fa-truck"></i> Kargoya Ver</button>` : ''}
+            ${o.status !== 'delivered'  ? `<button class="btn-admin btn-admin-success btn-admin-sm" onclick="changeStatus('${o.id}','delivered')"><i class="fas fa-check-double"></i> Teslim Edildi</button>` : ''}
+            ${o.status !== 'cancelled'  ? `<button class="btn-admin btn-admin-danger btn-admin-sm" onclick="changeStatus('${o.id}','cancelled')"><i class="fas fa-times"></i> İptal</button>` : ''}
+        </div>
+        <button class="btn-admin btn-admin-ghost" onclick="closeOrderModal()">Kapat</button>
+    `;
+    document.getElementById('orderModal').classList.add('show');
+}
+
+function changeStatus(orderId, status) {
+    updateOrderStatus(orderId, status);
+    closeOrderModal();
+    renderOrders();
+    showAdminNotification('Sipariş durumu güncellendi!');
+}
+
+function closeOrderModal() {
+    document.getElementById('orderModal').classList.remove('show');
+}
+
+// Demo sipariş ekleme
+function addDemoOrder() {
+    const orders = getOrders();
+    const customers = getCustomers();
+    const c = customers[0];
+    const order = {
+        id: 'ord_' + Date.now(),
+        customerId: c ? c.id : null,
+        customerName: c ? c.name : 'Test Müşterisi',
+        customerEmail: c ? c.email : 'test@test.com',
+        customerPhone: c ? c.phone : '05321234567',
+        items: [
+            { name: 'ALTUS AL370NX Buzdolabı', price: '₺15.999', quantity: 1 },
+            { name: 'FAKİR Fiume El Mikseri', price: '₺320', quantity: 2 }
+        ],
+        total: '₺16.639',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    orders.push(order);
+    saveOrders(orders);
+    renderOrders();
+    showAdminNotification('Demo sipariş eklendi!');
+}
+
+document.getElementById('orderModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('orderModal')) closeOrderModal();
+});
+
+renderOrders();
+</script>
+</body>
+</html>

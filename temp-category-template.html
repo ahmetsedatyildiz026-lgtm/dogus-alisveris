@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beyaz Eşya Ürünleri | Doğuş Alışveriş Merkezi</title>
+    <meta name="description" content="Beyaz eşya ürünleri - Buzdolabı, çamaşır makinesi, bulaşık makinesi ve daha fazlası. Taksitli fiyatlarla.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css?v=202412251225">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <a href="index.html" class="logo">
+                    <h1>DOĞUŞ</h1>
+                    <span>ALIŞVERİŞ MERKEZİ</span>
+                </a>
+                
+                <!-- Navigation -->
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Ana Sayfa</a>
+                    <a href="index.html#urunlerimiz" class="nav-link active">Ürünlerimiz</a>
+                    <a href="index.html#markalar" class="nav-link">Markalar</a>
+                    <a href="index.html#iletisim" class="nav-link">İletişim</a>
+                </nav>
+                
+                <!-- User Actions -->
+                <div class="user-actions">
+                    <button class="cart-btn" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                    <a href="#" class="btn btn-secondary">Giriş Yap</a>
+                    <a href="#" class="btn btn-primary">Üye Ol</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main category-page">
+        <!-- CATEGORY HEADER -->
+        <section class="category-header">
+            <div class="container">
+                <div class="category-breadcrumb">
+                    <a href="index.html">Ana Sayfa</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <a href="index.html#urunlerimiz">Ürünlerimiz</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Beyaz Eşya</span>
+                </div>
+                
+                <div class="category-title-section">
+                    <div class="category-icon-large">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <h1 class="category-title">Beyaz Eşya</h1>
+                    <p class="category-description">Kaliteli beyaz eşya ürünleri ile evinizi modernleştirin. Buzdolabı, çamaşır makinesi, bulaşık makinesi ve daha fazlası.</p>
+                </div>
+                
+                <div class="pricing-info-banner">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Fiyatlarımız taksitli fiyatlardır</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCTS SECTION -->
+        <section class="products-section">
+            <div class="container">
+                <div class="products-header">
+                    <div class="products-count">
+                        <span id="productsCount">12</span> ürün bulundu
+                    </div>
+                    <div class="products-sort">
+                        <select id="sortSelect" onchange="sortProducts()">
+                            <option value="default">Sıralama</option>
+                            <option value="price-low">Fiyat (Düşük → Yüksek)</option>
+                            <option value="price-high">Fiyat (Yüksek → Düşük)</option>
+                            <option value="name">İsim (A → Z)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be loaded here -->
+                </div>
+                
+                <!-- PAGINATION -->
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be generated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- PRODUCT DETAIL MODAL -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Ürün Detayı</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-product-image">
+                    <div class="image-gallery">
+                        <div class="gallery-main-image">
+                            <img id="modalMainImage" src="" alt="Ürün Resmi">
+                            <button class="gallery-nav prev" onclick="previousImage()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="gallery-nav next" onclick="nextImage()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="gallery-indicators" id="galleryIndicators">
+                                <!-- Indicators will be generated here -->
+                            </div>
+                        </div>
+                        <div class="gallery-thumbnails" id="galleryThumbnails">
+                            <!-- Thumbnails will be generated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-product-info">
+                    <h3 id="modalProductTitle">Ürün Adı</h3>
+                    <p id="modalProductDescription">Ürün açıklaması...</p>
+                    <div class="modal-product-specs" id="modalProductSpecs">
+                        <!-- Özellikler buraya gelecek -->
+                    </div>
+                    <div class="modal-product-price-section">
+                        <div class="modal-original-price" id="modalOriginalPrice" style="display: none;"></div>
+                        <div class="modal-product-price" id="modalProductPrice">₺0</div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-add-cart" onclick="addToCart(currentProduct.title)">Sepete Ekle</button>
+                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)">Teklif Al</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHOPPING CART MODAL -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content cart-modal">
+            <div class="modal-header">
+                <h2 id="cartModalTitle">Sepetim</h2>
+                <span class="close" onclick="closeCart()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="cart-items" id="cartItems">
+                    <div class="empty-cart" id="emptyCart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Sepetiniz boş</p>
+                        <small>Ürün eklemek için kategori sayfalarını ziyaret edin</small>
+                    </div>
+                </div>
+                <div class="cart-summary" id="cartSummary" style="display: none;">
+                    <div class="cart-total">
+                        <div class="total-row">
+                            <span>Toplam:</span>
+                            <span class="total-price" id="totalPrice">₺0</span>
+                        </div>
+                        <div class="installment-info">
+                            <small>Vade farksız taksit imkanı</small>
+                        </div>
+                    </div>
+                    <div class="cart-actions">
+                        <button class="btn-installments" onclick="showInstallmentTable()">
+                            <i class="fas fa-credit-card"></i> Taksit Seçenekleri
+                        </button>
+                        <button class="btn-order" onclick="sendWhatsAppOrder()">
+                            <i class="fab fa-whatsapp"></i> Sipariş Ver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INSTALLMENT TABLE MODAL -->
+    <div id="installmentModal" class="modal">
+        <div class="modal-content installment-modal">
+            <div class="modal-header">
+                <h2>Taksit Seçenekleri</h2>
+                <span class="close" onclick="closeInstallmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="installment-table-container">
+                    <table class="installment-table">
+                        <thead>
+                            <tr>
+                                <th>Taksit Sayısı</th>
+                                <th>Aylık Tutar</th>
+                                <th>Toplam Tutar</th>
+                                <th>Faiz Oranı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="installmentTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="installment-note">
+                    <p><i class="fas fa-info-circle"></i> 5000 TL'ye kadar 6 aya kadar, 5000 TL üstü alışverişlerde 9 aya kadar vade farksız taksit.</p>
+                    <p><small>Siparişinizi WhatsApp üzerinden tamamladıktan sonra ödeme detayları paylaşılacaktır.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Sol Sütun - Hakkımızda -->
+                <div class="footer-section">
+                    <h3>DOĞUŞ ALIŞVERİŞ MERKEZİ</h3>
+                    <p><strong>Memnuniyetiniz Kazancımızdır</strong></p>
+                    <p>
+                        Atatürk Caddesi No:123<br>
+                        Kadıköy, İstanbul 34710<br>
+                        <strong>2001'den Bu Yana</strong>
+                    </p>
+                </div>
+                
+                <!-- Orta Sütun - Kategoriler -->
+                <div class="footer-section">
+                    <h3>Kategoriler</h3>
+                    <ul class="footer-links">
+                        <li><a href="kategori-beyaz-esya.html"><i class="fas fa-snowflake"></i> Beyaz Eşya</a></li>
+                        <li><a href="kategori-mobilya.html"><i class="fas fa-couch"></i> Mobilya</a></li>
+                        <li><a href="kategori-kucuk-ev-aletleri.html"><i class="fas fa-blender"></i> Küçük Ev Aletleri</a></li>
+                        <li><a href="kategori-klima-ventilator.html"><i class="fas fa-wind"></i> Klima & Vantilatör</a></li>
+                        <li><a href="kategori-kisisel-bakim.html"><i class="fas fa-user-check"></i> Kişisel Bakım</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Sağ Sütun - İletişim -->
+                <div class="footer-section">
+                    <h3>İletişim</h3>
+                    <ul class="footer-links">
+                        <li><a href="tel:+905358797376"><i class="fas fa-mobile-alt"></i> +90 535 879 73 76</a></li>
+                        <li><a href="tel:+902122644907"><i class="fas fa-phone"></i> +90 212 264 49 07</a></li>
+                        <li><a href="https://wa.me/905379429437" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+                        <li><a href="https://goo.gl/maps/example" target="_blank"><i class="fas fa-map-marker-alt"></i> Konum</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Doğuş Alışveriş Merkezi. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CATEGORY PAGE JAVASCRIPT -->
+    <script src="js/category-products.js"></script>
+    <script>
+        // Initialize category page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCategoryPage('beyaz-esya', 'Beyaz Eşya');
+        });
+    </script>
+</body>
+</html>

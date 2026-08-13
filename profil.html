@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilim - Doğuş Alışveriş Merkezi</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css?v=202412251225">
+    <link rel="stylesheet" href="css/auth.css?v=202412251225">
+    <link rel="stylesheet" href="css/profile.css?v=202412251225">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <h1>DOĞUŞ</h1>
+                    <span>ALIŞVERİŞ MERKEZİ</span>
+                </a>
+                
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Ana Sayfa</a>
+                    <a href="index.html#urunlerimiz" class="nav-link">Ürünlerimiz</a>
+                    <a href="index.html#markalar" class="nav-link">Markalar</a>
+                    <a href="index.html#iletisim" class="nav-link">İletişim</a>
+                </nav>
+                
+                <div class="user-actions">
+                    <!-- Will be populated by auth.js -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PROFILE CONTAINER -->
+    <div class="profile-container">
+        <div class="container">
+            <div class="profile-layout">
+                <!-- Sidebar -->
+                <aside class="profile-sidebar">
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 id="sidebarUserName">Kullanıcı</h3>
+                        <p id="sidebarUserEmail">email@example.com</p>
+                    </div>
+
+                    <nav class="profile-nav">
+                        <a href="#" class="profile-nav-item active" data-tab="info">
+                            <i class="fas fa-user"></i>
+                            <span>Bilgilerim</span>
+                        </a>
+                        <a href="#" class="profile-nav-item" data-tab="password">
+                            <i class="fas fa-lock"></i>
+                            <span>Şifre Değiştir</span>
+                        </a>
+                        <a href="#" class="profile-nav-item" data-tab="orders">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Siparişlerim</span>
+                        </a>
+                        <a href="#" class="profile-nav-item" onclick="event.preventDefault(); authSystem.logout(); window.location.href='index.html';">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="profile-main">
+                    <!-- User Info Tab -->
+                    <div class="profile-tab active" id="info-tab">
+                        <div class="profile-header">
+                            <h2>Kullanıcı Bilgilerim</h2>
+                            <p>Kişisel bilgilerinizi güncelleyin</p>
+                        </div>
+
+                        <form id="profileForm" class="profile-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileName">Ad Soyad *</label>
+                                    <input type="text" id="profileName" name="name" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileEmail">E-posta *</label>
+                                    <input type="email" id="profileEmail" name="email" disabled>
+                                    <small>E-posta adresi değiştirilemez</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profilePhone">Telefon *</label>
+                                    <input type="tel" id="profilePhone" name="phone" required pattern="[0-9]{10,11}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileProvider">Kayıt Yöntemi</label>
+                                    <input type="text" id="profileProvider" disabled>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="profileAddress">Teslimat Adresi</label>
+                                <textarea id="profileAddress" name="address" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Değişiklikleri Kaydet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Change Password Tab -->
+                    <div class="profile-tab" id="password-tab">
+                        <div class="profile-header">
+                            <h2>Şifre Değiştir</h2>
+                            <p>Hesap güvenliğiniz için güçlü bir şifre seçin</p>
+                        </div>
+
+                        <form id="passwordForm" class="profile-form">
+                            <div class="form-group">
+                                <label for="currentPassword">Mevcut Şifre *</label>
+                                <div class="password-input">
+                                    <input type="password" id="currentPassword" name="currentPassword" required>
+                                    <button type="button" class="toggle-password" onclick="togglePassword('currentPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="newPassword">Yeni Şifre *</label>
+                                <div class="password-input">
+                                    <input type="password" id="newPassword" name="newPassword" required minlength="6">
+                                    <button type="button" class="toggle-password" onclick="togglePassword('newPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small>En az 6 karakter olmalıdır</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmNewPassword">Yeni Şifre Tekrar *</label>
+                                <div class="password-input">
+                                    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required minlength="6">
+                                    <button type="button" class="toggle-password" onclick="togglePassword('confirmNewPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-key"></i> Şifreyi Değiştir
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Orders Tab -->
+                    <div class="profile-tab" id="orders-tab">
+                        <div class="profile-header">
+                            <h2>Siparişlerim</h2>
+                            <p>Geçmiş siparişlerinizi görüntüleyin</p>
+                        </div>
+
+                        <div class="orders-container">
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-bag"></i>
+                                <h3>Henüz siparişiniz yok</h3>
+                                <p>Alışverişe başlamak için ürünlerimize göz atın</p>
+                                <a href="index.html#urunlerimiz" class="btn btn-primary">
+                                    <i class="fas fa-shopping-cart"></i> Alışverişe Başla
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/auth.js?v=202412251225"></script>
+    <script src="js/auth-firebase.js?v=202412251225"></script>
+    <script>
+        // Check if user is logged in
+        if (!authSystem.isLoggedIn()) {
+            window.location.href = 'giris.html';
+        }
+
+        const currentUser = authSystem.getCurrentUser();
+        if (currentUser) {
+            // Update sidebar
+            document.getElementById('sidebarUserName').textContent = currentUser.name;
+            document.getElementById('sidebarUserEmail').textContent = currentUser.email;
+
+            // Update form
+            document.getElementById('profileName').value = currentUser.name;
+            document.getElementById('profileEmail').value = currentUser.email;
+            document.getElementById('profilePhone').value = currentUser.phone;
+            document.getElementById('profileAddress').value = currentUser.address || '';
+            document.getElementById('profileProvider').value = currentUser.provider === 'google' ? 'Google' : 'E-posta';
+
+            // Hide password tab if Google user
+            if (currentUser.provider === 'google') {
+                const passwordTab = document.querySelector('[data-tab="password"]');
+                if (passwordTab) {
+                    passwordTab.style.display = 'none';
+                }
+            }
+        }
+
+        // Profile form handler
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+
+            const userData = {
+                name:    document.getElementById('profileName').value,
+                phone:   document.getElementById('profilePhone').value,
+                address: document.getElementById('profileAddress').value
+            };
+
+            const result = await authUpdateProfile(currentUser.uid || currentUser.id, userData);
+
+            if (result.success) {
+                showNotification(result.message, 'success');
+                document.getElementById('sidebarUserName').textContent = userData.name;
+            } else {
+                showNotification(result.message, 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Değişiklikleri Kaydet';
+        });
+
+        // Password form handler
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showNotification('Yeni şifreler eşleşmiyor!', 'error');
+                return;
+            }
+
+            const result = authSystem.changePassword(currentPassword, newPassword);
+
+            if (result.success) {
+                showNotification(result.message, 'success');
+                document.getElementById('passwordForm').reset();
+            } else {
+                showNotification(result.message, 'error');
+            }
+        });
+
+        // Tab navigation
+        document.querySelectorAll('.profile-nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.getAttribute('data-tab')) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.profile-nav-item').forEach(nav => nav.classList.remove('active'));
+                    document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab') + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                }
+            });
+        });
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

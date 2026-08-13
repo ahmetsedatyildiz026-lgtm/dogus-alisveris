@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ürün Yönetimi - Doğuş Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-logo">
+            <h1>DOĞUŞ</h1>
+            <span>Admin Paneli</span>
+        </div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item active"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="admin-depo.html" class="admin-nav-item"><i class="fas fa-warehouse"></i> Depo / Stok</a>
+            <a href="admin-markalar.html" class="admin-nav-item"><i class="fas fa-tags"></i> Markalar</a>
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item"><i class="fas fa-shopping-bag"></i> Siparişler</a>
+            <a href="admin-musteriler.html" class="admin-nav-item"><i class="fas fa-users"></i> Müşteriler</a>
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Raporlar & Mesajlar</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a><br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2><i class="fas fa-box" style="color:var(--admin-accent);margin-right:.5rem"></i>Ürün Yönetimi</h2>
+            <div class="admin-topbar-right">
+                <button class="btn-admin btn-admin-primary" onclick="openProductModal()">
+                    <i class="fas fa-plus"></i> Yeni Ürün Ekle
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- Toolbar -->
+            <div class="admin-toolbar">
+                <div class="admin-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Ürün adı, marka, kategori..." oninput="renderProducts()">
+                </div>
+                <select id="filterCategory" class="btn-admin btn-admin-ghost" onchange="renderProducts()" style="padding:.6rem 1rem">
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="beyaz-esya">Beyaz Eşya</option>
+                    <option value="kucuk-ev-aletleri">Küçük Ev Aletleri</option>
+                    <option value="klima-ventilator">Klima & Vantilatör</option>
+                    <option value="mobilya">Mobilya</option>
+                    <option value="kisisel-bakim">Kişisel Bakım</option>
+                    <option value="tekstil">Tekstil</option>
+                    <option value="zucaciye">Züccaciye</option>
+                </select>
+                <span id="productCountBadge" class="badge badge-blue" style="font-size:.85rem;padding:.4rem .9rem"></span>
+            </div>
+
+            <!-- Table -->
+            <div class="admin-card">
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Fotoğraf</th>
+                                <th>Ürün Adı</th>
+                                <th>Kategori</th>
+                                <th>Marka</th>
+                                <th>Fiyat</th>
+                                <th>Stok</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="admin-empty" style="display:none">
+                    <i class="fas fa-box-open"></i>
+                    <h3>Ürün bulunamadı</h3>
+                    <p>Yeni ürün eklemek için "Yeni Ürün Ekle" butonuna tıklayın</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ÜRÜN MODAL -->
+<div class="admin-modal-overlay" id="productModal">
+    <div class="admin-modal" style="max-width:820px">
+        <div class="admin-modal-header">
+            <h3 id="modalTitle">Yeni Ürün Ekle</h3>
+            <button class="admin-modal-close" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body">
+            <form id="productForm" class="admin-form">
+                <!-- FOTOĞRAFLAR -->
+                <div class="admin-form-group">
+                    <label>Ürün Fotoğrafları (Maksimum 6 adet, her biri max 5MB)</label>
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                        <button type="button" class="btn-admin btn-admin-primary" onclick="document.getElementById('bulkFileInput').click()">
+                            <i class="fas fa-images"></i> 6 Fotoğrafı Birden Seç
+                        </button>
+                        <input type="file" id="bulkFileInput" accept="image/*" multiple style="display:none" onchange="handleBulkFileSelect(event)">
+                        <small style="color:var(--admin-text-light)">6 fotoğrafı aynı anda seçebilirsiniz. İlk fotoğraf kapak görseli olur.</small>
+                    </div>
+                    <div class="photo-upload-grid" id="photoGrid">
+                        <!-- 6 slot JS ile oluşturulacak -->
+                    </div>
+                    <input type="file" id="hiddenFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+                    <small style="color:var(--admin-text-light)">Slotlara teker teker tıklayarak da fotoğraf ekleyebilirsiniz.</small>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="admin-form-group">
+                        <label>Ürün Adı *</label>
+                        <input type="text" id="prodName" required placeholder="Örn: ALTUS AL370NX Buzdolabı">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Marka *</label>
+                        <input type="text" id="prodBrand" required placeholder="Örn: ALTUS">
+                    </div>
+                </div>
+
+                <div class="form-grid-3">
+                    <div class="admin-form-group">
+                        <label>Kategori *</label>
+                        <select id="prodCategory" required>
+                            <option value="">Seçin...</option>
+                            <option value="beyaz-esya">Beyaz Eşya</option>
+                            <option value="kucuk-ev-aletleri">Küçük Ev Aletleri</option>
+                            <option value="klima-ventilator">Klima & Vantilatör</option>
+                            <option value="mobilya">Mobilya</option>
+                            <option value="kisisel-bakim">Kişisel Bakım</option>
+                            <option value="tekstil">Tekstil</option>
+                            <option value="zucaciye">Züccaciye</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Satış Fiyatı (₺) *</label>
+                        <input type="number" id="prodPrice" required placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Orijinal Fiyat (₺)</label>
+                        <input type="number" id="prodOriginalPrice" placeholder="İndirimli ise orijinal fiyat" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="admin-form-group">
+                        <label>Stok Adedi</label>
+                        <input type="number" id="prodStock" placeholder="0" min="0" value="0">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Durum</label>
+                        <select id="prodStatus">
+                            <option value="active">Aktif (Satışta)</option>
+                            <option value="draft">Taslak</option>
+                            <option value="out_of_stock">Stok Yok</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="admin-form-group">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: var(--admin-bg); border-radius: 8px; border: 1.5px solid var(--admin-border);">
+                        <input type="checkbox" id="prodFeatured" style="width: 20px; height: 20px; cursor: pointer;">
+                        <div style="flex: 1;">
+                            <strong style="display: block; margin-bottom: 0.25rem; color: var(--admin-accent);">
+                                <i class="fas fa-star"></i> En Çok Satanlarda Göster
+                            </strong>
+                            <small style="color: var(--admin-text-light);">Bu ürün ana sayfada "En Çok Satanlar" bölümünde öne çıkarılacak</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Ürün Açıklaması *</label>
+                    <textarea id="prodDescription" required placeholder="Ürünü detaylı açıklayın..." rows="4"></textarea>
+                </div>
+
+                <!-- Özellikler (Specs) -->
+                <div class="admin-form-group">
+                    <label>Ürün Özellikleri</label>
+                    <div id="specsContainer"></div>
+                    <button type="button" class="btn-admin btn-admin-ghost btn-admin-sm" onclick="addSpecRow()" style="margin-top:.5rem">
+                        <i class="fas fa-plus"></i> Özellik Ekle
+                    </button>
+                    <small style="color:var(--admin-text-light)">Örn: "Enerji Sınıfı" → "A++"</small>
+                </div>
+            </form>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeProductModal()">İptal</button>
+            <button class="btn-admin btn-admin-primary" onclick="saveProduct()">
+                <i class="fas fa-save"></i> Kaydet
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SİL ONAY MODAL -->
+<div class="admin-modal-overlay" id="deleteModal">
+    <div class="admin-modal" style="max-width:420px">
+        <div class="admin-modal-header">
+            <h3>Ürünü Sil</h3>
+            <button class="admin-modal-close" onclick="closeDeleteModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-modal-body" style="text-align:center;padding:2rem">
+            <i class="fas fa-trash-alt" style="font-size:3rem;color:var(--admin-danger);margin-bottom:1rem"></i>
+            <p style="font-size:1rem;margin-bottom:.5rem"><strong id="deleteProductName"></strong></p>
+            <p style="color:var(--admin-text-light)">Bu ürünü silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin btn-admin-ghost" onclick="closeDeleteModal()">Vazgeç</button>
+            <button class="btn-admin btn-admin-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i> Evet, Sil
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+checkAdminAuth();
+
+const CATEGORIES = {
+    'beyaz-esya': 'Beyaz Eşya',
+    'kucuk-ev-aletleri': 'Küçük Ev Aletleri',
+    'klima-ventilator': 'Klima & Vantilatör',
+    'mobilya': 'Mobilya',
+    'kisisel-bakim': 'Kişisel Bakım',
+    'tekstil': 'Tekstil',
+    'zucaciye': 'Züccaciye'
+};
+
+let editingProductId = null;
+let deletingProductId = null;
+let currentSlotIndex = null;
+let productImages = ['', '', '', '', '', '']; // 6 slot
+
+// ─── PHOTO SLOTS ──────────────────────────────────────────────
+function buildPhotoGrid() {
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    productImages.forEach((img, i) => {
+        const slot = document.createElement('div');
+        slot.className = 'photo-slot' + (img ? ' has-image' : '');
+        slot.dataset.index = i;
+        slot.onclick = () => openFileForSlot(i);
+        slot.innerHTML = img
+            ? `<img src="${img}" alt="Fotoğraf ${i+1}">
+               <div class="photo-overlay">
+                   <button type="button" onclick="event.stopPropagation();removePhoto(${i})" style="background:#ef4444;color:white;border:none;border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.8rem">
+                       <i class="fas fa-trash"></i>
+                   </button>
+               </div>
+               ${i === 0 ? '<span style="position:absolute;bottom:4px;left:4px;background:var(--admin-accent);color:#1a1a1a;font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:4px">KAPAK</span>' : ''}`
+            : `<div class="photo-placeholder">
+                   <i class="fas fa-camera"></i>
+                   <span>${i === 0 ? 'Kapak' : 'Foto ' + (i+1)}</span>
+               </div>`;
+        grid.appendChild(slot);
+    });
+}
+
+function openFileForSlot(index) {
+    currentSlotIndex = index;
+    const input = document.getElementById('hiddenFileInput');
+    input.multiple = false;
+    input.click();
+}
+
+async function handleFileSelect(event) {
+    const files = event.target.files;
+    if (!files.length) return;
+    
+    // Dosya boyutu kontrolü
+    const file = files[0];
+    if (file.size > 5 * 1024 * 1024) { // 5MB
+        showAdminNotification('Fotoğraf çok büyük! Maksimum 5MB olmalı.', 'error');
+        event.target.value = '';
+        return;
+    }
+    
+    const images = await processImageFiles(files, 1);
+    if (images.length && currentSlotIndex !== null) {
+        productImages[currentSlotIndex] = images[0];
+        buildPhotoGrid();
+    }
+    event.target.value = '';
+}
+
+// Toplu fotoğraf seçme
+async function handleBulkFileSelect(event) {
+    const files = event.target.files;
+    if (!files.length) return;
+    
+    if (files.length > 6) {
+        showAdminNotification('Maksimum 6 fotoğraf seçebilirsiniz!', 'error');
+        event.target.value = '';
+        return;
+    }
+    
+    // Dosya boyutu kontrolü
+    let totalSize = 0;
+    for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) {
+            showAdminNotification(`${file.name} çok büyük! Maksimum 5MB olmalı.`, 'error');
+            event.target.value = '';
+            return;
+        }
+        totalSize += file.size;
+    }
+    
+    if (totalSize > 15 * 1024 * 1024) { // 15MB toplam
+        showAdminNotification('Toplam fotoğraf boyutu 15MB\'ı geçemez!', 'error');
+        event.target.value = '';
+        return;
+    }
+    
+    const images = await processImageFiles(files, 6);
+    
+    // Boş slotları doldur
+    let emptySlots = productImages.map((img, i) => img === '' ? i : -1).filter(i => i !== -1);
+    
+    if (emptySlots.length === 0) {
+        // Tüm slotlar doluysa baştan yaz
+        productImages = ['', '', '', '', '', ''];
+        emptySlots = [0, 1, 2, 3, 4, 5];
+    }
+    
+    images.forEach((img, i) => {
+        if (emptySlots[i] !== undefined) {
+            productImages[emptySlots[i]] = img;
+        }
+    });
+    
+    buildPhotoGrid();
+    showAdminNotification(`${images.length} fotoğraf yüklendi!`, 'success');
+    event.target.value = '';
+}
+
+function removePhoto(index) {
+    productImages[index] = '';
+    buildPhotoGrid();
+}
+
+// ─── SPEC ROWS ────────────────────────────────────────────────
+function addSpecRow(key = '', value = '') {
+    const container = document.getElementById('specsContainer');
+    const row = document.createElement('div');
+    row.className = 'spec-row';
+    row.style.cssText = 'display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center';
+    row.innerHTML = `
+        <input type="text" placeholder="Özellik (örn: Enerji Sınıfı)" value="${key}"
+               style="flex:1;padding:.6rem .875rem;border:1.5px solid var(--admin-border);border-radius:8px;font-family:inherit;font-size:.875rem">
+        <input type="text" placeholder="Değer (örn: A++)" value="${value}"
+               style="flex:1;padding:.6rem .875rem;border:1.5px solid var(--admin-border);border-radius:8px;font-family:inherit;font-size:.875rem">
+        <button type="button" onclick="this.parentElement.remove()" class="btn-admin btn-admin-danger btn-admin-icon btn-admin-sm">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(row);
+}
+
+function getSpecs() {
+    const rows = document.querySelectorAll('.spec-row');
+    const specs = {};
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const k = inputs[0].value.trim();
+        const v = inputs[1].value.trim();
+        if (k && v) specs[k] = v;
+    });
+    return specs;
+}
+
+// ─── MODAL ────────────────────────────────────────────────────
+function openProductModal(productId = null) {
+    editingProductId = productId;
+    productImages = ['', '', '', '', '', ''];
+    document.getElementById('specsContainer').innerHTML = '';
+
+    if (productId) {
+        // Edit mode
+        const p = getProducts().find(p => p.id === productId);
+        if (!p) return;
+        document.getElementById('modalTitle').textContent = 'Ürünü Düzenle';
+        document.getElementById('prodName').value = p.title || '';
+        document.getElementById('prodBrand').value = p.brand || '';
+        document.getElementById('prodCategory').value = p.category || '';
+        document.getElementById('prodPrice').value = (p.price || '').toString().replace(/[₺.,]/g, '');
+        document.getElementById('prodOriginalPrice').value = (p.originalPrice || '').toString().replace(/[₺.,]/g, '');
+        document.getElementById('prodStock').value = p.stock || 0;
+        document.getElementById('prodStatus').value = p.status || 'active';
+        document.getElementById('prodDescription').value = p.description || '';
+        document.getElementById('prodFeatured').checked = p.isFeatured || false;
+
+        // Photos
+        const imgs = p.images || (p.image ? [p.image] : []);
+        imgs.forEach((img, i) => { if (i < 6) productImages[i] = img; });
+
+        // Specs
+        if (p.specifications) {
+            Object.entries(p.specifications).forEach(([k, v]) => addSpecRow(k, v));
+        }
+    } else {
+        document.getElementById('modalTitle').textContent = 'Yeni Ürün Ekle';
+        document.getElementById('productForm').reset();
+        document.getElementById('prodFeatured').checked = false;
+        // Default spec rows
+        addSpecRow('Marka', '');
+        addSpecRow('Garanti', '2 Yıl');
+    }
+
+    buildPhotoGrid();
+    document.getElementById('productModal').classList.add('show');
+}
+
+function closeProductModal() {
+    document.getElementById('productModal').classList.remove('show');
+    editingProductId = null;
+}
+
+// ─── SAVE ─────────────────────────────────────────────────────
+function saveProduct() {
+    console.log('💾 saveProduct çağrıldı');
+    
+    const name = document.getElementById('prodName').value.trim();
+    const brand = document.getElementById('prodBrand').value.trim();
+    const category = document.getElementById('prodCategory').value;
+    const price = document.getElementById('prodPrice').value;
+    const description = document.getElementById('prodDescription').value.trim();
+
+    console.log('📝 Form değerleri:', { name, brand, category, price, description });
+
+    if (!name || !brand || !category || !price || !description) {
+        console.error('❌ Zorunlu alanlar eksik!');
+        showAdminNotification('Zorunlu alanları doldurun!', 'error');
+        return;
+    }
+
+    const validImages = productImages.filter(Boolean);
+    console.log('🖼️ Geçerli fotoğraf sayısı:', validImages.length);
+    
+    const originalPrice = document.getElementById('prodOriginalPrice').value;
+    const specs = getSpecs();
+    specs['Marka'] = brand;
+
+    const productData = {
+        title: name,
+        brand: brand,
+        category: category,
+        price: '₺' + parseFloat(price).toLocaleString('tr-TR'),
+        originalPrice: originalPrice ? '₺' + parseFloat(originalPrice).toLocaleString('tr-TR') : '',
+        stock: parseInt(document.getElementById('prodStock').value) || 0,
+        status: document.getElementById('prodStatus').value,
+        isFeatured: document.getElementById('prodFeatured').checked,
+        description: description,
+        images: validImages,
+        image: validImages[0] || '',
+        specifications: specs,
+        id: editingProductId || ('prod_' + Date.now()),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    console.log('📦 Ürün verisi hazırlandı:', productData);
+
+    try {
+        // LocalStorage'a doğrudan kaydet
+        const products = JSON.parse(localStorage.getItem('dogusAdminProducts') || '[]');
+        console.log('📚 Mevcut ürün sayısı:', products.length);
+        
+        if (editingProductId) {
+            const idx = products.findIndex(p => p.id === editingProductId);
+            if (idx !== -1) {
+                products[idx] = { ...products[idx], ...productData };
+                console.log('✏️ Ürün güncellendi, index:', idx);
+            }
+        } else {
+            products.push(productData);
+            console.log('✅ Yeni ürün eklendi, toplam:', products.length);
+        }
+        
+        localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
+        console.log('💾 localStorage\'a kaydedildi!');
+        
+        showAdminNotification(editingProductId ? 'Ürün güncellendi!' : 'Ürün eklendi!', 'success');
+        
+        closeProductModal();
+        renderProducts();
+        
+        console.log('✅ İşlem tamamlandı!');
+    } catch (error) {
+        console.error('❌ HATA:', error);
+        showAdminNotification('Ürün kaydedilemedi: ' + error.message, 'error');
+    }
+}
+
+// ─── DELETE ───────────────────────────────────────────────────
+function openDeleteModal(id) {
+    deletingProductId = id;
+    const p = getProducts().find(p => p.id === id);
+    document.getElementById('deleteProductName').textContent = p ? p.title : '';
+    document.getElementById('deleteModal').classList.add('show');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('show');
+    deletingProductId = null;
+}
+
+function confirmDelete() {
+    if (!deletingProductId) return;
+    deleteProduct(deletingProductId);
+    showAdminNotification('Ürün silindi!', 'error');
+    closeDeleteModal();
+    renderProducts();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────
+function renderProducts() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const catFilter = document.getElementById('filterCategory').value;
+    let products = getProducts();
+
+    if (search) {
+        products = products.filter(p =>
+            (p.title || '').toLowerCase().includes(search) ||
+            (p.brand || '').toLowerCase().includes(search) ||
+            (p.category || '').toLowerCase().includes(search)
+        );
+    }
+    if (catFilter) {
+        products = products.filter(p => p.category === catFilter);
+    }
+
+    const tbody = document.getElementById('productsTableBody');
+    const empty = document.getElementById('emptyState');
+    document.getElementById('productCountBadge').textContent = products.length + ' ürün';
+
+    if (!products.length) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = products.map(p => {
+        const statusMap = {
+            active: '<span class="badge badge-green">Aktif</span>',
+            draft: '<span class="badge badge-gray">Taslak</span>',
+            out_of_stock: '<span class="badge badge-red">Stok Yok</span>'
+        };
+        const thumb = p.image
+            ? `<img src="${p.image}" class="product-thumb" alt="">`
+            : `<div class="product-thumb-placeholder"><i class="fas fa-image"></i></div>`;
+        const photoCount = (p.images || []).filter(Boolean).length;
+        const featuredBadge = p.isFeatured ? '<span class="badge badge-yellow" style="background: #f59e0b; margin-left: 0.25rem;"><i class="fas fa-star"></i></span>' : '';
+
+        return `<tr>
+            <td>${thumb}</td>
+            <td>
+                <strong style="font-size:.875rem">${p.title}</strong>${featuredBadge}
+                <br><small style="color:var(--admin-text-light)">${photoCount} fotoğraf</small>
+            </td>
+            <td><span class="badge badge-blue">${CATEGORIES[p.category] || p.category}</span></td>
+            <td><strong>${p.brand || '-'}</strong></td>
+            <td>
+                <strong style="color:var(--admin-accent)">${p.price}</strong>
+                ${p.originalPrice ? `<br><small style="text-decoration:line-through;color:var(--admin-text-light)">${p.originalPrice}</small>` : ''}
+            </td>
+            <td>
+                <span class="${(p.stock || 0) <= 3 ? 'badge badge-red' : 'badge badge-green'}">${p.stock || 0} adet</span>
+            </td>
+            <td>${statusMap[p.status] || statusMap.active}</td>
+            <td>
+                <div style="display:flex;gap:.4rem">
+                    <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="openProductModal('${p.id}')" title="Düzenle">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-admin btn-admin-danger btn-admin-icon btn-admin-sm" onclick="openDeleteModal('${p.id}')" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// Modal dışına tıklayınca kapat
+document.getElementById('productModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('productModal')) closeProductModal();
+});
+document.getElementById('deleteModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+});
+
+renderProducts();
+</script>
+</body>
+</html>

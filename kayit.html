@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üye Ol - Doğuş Alışveriş Merkezi</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css?v=202412251225">
+    <link rel="stylesheet" href="css/auth.css?v=202412251225">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <h1>DOĞUŞ</h1>
+                    <span>ALIŞVERİŞ MERKEZİ</span>
+                </a>
+                
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Ana Sayfa</a>
+                    <a href="index.html#urunlerimiz" class="nav-link">Ürünlerimiz</a>
+                    <a href="index.html#markalar" class="nav-link">Markalar</a>
+                    <a href="index.html#iletisim" class="nav-link">İletişim</a>
+                </nav>
+                
+                <div class="user-actions">
+                    <a href="giris.html" class="btn btn-secondary">Giriş Yap</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- AUTH CONTAINER -->
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>Üye Ol</h1>
+                <p>Hemen üye olun, avantajlardan yararlanın</p>
+            </div>
+
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="name">Ad Soyad *</label>
+                    <input type="text" id="name" name="name" required placeholder="Adınız Soyadınız">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-posta Adresi *</label>
+                    <input type="email" id="email" name="email" required placeholder="ornek@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Telefon Numarası *</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="05XX XXX XX XX" pattern="[0-9]{10,11}">
+                    <small>Örnek: 05321234567</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Adres</label>
+                    <textarea id="address" name="address" rows="3" placeholder="Teslimat adresiniz (isteğe bağlı)"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Şifre *</label>
+                    <div class="password-input">
+                        <input type="password" id="password" name="password" required placeholder="••••••••" minlength="6">
+                        <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <small>En az 6 karakter olmalıdır</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Şifre Tekrar *</label>
+                    <div class="password-input">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••" minlength="6">
+                        <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="terms" required>
+                        <span><a href="#" target="_blank">Kullanım şartlarını</a> ve <a href="#" target="_blank">gizlilik politikasını</a> kabul ediyorum</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="newsletter">
+                        <span>Kampanya ve fırsatlardan haberdar olmak istiyorum</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    Üye Ol
+                </button>
+            </form>
+
+            <div class="auth-divider">
+                <span>veya</span>
+            </div>
+
+            <button class="btn btn-google" onclick="googleSignIn()">
+                <i class="fab fa-google"></i>
+                Google ile Üye Ol
+            </button>
+
+            <div class="auth-footer">
+                <p>Zaten üye misiniz? <a href="giris.html">Giriş Yap</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/auth.js?v=202412251225"></script>
+    <script src="js/auth-firebase.js?v=202412251225"></script>
+    <script>
+        // Check if already logged in
+        if (authSystem.isLoggedIn()) {
+            window.location.href = 'profil.html';
+        }
+
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showNotification('Şifreler eşleşmiyor!', 'error');
+                return;
+            }
+
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+
+            const userData = {
+                name:     document.getElementById('name').value,
+                email:    document.getElementById('email').value,
+                phone:    document.getElementById('phone').value,
+                address:  document.getElementById('address').value,
+                password: password
+            };
+
+            const result = await authRegister(userData);
+
+            if (result.success) {
+                showNotification(result.message, 'success');
+                setTimeout(() => { window.location.href = 'giris.html'; }, 1500);
+            } else {
+                showNotification(result.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Üye Ol';
+            }
+        });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        async function googleSignIn() {
+            const btn = document.querySelector('.btn-google');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bağlanıyor...';
+
+            const result = await authGoogleSignIn();
+
+            if (result.success) {
+                showNotification(result.message, 'success');
+                setTimeout(() => { window.location.href = 'profil.html'; }, 1000);
+            } else {
+                showNotification(result.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fab fa-google"></i> Google ile Üye Ol';
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Phone number formatting
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) {
+                value = value.substr(0, 11);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

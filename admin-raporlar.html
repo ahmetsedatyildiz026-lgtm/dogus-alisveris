@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlar & Mesajlar - Doğuş Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-logo">
+            <h1>DOĞUŞ</h1>
+            <span>Admin Paneli</span>
+        </div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">Genel</div>
+            <a href="admin.html" class="admin-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <div class="admin-nav-section">Mağaza</div>
+            <a href="admin-urunler.html" class="admin-nav-item"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="admin-depo.html" class="admin-nav-item"><i class="fas fa-warehouse"></i> Depo / Stok</a>
+            <a href="admin-markalar.html" class="admin-nav-item"><i class="fas fa-tags"></i> Markalar</a>
+            <div class="admin-nav-section">Satış</div>
+            <a href="admin-siparisler.html" class="admin-nav-item"><i class="fas fa-shopping-bag"></i> Siparişler</a>
+            <a href="admin-musteriler.html" class="admin-nav-item"><i class="fas fa-users"></i> Müşteriler</a>
+            <div class="admin-nav-section">Analiz</div>
+            <a href="admin-raporlar.html" class="admin-nav-item active"><i class="fas fa-chart-line"></i> Raporlar & Mesajlar</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Siteye Git</a><br><br>
+            <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <h2><i class="fas fa-chart-line" style="color:var(--admin-accent);margin-right:.5rem"></i>Raporlar & Mesajlaşma</h2>
+            <div class="admin-topbar-right">
+                <span id="currentDateTime" style="font-size: 0.875rem; color: var(--admin-text-light);"></span>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- TAB NAVİGASYON -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('reports')">
+                    <i class="fas fa-file-alt"></i> Aylık Raporlar
+                </button>
+                <button class="admin-tab" onclick="switchTab('messaging')">
+                    <i class="fas fa-envelope"></i> Toplu Mesajlaşma
+                </button>
+                <button class="admin-tab" onclick="switchTab('notifications')">
+                    <i class="fas fa-bell"></i> Bildirimler
+                </button>
+            </div>
+
+            <!-- RAPORLAR TAB -->
+            <div class="tab-content active" id="reportsTab">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-calendar-alt"></i> Aylık Özet Raporu</h3>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <select id="reportMonth" class="btn-admin btn-admin-ghost" style="padding: .6rem 1rem;">
+                                <!-- Dinamik oluşturulacak -->
+                            </select>
+                            <select id="reportYear" class="btn-admin btn-admin-ghost" style="padding: .6rem 1rem;">
+                                <!-- Dinamik oluşturulacak -->
+                            </select>
+                            <button class="btn-admin btn-admin-primary" onclick="generateReport()">
+                                <i class="fas fa-sync-alt"></i> Rapor Oluştur
+                            </button>
+                            <button class="btn-admin btn-admin-success" onclick="exportReportPDF()">
+                                <i class="fas fa-file-pdf"></i> PDF İndir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="reportContent" class="report-content">
+                        <div class="empty-report">
+                            <i class="fas fa-chart-bar"></i>
+                            <p>Rapor görmek için ay ve yıl seçip "Rapor Oluştur" butonuna tıklayın</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MESAJLAŞMA TAB -->
+            <div class="tab-content" id="messagingTab">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-paper-plane"></i> Toplu Müşteri Mesajlaşma</h3>
+                    </div>
+
+                    <div class="admin-form" style="padding: 2rem;">
+                        <div class="admin-form-group">
+                            <label>Alıcılar</label>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="recipients" value="all" checked onchange="updateRecipients()">
+                                    <span>Tüm Müşteriler (<span id="totalCustomers">0</span>)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="recipients" value="active" onchange="updateRecipients()">
+                                    <span>Aktif Müşteriler (Son 30 gün sipariş veren)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="recipients" value="custom" onchange="updateRecipients()">
+                                    <span>Seçili Müşteriler</span>
+                                </label>
+                            </div>
+                            
+                            <div id="customRecipients" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--admin-bg); border-radius: 8px;">
+                                <label style="font-weight: 600; margin-bottom: 0.75rem; display: block;">Müşteri Seç:</label>
+                                <div id="customerList" style="max-height: 200px; overflow-y: auto;">
+                                    <!-- Dinamik oluşturulacak -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label>Mesaj Başlığı</label>
+                            <input type="text" id="messageTitle" placeholder="Örn: Yeni Kampanya Duyurusu">
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label>Mesaj İçeriği</label>
+                            <textarea id="messageContent" rows="6" placeholder="Mesajınızı buraya yazın..."></textarea>
+                            <small style="color: var(--admin-text-light);">
+                                Kullanabileceğiniz değişkenler: {AD}, {SOYAD}, {TELEFON}
+                            </small>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label>Gönderim Yöntemi</label>
+                            <div style="display: flex; gap: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="method" value="whatsapp" checked>
+                                    <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                                    <span>WhatsApp</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="method" value="sms">
+                                    <i class="fas fa-sms" style="color: var(--admin-info);"></i>
+                                    <span>SMS</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="method" value="email">
+                                    <i class="fas fa-envelope" style="color: var(--admin-warning);"></i>
+                                    <span>E-posta</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="message-preview" style="margin-top: 1.5rem; padding: 1.5rem; background: var(--admin-bg); border-radius: 8px; border-left: 4px solid var(--admin-accent);">
+                            <h4 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-eye"></i> Mesaj Önizleme
+                            </h4>
+                            <div id="messagePreview" style="white-space: pre-wrap; color: var(--admin-text-light);">
+                                Mesaj içeriğiniz buraya gelecek...
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+                            <button class="btn-admin btn-admin-ghost" onclick="clearMessageForm()">
+                                <i class="fas fa-times"></i> Temizle
+                            </button>
+                            <button class="btn-admin btn-admin-primary" onclick="sendBulkMessage()">
+                                <i class="fas fa-paper-plane"></i> Mesajları Gönder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mesaj Geçmişi -->
+                <div class="admin-card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Gönderilmiş Mesajlar</h3>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Başlık</th>
+                                    <th>Alıcı Sayısı</th>
+                                    <th>Yöntem</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="messageHistoryBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--admin-text-light);">
+                                        Henüz mesaj gönderilmemiş
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BİLDİRİMLER TAB -->
+            <div class="tab-content" id="notificationsTab">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bell"></i> Sistem Bildirimleri</h3>
+                        <button class="btn-admin btn-admin-ghost btn-admin-sm" onclick="markAllRead()">
+                            <i class="fas fa-check-double"></i> Tümünü Okundu İşaretle
+                        </button>
+                    </div>
+
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- Dinamik oluşturulacak -->
+                    </div>
+                </div>
+
+                <!-- Bildirim Ayarları -->
+                <div class="admin-card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-cog"></i> Bildirim Ayarları</h3>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div class="notification-settings">
+                            <label class="setting-item">
+                                <div>
+                                    <strong>Yeni Sipariş Bildirimleri</strong>
+                                    <p>Yeni sipariş geldiğinde bildirim al</p>
+                                </div>
+                                <input type="checkbox" id="notifOrders" checked>
+                            </label>
+                            <label class="setting-item">
+                                <div>
+                                    <strong>Düşük Stok Uyarıları</strong>
+                                    <p>Stok 3'ün altına düştüğünde uyarı</p>
+                                </div>
+                                <input type="checkbox" id="notifStock" checked>
+                            </label>
+                            <label class="setting-item">
+                                <div>
+                                    <strong>Yeni Müşteri Bildirimleri</strong>
+                                    <p>Yeni müşteri kayıt olduğunda bildirim al</p>
+                                </div>
+                                <input type="checkbox" id="notifCustomers" checked>
+                            </label>
+                            <label class="setting-item">
+                                <div>
+                                    <strong>Günlük Özet Raporu</strong>
+                                    <p>Her gün saat 18:00'de günlük özet</p>
+                                </div>
+                                <input type="checkbox" id="notifDaily">
+                            </label>
+                        </div>
+                        <button class="btn-admin btn-admin-primary" style="margin-top: 1.5rem;" onclick="saveNotificationSettings()">
+                            <i class="fas fa-save"></i> Ayarları Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+checkAdminAuth();
+
+// Tarih-saat göster
+function updateDateTime() {
+    const now = new Date();
+    document.getElementById('currentDateTime').textContent = now.toLocaleDateString('tr-TR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+updateDateTime();
+setInterval(updateDateTime, 60000);
+
+// ─── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(tabName) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    event.target.closest('.admin-tab').classList.add('active');
+    
+    const tabs = {
+        'reports': 'reportsTab',
+        'messaging': 'messagingTab',
+        'notifications': 'notificationsTab'
+    };
+    
+    document.getElementById(tabs[tabName]).classList.add('active');
+    
+    if (tabName === 'notifications') {
+        loadNotifications();
+    } else if (tabName === 'messaging') {
+        updateRecipients();
+    }
+}
+
+// ─── RAPORLAR ──────────────────────────────────────────────────────────────────
+
+function initReportSelects() {
+    const monthSelect = document.getElementById('reportMonth');
+    const yearSelect = document.getElementById('reportYear');
+    
+    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    monthSelect.innerHTML = months.map((m, i) => 
+        `<option value="${i}" ${i === currentMonth ? 'selected' : ''}>${m}</option>`
+    ).join('');
+    
+    yearSelect.innerHTML = '';
+    for (let y = currentYear; y >= currentYear - 5; y--) {
+        yearSelect.innerHTML += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+    }
+}
+
+function generateReport() {
+    const month = parseInt(document.getElementById('reportMonth').value);
+    const year = parseInt(document.getElementById('reportYear').value);
+    
+    const report = getMonthlyReport(month, year);
+    const stats = getDashboardStats();
+    const products = getProducts();
+    const customers = getCustomers();
+    
+    const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    
+    const reportHTML = `
+        <div class="report-header">
+            <h2>${monthNames[month]} ${year} Ayı Performans Raporu</h2>
+            <p>Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+        </div>
+
+        <div class="report-stats-grid">
+            <div class="report-stat-card">
+                <div class="stat-icon" style="background: #e0f2fe;"><i class="fas fa-shopping-bag" style="color: #0284c7;"></i></div>
+                <div class="stat-info">
+                    <h4>Toplam Sipariş</h4>
+                    <p class="stat-value">${report.totalOrders}</p>
+                </div>
+            </div>
+            <div class="report-stat-card">
+                <div class="stat-icon" style="background: #d1fae5;"><i class="fas fa-lira-sign" style="color: #059669;"></i></div>
+                <div class="stat-info">
+                    <h4>Toplam Ciro</h4>
+                    <p class="stat-value">₺${report.totalRevenue.toLocaleString('tr-TR')}</p>
+                </div>
+            </div>
+            <div class="report-stat-card">
+                <div class="stat-icon" style="background: #fef3c7;"><i class="fas fa-user-plus" style="color: #d97706;"></i></div>
+                <div class="stat-info">
+                    <h4>Yeni Müşteri</h4>
+                    <p class="stat-value">${report.newCustomers}</p>
+                </div>
+            </div>
+            <div class="report-stat-card">
+                <div class="stat-icon" style="background: #ede9fe;"><i class="fas fa-chart-line" style="color: #7c3aed;"></i></div>
+                <div class="stat-info">
+                    <h4>Ort. Sipariş Tutarı</h4>
+                    <p class="stat-value">₺${report.avgOrderValue.toLocaleString('tr-TR', {maximumFractionDigits: 0})}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h3><i class="fas fa-box"></i> Genel İstatistikler</h3>
+            <table class="report-table">
+                <tr>
+                    <td>Toplam Ürün Sayısı</td>
+                    <td><strong>${stats.totalProducts}</strong></td>
+                </tr>
+                <tr>
+                    <td>Aktif Ürün</td>
+                    <td><strong>${products.filter(p => p.status === 'active').length}</strong></td>
+                </tr>
+                <tr>
+                    <td>Stokta Olmayan Ürün</td>
+                    <td><strong class="text-danger">${products.filter(p => (p.stock || 0) === 0).length}</strong></td>
+                </tr>
+                <tr>
+                    <td>Düşük Stoklu Ürün (≤3)</td>
+                    <td><strong class="text-warning">${products.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= 3).length}</strong></td>
+                </tr>
+                <tr>
+                    <td>Toplam Müşteri</td>
+                    <td><strong>${stats.totalCustomers}</strong></td>
+                </tr>
+                <tr>
+                    <td>Anlaşmalı Marka</td>
+                    <td><strong>${stats.totalBrands}</strong></td>
+                </tr>
+                <tr>
+                    <td>Toplam Stok Değeri</td>
+                    <td><strong>₺${stats.totalValue.toLocaleString('tr-TR')}</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="report-section">
+            <h3><i class="fas fa-trophy"></i> En Çok Satan Ürünler</h3>
+            <p style="color: var(--admin-text-light); margin-bottom: 1rem;">Öne çıkan ürünler</p>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Ürün Adı</th>
+                        <th>Kategori</th>
+                        <th>Stok</th>
+                        <th>Fiyat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${products.filter(p => p.isFeatured && p.status === 'active').slice(0, 5).map(p => `
+                        <tr>
+                            <td>${p.title}</td>
+                            <td>${p.category}</td>
+                            <td>${p.stock || 0}</td>
+                            <td>${p.price}</td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="4" style="text-align:center;">Veri yok</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="report-footer">
+            <p><strong>DOĞUŞ ALIŞVERİŞ MERKEZİ</strong></p>
+            <p>Sultan Selim Mahallesi Sultan Selim Caddesi Sonbahar Sok No:13, İstanbul</p>
+            <p>Tel: +90 535 879 73 76 | +90 212 264 49 07</p>
+        </div>
+    `;
+    
+    document.getElementById('reportContent').innerHTML = reportHTML;
+}
+
+function exportReportPDF() {
+    const reportContent = document.getElementById('reportContent').innerHTML;
+    
+    if (reportContent.includes('empty-report')) {
+        showAdminNotification('Önce rapor oluşturun!', 'error');
+        return;
+    }
+    
+    // Basit PDF export (gerçek projede jsPDF kullanılabilir)
+    const printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Aylık Rapor - PDF</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 2rem; }
+                .report-header { text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #333; padding-bottom: 1rem; }
+                .report-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0; }
+                .report-stat-card { border: 1px solid #ddd; padding: 1rem; border-radius: 8px; }
+                .stat-value { font-size: 1.5rem; font-weight: bold; color: #D4AF37; }
+                .report-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+                .report-table th, .report-table td { border: 1px solid #ddd; padding: 0.75rem; text-align: left; }
+                .report-table thead { background: #f5f5f5; }
+                .report-section { margin: 2rem 0; }
+                .report-section h3 { background: #1e293b; color: white; padding: 0.75rem; margin-bottom: 1rem; }
+                .report-footer { margin-top: 3rem; text-align: center; font-size: 0.875rem; color: #666; border-top: 1px solid #ddd; padding-top: 1rem; }
+            </style>
+        </head>
+        <body>
+            ${reportContent}
+            <script>
+                window.onload = function() {
+                    window.print();
+                    window.onafterprint = function() { window.close(); };
+                };
+            </script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// ─── MESAJLAŞMA ────────────────────────────────────────────────────────────────
+
+function updateRecipients() {
+    const selected = document.querySelector('input[name="recipients"]:checked').value;
+    const customDiv = document.getElementById('customRecipients');
+    const customerList = document.getElementById('customerList');
+    const customers = getCustomers();
+    
+    document.getElementById('totalCustomers').textContent = customers.length;
+    
+    if (selected === 'custom') {
+        customDiv.style.display = 'block';
+        customerList.innerHTML = customers.map(c => `
+            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); cursor: pointer;">
+                <input type="checkbox" class="customer-checkbox" value="${c.id || c.email}">
+                <span><strong>${c.name || c.firstName + ' ' + c.lastName}</strong> - ${c.email || ''}</span>
+            </label>
+        `).join('');
+    } else {
+        customDiv.style.display = 'none';
+    }
+    
+    updateMessagePreview();
+}
+
+function updateMessagePreview() {
+    const title = document.getElementById('messageTitle').value || 'Başlık';
+    const content = document.getElementById('messageContent').value || 'Mesaj içeriği';
+    const sampleCustomer = { name: 'Ahmet Yılmaz', phone: '0555 123 45 67' };
+    
+    const preview = `
+<strong>${title}</strong>
+
+${content.replace('{AD}', sampleCustomer.name).replace('{TELEFON}', sampleCustomer.phone)}
+
+---
+DOĞUŞ ALIŞVERİŞ MERKEZİ
+    `.trim();
+    
+    document.getElementById('messagePreview').textContent = preview;
+}
+
+document.getElementById('messageTitle')?.addEventListener('input', updateMessagePreview);
+document.getElementById('messageContent')?.addEventListener('input', updateMessagePreview);
+
+function clearMessageForm() {
+    document.getElementById('messageTitle').value = '';
+    document.getElementById('messageContent').value = '';
+    document.querySelector('input[name="recipients"][value="all"]').checked = true;
+    updateRecipients();
+    updateMessagePreview();
+}
+
+function sendBulkMessage() {
+    const title = document.getElementById('messageTitle').value.trim();
+    const content = document.getElementById('messageContent').value.trim();
+    const recipientType = document.querySelector('input[name="recipients"]:checked').value;
+    const method = document.querySelector('input[name="method"]:checked').value;
+    
+    if (!title || !content) {
+        showAdminNotification('Başlık ve mesaj içeriği gerekli!', 'error');
+        return;
+    }
+    
+    let customers = getCustomers();
+    
+    if (recipientType === 'active') {
+        // Son 30 gün içinde sipariş verenler
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const orders = getOrders();
+        const activeCustomerIds = [...new Set(orders
+            .filter(o => new Date(o.createdAt) > thirtyDaysAgo)
+            .map(o => o.customerId)
+        )];
+        
+        customers = customers.filter(c => activeCustomerIds.includes(c.id));
+    } else if (recipientType === 'custom') {
+        const selected = Array.from(document.querySelectorAll('.customer-checkbox:checked')).map(cb => cb.value);
+        customers = customers.filter(c => selected.includes(c.id || c.email));
+    }
+    
+    if (customers.length === 0) {
+        showAdminNotification('Gönderilecek müşteri seçilmedi!', 'error');
+        return;
+    }
+    
+    // Gerçek bir projede burada API çağrısı yapılır
+    // Şimdi sadece simülasyon
+    
+    if (method === 'whatsapp') {
+        // WhatsApp Business API entegrasyonu
+        const message = `*${title}*\n\n${content}\n\n---\nDOĞUŞ ALIŞVERİŞ MERKEZİ`;
+        const firstCustomer = customers[0];
+        const phone = (firstCustomer.phone || '').replace(/\D/g, '');
+        
+        if (phone) {
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            showAdminNotification(`${customers.length} müşteriye WhatsApp mesajı hazırlandı!`);
+        } else {
+            showAdminNotification('Müşterilerde telefon numarası bulunamadı!', 'error');
+        }
+    } else if (method === 'sms') {
+        showAdminNotification(`${customers.length} müşteriye SMS gönderildi! (Simülasyon)`);
+    } else if (method === 'email') {
+        showAdminNotification(`${customers.length} müşteriye e-posta gönderildi! (Simülasyon)`);
+    }
+    
+    // Mesaj geçmişine kaydet
+    saveMessageHistory({
+        title: title,
+        content: content,
+        recipients: customers.length,
+        method: method,
+        date: new Date().toISOString()
+    });
+}
+
+function saveMessageHistory(message) {
+    const history = JSON.parse(localStorage.getItem('dogusMessageHistory') || '[]');
+    history.unshift(message);
+    localStorage.setItem('dogusMessageHistory', JSON.stringify(history.slice(0, 20)));
+}
+
+// ─── BİLDİRİMLER ───────────────────────────────────────────────────────────────
+
+function loadNotifications() {
+    const notifications = getNotifications();
+    const container = document.getElementById('notificationsList');
+    
+    if (notifications.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--admin-text-light);">
+                <i class="fas fa-bell-slash" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>Henüz bildirim yok</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const typeIcons = {
+        'order': { icon: 'shopping-bag', color: '#3b82f6' },
+        'stock': { icon: 'exclamation-triangle', color: '#f59e0b' },
+        'customer': { icon: 'user-plus', color: '#10b981' },
+        'system': { icon: 'info-circle', color: '#6b7280' }
+    };
+    
+    container.innerHTML = notifications.map(n => {
+        const icon = typeIcons[n.type] || typeIcons.system;
+        return `
+            <div class="notification-item ${n.read ? 'read' : ''}" onclick="markNotificationRead('${n.id}')">
+                <div class="notification-icon" style="background: ${icon.color}20;">
+                    <i class="fas fa-${icon.icon}" style="color: ${icon.color};"></i>
+                </div>
+                <div class="notification-content">
+                    <h4>${n.title}</h4>
+                    <p>${n.message}</p>
+                    <small>${formatDate(n.createdAt)}</small>
+                </div>
+                ${!n.read ? '<span class="notification-badge"></span>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function markNotificationRead(id) {
+    markNotificationRead(id);
+    loadNotifications();
+}
+
+function markAllRead() {
+    const notifications = getNotifications();
+    notifications.forEach(n => n.read = true);
+    saveNotifications(notifications);
+    loadNotifications();
+    showAdminNotification('Tüm bildirimler okundu olarak işaretlendi');
+}
+
+function saveNotificationSettings() {
+    const settings = {
+        orders: document.getElementById('notifOrders').checked,
+        stock: document.getElementById('notifStock').checked,
+        customers: document.getElementById('notifCustomers').checked,
+        daily: document.getElementById('notifDaily').checked
+    };
+    localStorage.setItem('dogusNotificationSettings', JSON.stringify(settings));
+    showAdminNotification('Bildirim ayarları kaydedildi!');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+
+initReportSelects();
+updateRecipients();
+
+// Otomatik bildirim oluştur (demo)
+window.addEventListener('load', function() {
+    const products = getProducts();
+    const lowStockProducts = products.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= 3);
+    
+    if (lowStockProducts.length > 0) {
+        lowStockProducts.forEach(p => {
+            addNotification('stock', 'Düşük Stok Uyarısı', 
+                `${p.title} ürününün stok seviyesi düşük: ${p.stock} adet`);
+        });
+    }
+});
+</script>
+
+<style>
+/* Tab Styles */
+.admin-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--admin-border);
+}
+
+.admin-tab {
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: var(--admin-text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.admin-tab:hover {
+    color: var(--admin-accent);
+}
+
+.admin-tab.active {
+    color: var(--admin-accent);
+    border-bottom-color: var(--admin-accent);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Report Styles */
+.empty-report {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--admin-text-light);
+}
+
+.empty-report i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.report-content {
+    padding: 2rem;
+}
+
+.report-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--admin-border);
+}
+
+.report-header h2 {
+    color: var(--admin-primary);
+    margin-bottom: 0.5rem;
+}
+
+.report-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.report-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--admin-bg);
+    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.25rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--admin-accent);
+    margin-top: 0.25rem;
+}
+
+.report-section {
+    margin: 2rem 0;
+}
+
+.report-section h3 {
+    background: var(--admin-primary);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+    padding: 0.875rem;
+    text-align: left;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.report-table thead {
+    background: var(--admin-bg);
+}
+
+.report-footer {
+    margin-top: 3rem;
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 2px solid var(--admin-border);
+    color: var(--admin-text-light);
+    font-size: 0.875rem;
+}
+
+/* Notification Styles */
+.notifications-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--admin-border);
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.notification-item:hover {
+    background: var(--admin-bg);
+}
+
+.notification-item.read {
+    opacity: 0.6;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-content h4 {
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.notification-content p {
+    color: var(--admin-text-light);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.notification-content small {
+    color: var(--admin-text-light);
+    font-size: 0.75rem;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 10px;
+    height: 10px;
+    background: var(--admin-accent);
+    border-radius: 50%;
+}
+
+.notification-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: var(--admin-bg);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.setting-item input[type="checkbox"] {
+    width: 44px;
+    height: 24px;
+}
+
+.text-danger { color: var(--admin-danger); }
+.text-warning { color: var(--admin-warning); }
+</style>
+</body>
+</html>

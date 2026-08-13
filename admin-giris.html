@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Giriş - Doğuş</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-login-page">
+    <div class="admin-login-box">
+        <div style="text-align:center; margin-bottom:2rem">
+            <div style="width:60px;height:60px;background:var(--admin-primary);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+                <i class="fas fa-shield-alt" style="color:var(--admin-accent);font-size:1.5rem"></i>
+            </div>
+            <h1>Admin Paneli</h1>
+            <p>Doğuş Alışveriş Merkezi</p>
+        </div>
+
+        <form id="adminLoginForm" class="admin-form">
+            <div class="admin-form-group">
+                <label>E-posta</label>
+                <input type="email" id="adminEmail" placeholder="admin@dogus.com" required>
+            </div>
+            <div class="admin-form-group">
+                <label>Şifre</label>
+                <input type="password" id="adminPassword" placeholder="••••••••" required>
+            </div>
+            <div id="loginError" style="color:#ef4444;font-size:0.875rem;display:none"></div>
+            <button type="submit" class="btn-admin btn-admin-primary" style="width:100%;justify-content:center;padding:0.875rem">
+                <i class="fas fa-sign-in-alt"></i> Giriş Yap
+            </button>
+        </form>
+
+        <p style="text-align:center;margin-top:1.5rem;font-size:0.8rem;color:var(--admin-text-light)">
+            <a href="index.html" style="color:var(--admin-accent);text-decoration:none">← Siteye dön</a>
+        </p>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+    // Zaten giriş yapılmışsa yönlendir
+    if (localStorage.getItem('dogusAdminSession')) {
+        window.location.href = 'admin.html';
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+        const result = adminLogin(email, password);
+        if (result.success) {
+            window.location.href = 'admin.html';
+        } else {
+            const err = document.getElementById('loginError');
+            err.textContent = result.message;
+            err.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
