@@ -32,7 +32,7 @@ const firebaseConfig = {
 };
 
 // Firebase'i başlat
-let app, db, storage, auth;
+let app, db, storage;
 
 try {
   // Firebase SDK'ları yüklendiyse başlat
@@ -40,7 +40,6 @@ try {
     app = firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     storage = firebase.storage();
-    auth = firebase.auth();
     
     console.log('✅ Firebase başarıyla başlatıldı');
     
@@ -428,7 +427,6 @@ function isFirebaseReady() {
 window.firebase = firebase;
 window.db = db;
 window.storage = storage;
-window.auth = auth;
 
 // Helper fonksiyonları export et
 window.getProductsFromFirebase = getProductsFromFirebase;
