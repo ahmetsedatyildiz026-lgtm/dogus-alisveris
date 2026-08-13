@@ -120,10 +120,8 @@ async function deleteProduct(productId) {
     }
 }
 
-// ESKİ saveProducts fonksiyonu - artık kullanılmıyor ama geriye uyumluluk için
-function saveProducts(products) {
-    console.warn('⚠️ saveProducts() artık kullanılmıyor. addProduct() veya updateProduct() kullanın.');
-}
+// ESKİ saveProducts fonksiyonu - artık kullanılmıyor
+// Firebase async fonksiyonları kullanın: addProduct(), updateProduct(), deleteProduct()
 
 function getCustomers() {
     // Merge kayıtlı kullanıcılar
