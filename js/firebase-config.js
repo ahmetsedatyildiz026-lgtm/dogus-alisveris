@@ -1,57 +1,453 @@
-// Firebase Configuration
-// Bu dosyayı Firebase Console'dan aldığınız config ile doldurun
-// https://console.firebase.google.com → Project Settings → Your Apps → Web App
+// ===== FIREBASE CONFIGURATION =====
+// Firebase Console'dan alınan config bilgileri buraya girilecek
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+// FIREBASE KURULUM ADIMLARI:
+// 1. https://console.firebase.google.com/ adresine git
+// 2. "Add project" veya "Proje ekle" butonuna tıkla
+// 3. Proje adı: "dogus-alisveris" (veya istediğin bir isim)
+// 4. Google Analytics: İsteğe bağlı (şimdilik hayır diyebilirsin)
+// 5. Proje oluşturulduktan sonra:
+//    - Sol menüden "Build" → "Firestore Database" → "Create database"
+//    - Mode: "Start in test mode" seç (geliştirme için)
+//    - Location: "europe-west" seç (Avrupa sunucusu)
+// 6. Sol menüden "Build" → "Storage" → "Get started"
+//    - Mode: "Start in test mode" seç
+// 7. Sol menüden "Project Settings" (⚙️ ikonu) → "General" tab
+//    - Aşağı kaydır, "Your apps" bölümünde "Web" (</>)  ikonuna tıkla
+//    - App nickname: "dogus-web"
+//    - Firebase Hosting: Hayır (GitHub Pages kullanıyoruz)
+//    - "Register app" butonuna tıkla
+//    - Açılan config kodunu aşağıya kopyala
 
-// ⚠️ BURAYA KENDİ FİREBASE CONFIG'İNİZİ GİRİN
+// ========================================
+// BU KISMI FIREBASE CONSOLE'DAN DOLDUR:
+// ========================================
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "BURAYA_API_KEY_GELECEK",
+  authDomain: "BURAYA_AUTH_DOMAIN_GELECEK",
+  projectId: "BURAYA_PROJECT_ID_GELECEK",
+  storageBucket: "BURAYA_STORAGE_BUCKET_GELECEK",
+  messagingSenderId: "BURAYA_MESSAGING_SENDER_ID_GELECEK",
+  appId: "BURAYA_APP_ID_GELECEK"
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const googleProvider = new GoogleAuthProvider();
+// Firebase'i başlat
+let app, db, storage, auth;
 
-/*
-FIREBASE KURULUM ADIMLARI:
-1. https://console.firebase.google.com adresine gidin
-2. "Create a project" → proje adı girin (örn: dogus-alisveris)
-3. Google Analytics: isteğe bağlı
-4. Project Settings → Your apps → Web app ekle (</>)
-5. Yukarıdaki firebaseConfig'i kopyala-yapıştır
-6. Authentication → Sign-in method → Email/Password + Google aç
-7. Firestore Database → Create database → Production mode
-8. Storage → Get started
-9. Firestore Rules:
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /users/{userId} {
-         allow read, write: if request.auth.uid == userId;
-       }
-       match /products/{productId} {
-         allow read: if true;
-         allow write: if request.auth != null && 
-           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
-       }
-       match /orders/{orderId} {
-         allow read, write: if request.auth != null;
-       }
-       match /admins/{adminId} {
-         allow read: if request.auth.uid == adminId;
-         allow write: if false;
-       }
-     }
-   }
-*/
+try {
+  // Firebase SDK'ları yüklendiyse başlat
+  if (typeof firebase !== 'undefined') {
+    app = firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    storage = firebase.storage();
+    auth = firebase.auth();
+    
+    console.log('✅ Firebase başarıyla başlatıldı');
+    
+    // Firestore offline persistence (çevrimdışı çalışma)
+    db.enablePersistence({ synchronizeTabs: true })
+      .catch((err) => {
+        if (err.code == 'failed-precondition') {
+          console.warn('⚠️ Persistence sadece bir tab\'ta aktif olabilir');
+        } else if (err.code == 'unimplemented') {
+          console.warn('⚠️ Tarayıcı offline persistence desteklemiyor');
+        }
+      });
+  } else {
+    console.error('❌ Firebase SDK yüklenmedi! HTML dosyalarında Firebase script taglerini kontrol et.');
+  }
+} catch (error) {
+  console.error('❌ Firebase başlatma hatası:', error);
+}
+
+// ===== FİREBASE HELPER FUNCTIONS =====
+
+// Firestore koleksiyonları
+const COLLECTIONS = {
+  PRODUCTS: 'products',
+  BRANDS: 'brands',
+  CUSTOMERS: 'customers',
+  ORDERS: 'orders',
+  CATEGORIES: 'categories',
+  SETTINGS: 'settings'
+};
+
+// ===== ÜRÜN İŞLEMLERİ =====
+
+/**
+ * Tüm ürünleri getir
+ */
+async function getProductsFromFirebase() {
+  try {
+    const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
+    const products = [];
+    snapshot.forEach(doc => {
+      products.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    console.log(`✅ ${products.length} ürün Firebase'den yüklendi`);
+    return products;
+  } catch (error) {
+    console.error('❌ Ürünler yüklenemedi:', error);
+    return [];
+  }
+}
+
+/**
+ * Tek ürün getir
+ */
+async function getProductByIdFromFirebase(productId) {
+  try {
+    const doc = await db.collection(COLLECTIONS.PRODUCTS).doc(productId).get();
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('❌ Ürün yüklenemedi:', error);
+    return null;
+  }
+}
+
+/**
+ * Ürün ekle
+ */
+async function addProductToFirebase(product) {
+  try {
+    const docRef = await db.collection(COLLECTIONS.PRODUCTS).add({
+      ...product,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Ürün eklendi:', docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Ürün eklenemedi:', error);
+    throw error;
+  }
+}
+
+/**
+ * Ürün güncelle
+ */
+async function updateProductInFirebase(productId, updates) {
+  try {
+    await db.collection(COLLECTIONS.PRODUCTS).doc(productId).update({
+      ...updates,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Ürün güncellendi:', productId);
+    return true;
+  } catch (error) {
+    console.error('❌ Ürün güncellenemedi:', error);
+    throw error;
+  }
+}
+
+/**
+ * Ürün sil
+ */
+async function deleteProductFromFirebase(productId) {
+  try {
+    await db.collection(COLLECTIONS.PRODUCTS).doc(productId).delete();
+    console.log('✅ Ürün silindi:', productId);
+    return true;
+  } catch (error) {
+    console.error('❌ Ürün silinemedi:', error);
+    throw error;
+  }
+}
+
+// ===== MARKA İŞLEMLERİ =====
+
+/**
+ * Tüm markaları getir
+ */
+async function getBrandsFromFirebase() {
+  try {
+    const doc = await db.collection(COLLECTIONS.BRANDS).doc('brandsList').get();
+    if (doc.exists) {
+      return doc.data().brands || {};
+    }
+    return {};
+  } catch (error) {
+    console.error('❌ Markalar yüklenemedi:', error);
+    return {};
+  }
+}
+
+/**
+ * Markaları kaydet
+ */
+async function saveBrandsToFirebase(brands) {
+  try {
+    await db.collection(COLLECTIONS.BRANDS).doc('brandsList').set({
+      brands: brands,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    console.log('✅ Markalar kaydedildi');
+    return true;
+  } catch (error) {
+    console.error('❌ Markalar kaydedilemedi:', error);
+    throw error;
+  }
+}
+
+// ===== DOSYA YÜKLEME (STORAGE) =====
+
+/**
+ * Fotoğraf yükle
+ * @param {File} file - Yüklenecek dosya
+ * @param {string} folder - Klasör adı (products, brands, etc.)
+ * @returns {Promise<string>} - Download URL
+ */
+async function uploadImageToFirebase(file, folder = 'products') {
+  try {
+    const fileName = `${folder}/${Date.now()}_${file.name}`;
+    const storageRef = storage.ref(fileName);
+    
+    // Metadata ekle
+    const metadata = {
+      contentType: file.type,
+      customMetadata: {
+        uploadedAt: new Date().toISOString()
+      }
+    };
+    
+    // Dosyayı yükle
+    const snapshot = await storageRef.put(file, metadata);
+    
+    // Download URL al
+    const downloadURL = await snapshot.ref.getDownloadURL();
+    
+    console.log('✅ Dosya yüklendi:', downloadURL);
+    return downloadURL;
+  } catch (error) {
+    console.error('❌ Dosya yüklenemedi:', error);
+    throw error;
+  }
+}
+
+/**
+ * Birden fazla fotoğraf yükle
+ */
+async function uploadMultipleImagesToFirebase(files, folder = 'products') {
+  try {
+    const uploadPromises = Array.from(files).map(file => 
+      uploadImageToFirebase(file, folder)
+    );
+    const urls = await Promise.all(uploadPromises);
+    console.log(`✅ ${urls.length} dosya yüklendi`);
+    return urls;
+  } catch (error) {
+    console.error('❌ Dosyalar yüklenemedi:', error);
+    throw error;
+  }
+}
+
+/**
+ * Storage'dan dosya sil
+ */
+async function deleteImageFromFirebase(imageUrl) {
+  try {
+    // URL'den storage path çıkar
+    const path = imageUrl.split('/o/')[1].split('?')[0];
+    const decodedPath = decodeURIComponent(path);
+    
+    const storageRef = storage.ref(decodedPath);
+    await storageRef.delete();
+    
+    console.log('✅ Dosya silindi:', decodedPath);
+    return true;
+  } catch (error) {
+    console.error('❌ Dosya silinemedi:', error);
+    throw error;
+  }
+}
+
+// ===== MÜŞTERİ İŞLEMLERİ =====
+
+async function getCustomersFromFirebase() {
+  try {
+    const snapshot = await db.collection(COLLECTIONS.CUSTOMERS).get();
+    const customers = [];
+    snapshot.forEach(doc => {
+      customers.push({ id: doc.id, ...doc.data() });
+    });
+    return customers;
+  } catch (error) {
+    console.error('❌ Müşteriler yüklenemedi:', error);
+    return [];
+  }
+}
+
+async function addCustomerToFirebase(customer) {
+  try {
+    const docRef = await db.collection(COLLECTIONS.CUSTOMERS).add({
+      ...customer,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Müşteri eklenemedi:', error);
+    throw error;
+  }
+}
+
+// ===== SİPARİŞ İŞLEMLERİ =====
+
+async function getOrdersFromFirebase() {
+  try {
+    const snapshot = await db.collection(COLLECTIONS.ORDERS).get();
+    const orders = [];
+    snapshot.forEach(doc => {
+      orders.push({ id: doc.id, ...doc.data() });
+    });
+    return orders;
+  } catch (error) {
+    console.error('❌ Siparişler yüklenemedi:', error);
+    return [];
+  }
+}
+
+async function addOrderToFirebase(order) {
+  try {
+    const docRef = await db.collection(COLLECTIONS.ORDERS).add({
+      ...order,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Sipariş eklenemedi:', error);
+    throw error;
+  }
+}
+
+// ===== GERÇEK ZAMANLI DİNLEYİCİLER =====
+
+/**
+ * Ürünleri gerçek zamanlı dinle
+ */
+function listenToProducts(callback) {
+  return db.collection(COLLECTIONS.PRODUCTS).onSnapshot(snapshot => {
+    const products = [];
+    snapshot.forEach(doc => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+    callback(products);
+  }, error => {
+    console.error('❌ Ürün dinleme hatası:', error);
+  });
+}
+
+/**
+ * Markaları gerçek zamanlı dinle
+ */
+function listenToBrands(callback) {
+  return db.collection(COLLECTIONS.BRANDS).doc('brandsList').onSnapshot(doc => {
+    if (doc.exists) {
+      callback(doc.data().brands || {});
+    } else {
+      callback({});
+    }
+  }, error => {
+    console.error('❌ Marka dinleme hatası:', error);
+  });
+}
+
+// ===== MIGRATION: LOCALSTORAGE → FIREBASE =====
+
+/**
+ * LocalStorage'daki tüm verileri Firebase'e taşı (bir kere çalıştırılacak)
+ */
+async function migrateLocalStorageToFirebase() {
+  try {
+    console.log('🔄 LocalStorage → Firebase migrasyonu başlatılıyor...');
+    
+    // Ürünleri taşı
+    const localProducts = JSON.parse(localStorage.getItem('dogusAdminProducts') || '[]');
+    if (localProducts.length > 0) {
+      console.log(`📦 ${localProducts.length} ürün taşınıyor...`);
+      for (const product of localProducts) {
+        await addProductToFirebase(product);
+      }
+      console.log('✅ Ürünler Firebase\'e taşındı');
+    }
+    
+    // Markaları taşı
+    const localBrands = JSON.parse(localStorage.getItem('dogusBrands') || '{}');
+    if (Object.keys(localBrands).length > 0) {
+      console.log(`🏷️ Markalar taşınıyor...`);
+      await saveBrandsToFirebase(localBrands);
+      console.log('✅ Markalar Firebase\'e taşındı');
+    }
+    
+    // Müşterileri taşı
+    const localCustomers = JSON.parse(localStorage.getItem('dogusCustomers') || '[]');
+    if (localCustomers.length > 0) {
+      console.log(`👥 ${localCustomers.length} müşteri taşınıyor...`);
+      for (const customer of localCustomers) {
+        await addCustomerToFirebase(customer);
+      }
+      console.log('✅ Müşteriler Firebase\'e taşındı');
+    }
+    
+    console.log('✅ Migrasyon tamamlandı!');
+    console.log('⚠️ LocalStorage verileri korundu (manuel silebilirsiniz)');
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Migrasyon hatası:', error);
+    throw error;
+  }
+}
+
+// ===== YARDIMCI FONKSİYONLAR =====
+
+/**
+ * Firebase bağlantı durumunu kontrol et
+ */
+function checkFirebaseConnection() {
+  if (!db) {
+    console.error('❌ Firebase bağlantısı yok!');
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Firebase hazır mı?
+ */
+function isFirebaseReady() {
+  return typeof firebase !== 'undefined' && db !== undefined;
+}
+
+// Global scope'a ekle
+window.firebase = firebase;
+window.db = db;
+window.storage = storage;
+window.auth = auth;
+
+// Helper fonksiyonları export et
+window.getProductsFromFirebase = getProductsFromFirebase;
+window.getProductByIdFromFirebase = getProductByIdFromFirebase;
+window.addProductToFirebase = addProductToFirebase;
+window.updateProductInFirebase = updateProductInFirebase;
+window.deleteProductFromFirebase = deleteProductFromFirebase;
+window.getBrandsFromFirebase = getBrandsFromFirebase;
+window.saveBrandsToFirebase = saveBrandsToFirebase;
+window.uploadImageToFirebase = uploadImageToFirebase;
+window.uploadMultipleImagesToFirebase = uploadMultipleImagesToFirebase;
+window.deleteImageFromFirebase = deleteImageFromFirebase;
+window.getCustomersFromFirebase = getCustomersFromFirebase;
+window.addCustomerToFirebase = addCustomerToFirebase;
+window.getOrdersFromFirebase = getOrdersFromFirebase;
+window.addOrderToFirebase = addOrderToFirebase;
+window.listenToProducts = listenToProducts;
+window.listenToBrands = listenToBrands;
+window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
+window.checkFirebaseConnection = checkFirebaseConnection;
+window.isFirebaseReady = isFirebaseReady;
+window.COLLECTIONS = COLLECTIONS;
