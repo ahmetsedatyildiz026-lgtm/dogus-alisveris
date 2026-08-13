@@ -203,52 +203,78 @@ function getDashboardStats() {
     };
 }
 
-// ─── PRODUCT CRUD ─────────────────────────────────────────────────────────────
+// ─── PRODUCT CRUD (Firebase) ──────────────────────────────────────────────────
 
-function addProduct(productData) {
-    const products = getProducts();
-    const product = {
-        id: 'prod_' + Date.now(),
-        ...productData,
-        isFeatured: productData.isFeatured || false,
-        isActive: productData.isActive !== false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-    products.push(product);
-    saveProducts(products);
-    
-    // Site ile senkronizasyon için event dispatch
-    window.dispatchEvent(new CustomEvent('productsUpdated', { 
-        detail: { products: getProducts() } 
-    }));
-    
-    return product;
+// Yeni ürün ekle - Firebase'e direkt
+async function addProduct(productData) {
+    try {
+        if (!db) {
+            throw new Error('Firebase bağlantısı yok!');
+        }
+        
+        const product = {
+            ...productData,
+            isFeatured: productData.isFeatured || false,
+            isActive: productData.isActive !== false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        const docRef = await db.collection('products').add(product);
+        console.log('✅ Ürün Firebase\'e eklendi:', docRef.id);
+        
+        // Site ile senkronizasyon için event dispatch
+        window.dispatchEvent(new CustomEvent('productsUpdated'));
+        
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Ürün eklenemedi:', error);
+        throw error;
+    }
 }
 
-function updateProduct(id, productData) {
-    const products = getProducts();
-    const idx = products.findIndex(p => p.id === id);
-    if (idx === -1) return null;
-    products[idx] = { ...products[idx], ...productData, updatedAt: new Date().toISOString() };
-    saveProducts(products);
-    
-    // Site ile senkronizasyon için event dispatch
-    window.dispatchEvent(new CustomEvent('productsUpdated', { 
-        detail: { products: getProducts() } 
-    }));
-    
-    return products[idx];
+// Ürün güncelle - Firebase'de direkt
+async function updateProduct(id, productData) {
+    try {
+        if (!db) {
+            throw new Error('Firebase bağlantısı yok!');
+        }
+        
+        await db.collection('products').doc(id).update({
+            ...productData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Ürün güncellendi:', id);
+        
+        // Site ile senkronizasyon için event dispatch
+        window.dispatchEvent(new CustomEvent('productsUpdated'));
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Ürün güncellenemedi:', error);
+        throw error;
+    }
 }
 
-function deleteProduct(id) {
-    const products = getProducts().filter(p => p.id !== id);
-    saveProducts(products);
-    
-    // Site ile senkronizasyon için event dispatch
-    window.dispatchEvent(new CustomEvent('productsUpdated', { 
-        detail: { products: getProducts() } 
-    }));
+// Ürün sil - Firebase'den direkt
+async function deleteProduct(id) {
+    try {
+        if (!db) {
+            throw new Error('Firebase bağlantısı yok!');
+        }
+        
+        await db.collection('products').doc(id).delete();
+        console.log('✅ Ürün silindi:', id);
+        
+        // Site ile senkronizasyon için event dispatch
+        window.dispatchEvent(new CustomEvent('productsUpdated'));
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Ürün silinemedi:', error);
+        throw error;
+    }
 }
 
 // ─── STOCK CRUD ───────────────────────────────────────────────────────────────
