@@ -32,73 +32,97 @@ function adminLogout() {
 
 // ─── DATA HELPERS ────────────────────────────────────────────────────────────
 
-// ===== ÜRÜN FONKSİYONLARI (Firebase ÖNCE, LocalStorage Fallback) =====
+// ===== ÜRÜN FONKSİYONLARI (SADECE Firebase) =====
 
-// Senkron getProducts - LocalStorage'dan oku (sayfa yüklemesi için)
-function getProducts() {
-    const data = localStorage.getItem('dogusAdminProducts');
-    return data ? JSON.parse(data) : [];
-}
-
-// Asenkron getProductsAsync - Firebase'den oku (gerçek veri)
-async function getProductsAsync() {
-    if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
-        try {
-            console.log('🔥 Ürünler Firebase\'den yükleniyor...');
-            const snapshot = await db.collection('products').get();
-            const products = [];
-            snapshot.forEach(doc => {
-                products.push({ id: doc.id, ...doc.data() });
-            });
-            
-            // LocalStorage'a cache olarak kaydet
-            localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
-            
-            console.log('✅ Firebase\'den', products.length, 'ürün yüklendi');
-            return products;
-        } catch (error) {
-            console.error('❌ Firebase okuma hatası:', error);
-            // Hata durumunda LocalStorage'dan oku
-            return getProducts();
-        }
-    } else {
-        // Firebase yoksa LocalStorage'dan oku
-        return getProducts();
-    }
-}
-
-function saveProducts(products) {
-    // LocalStorage'a anında kaydet (UI için)
-    localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
-    
-    // Firebase'e de kaydet (senkronizasyon için)
-    if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
-        syncProductsToFirebase(products).catch(err => {
-            console.warn('⚠️ Firebase senkronizasyonu başarısız:', err);
-        });
-    }
-}
-
-// Firebase senkronizasyonu (arka planda çalışır)
-async function syncProductsToFirebase(products) {
-    if (!isFirebaseReady()) return;
-    
+// SADECE Firebase'den oku
+async function getProducts() {
     try {
-        // Tüm ürünleri Firebase'e kaydet
-        const promises = products.map(async (product) => {
-            const docRef = db.collection('products').doc(product.id);
-            await docRef.set({
-                ...product,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+        if (!db) {
+            console.error('❌ Firebase bağlantısı yok!');
+            return [];
+        }
+        
+        console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+        const snapshot = await db.collection('products').get();
+        const products = [];
+        snapshot.forEach(doc => {
+            products.push({ id: doc.id, ...doc.data() });
         });
         
-        await Promise.all(promises);
-        console.log('✅ Firebase senkronize edildi:', products.length, 'ürün');
+        console.log(`✅ ${products.length} ürün Firebase'den yüklendi`);
+        return products;
     } catch (error) {
-        console.error('❌ Firebase senkronizasyon hatası:', error);
+        console.error('❌ Firebase okuma hatası:', error);
+        return [];
+    }
+}
+
+// Geriye uyumluluk için
+async function getProductsAsync() {
+    return await getProducts();
+}
+
+// Tek ürün ekle
+async function addProduct(product) {
+    try {
+        if (!db) {
+            throw new Error('Firebase bağlantısı yok!');
+        }
+        
+        const productData = {
+            ...product,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        const docRef = await db.collection('products').add(productData);
+        console.log('✅ Ürün Firebase\'e eklendi:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Ürün eklenemedi:', error);
         throw error;
     }
+}
+
+// Ürün güncelle
+async function updateProduct(productId, updates) {
+    try {
+        if (!db) {
+            throw new Error('Firebase bağlantısı yok!');
+        }
+        
+        await db.collection('products').doc(productId).update({
+            ...updates,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Ürün güncellendi:', productId);
+        return true;
+    } catch (error) {
+        console.error('❌ Ürün güncellenemedi:', error);
+        throw error;
+    }
+}
+
+// Ürün sil
+async function deleteProduct(productId) {
+    try {
+        if (!db) {
+            throw new Error('Firebase bağlantısı yok!');
+        }
+        
+        await db.collection('products').doc(productId).delete();
+        console.log('✅ Ürün silindi:', productId);
+        return true;
+    } catch (error) {
+        console.error('❌ Ürün silinemedi:', error);
+        throw error;
+    }
+}
+
+// ESKİ saveProducts fonksiyonu - artık kullanılmıyor ama geriye uyumluluk için
+function saveProducts(products) {
+    console.warn('⚠️ saveProducts() artık kullanılmıyor. addProduct() veya updateProduct() kullanın.');
 }
 
 function getCustomers() {

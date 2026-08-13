@@ -394,15 +394,17 @@ function getSpecs() {
 }
 
 // ─── MODAL ────────────────────────────────────────────────────
-function openProductModal(productId = null) {
+async function openProductModal(productId = null) {
     editingProductId = productId;
     productImages = ['', '', '', '', '', ''];
     document.getElementById('specsContainer').innerHTML = '';
 
     if (productId) {
         // Edit mode
-        const p = getProducts().find(p => p.id === productId);
+        const products = await getProducts();
+        const p = products.find(p => p.id === productId);
         if (!p) return;
+        
         document.getElementById('modalTitle').textContent = 'Ürünü Düzenle';
         document.getElementById('prodName').value = p.title || '';
         document.getElementById('prodBrand').value = p.brand || '';
@@ -441,7 +443,7 @@ function closeProductModal() {
 }
 
 // ─── SAVE ─────────────────────────────────────────────────────
-function saveProduct() {
+async function saveProduct() {
     console.log('💾 saveProduct çağrıldı');
     
     const name = document.getElementById('prodName').value.trim();
@@ -450,17 +452,12 @@ function saveProduct() {
     const price = document.getElementById('prodPrice').value;
     const description = document.getElementById('prodDescription').value.trim();
 
-    console.log('📝 Form değerleri:', { name, brand, category, price, description });
-
     if (!name || !brand || !category || !price || !description) {
-        console.error('❌ Zorunlu alanlar eksik!');
         showAdminNotification('Zorunlu alanları doldurun!', 'error');
         return;
     }
 
     const validImages = productImages.filter(Boolean);
-    console.log('🖼️ Geçerli fotoğraf sayısı:', validImages.length);
-    
     const originalPrice = document.getElementById('prodOriginalPrice').value;
     const specs = getSpecs();
     specs['Marka'] = brand;
@@ -477,51 +474,38 @@ function saveProduct() {
         description: description,
         images: validImages,
         image: validImages[0] || '',
-        specifications: specs,
-        id: editingProductId || ('prod_' + Date.now()),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        specifications: specs
     };
 
-    console.log('📦 Ürün verisi hazırlandı:', productData);
-
     try {
-        // LocalStorage'a doğrudan kaydet
-        const products = JSON.parse(localStorage.getItem('dogusAdminProducts') || '[]');
-        console.log('📚 Mevcut ürün sayısı:', products.length);
-        
         if (editingProductId) {
-            const idx = products.findIndex(p => p.id === editingProductId);
-            if (idx !== -1) {
-                products[idx] = { ...products[idx], ...productData };
-                console.log('✏️ Ürün güncellendi, index:', idx);
-            }
+            // Güncelleme
+            await updateProduct(editingProductId, productData);
+            showAdminNotification('✅ Ürün güncellendi!', 'success');
         } else {
-            products.push(productData);
-            console.log('✅ Yeni ürün eklendi, toplam:', products.length);
+            // Yeni ekleme
+            const newId = await addProduct(productData);
+            console.log('✅ Yeni ürün ID:', newId);
+            showAdminNotification('✅ Ürün Firebase\'e eklendi!', 'success');
         }
         
-        localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
-        console.log('💾 localStorage\'a kaydedildi!');
-        
-        showAdminNotification(editingProductId ? 'Ürün güncellendi!' : 'Ürün eklendi!', 'success');
-        
         closeProductModal();
-        renderProducts();
+        await renderProducts();
         
-        console.log('✅ İşlem tamamlandı!');
     } catch (error) {
-        console.error('❌ HATA:', error);
-        showAdminNotification('Ürün kaydedilemedi: ' + error.message, 'error');
+        console.error('❌ Kaydetme hatası:', error);
+        showAdminNotification('❌ Hata: ' + error.message, 'error');
     }
 }
 
 // ─── DELETE ───────────────────────────────────────────────────
 function openDeleteModal(id) {
     deletingProductId = id;
-    const p = getProducts().find(p => p.id === id);
-    document.getElementById('deleteProductName').textContent = p ? p.title : '';
-    document.getElementById('deleteModal').classList.add('show');
+    getProducts().then(products => {
+        const p = products.find(p => p.id === id);
+        document.getElementById('deleteProductName').textContent = p ? p.title : '';
+        document.getElementById('deleteModal').classList.add('show');
+    });
 }
 
 function closeDeleteModal() {
@@ -529,12 +513,17 @@ function closeDeleteModal() {
     deletingProductId = null;
 }
 
-function confirmDelete() {
+async function confirmDelete() {
     if (!deletingProductId) return;
-    deleteProduct(deletingProductId);
-    showAdminNotification('Ürün silindi!', 'error');
-    closeDeleteModal();
-    renderProducts();
+    
+    try {
+        await deleteProduct(deletingProductId);
+        showAdminNotification('✅ Ürün silindi!', 'success');
+        closeDeleteModal();
+        await renderProducts();
+    } catch (error) {
+        showAdminNotification('❌ Hata: ' + error.message, 'error');
+    }
 }
 
 // ─── RENDER ───────────────────────────────────────────────────
@@ -542,8 +531,8 @@ async function renderProducts() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
     
-    // Firebase'den yükle (eğer hazırsa)
-    let products = await getProductsAsync();
+    // Firebase'den yükle
+    let products = await getProducts();
 
     if (search) {
         products = products.filter(p =>
