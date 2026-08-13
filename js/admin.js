@@ -32,13 +32,51 @@ function adminLogout() {
 
 // ─── DATA HELPERS ────────────────────────────────────────────────────────────
 
+// ===== ÜRÜN FONKSİYONLARI (Firebase + LocalStorage Hybrid) =====
+
 function getProducts() {
+    // Her zaman LocalStorage'dan oku (senkronize)
     const data = localStorage.getItem('dogusAdminProducts');
     return data ? JSON.parse(data) : [];
 }
 
 function saveProducts(products) {
+    // LocalStorage'a kaydet (anında)
     localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
+    
+    // Firebase'e de kaydet (arka planda) - eğer Firebase hazırsa
+    if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
+        syncProductsToFirebase(products).catch(err => {
+            console.warn('⚠️ Firebase senkronizasyonu başarısız:', err);
+        });
+    }
+}
+
+// Firebase senkronizasyonu (arka planda çalışır)
+async function syncProductsToFirebase(products) {
+    if (!isFirebaseReady()) return;
+    
+    try {
+        // Mevcut Firebase ürünlerini al
+        const snapshot = await db.collection('products').get();
+        const existingIds = new Set();
+        snapshot.forEach(doc => existingIds.add(doc.id));
+        
+        // Yeni/güncel ürünleri Firebase'e kaydet
+        const promises = products.map(async (product) => {
+            const docRef = db.collection('products').doc(product.id);
+            await docRef.set({
+                ...product,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        });
+        
+        await Promise.all(promises);
+        console.log('✅ Firebase senkronize edildi:', products.length, 'ürün');
+    } catch (error) {
+        console.error('❌ Firebase senkronizasyon hatası:', error);
+        throw error;
+    }
 }
 
 function getCustomers() {
