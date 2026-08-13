@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: white;
+            border-left: 4px solid #ddd;
+        }
+        .status.success { border-color: #22c55e; }
+        .status.error { border-color: #ef4444; }
+        .status.warning { border-color: #f59e0b; }
+        pre {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Bağlantı Testi</h1>
+    
+    <div id="status"></div>
+    
+    <div style="margin: 20px 0;">
+        <button onclick="testFirebase()">Firebase Bağlantısını Test Et</button>
+        <button onclick="loadProducts()">Ürünleri Yükle</button>
+        <button onclick="addTestProduct()">Test Ürünü Ekle</button>
+    </div>
+    
+    <pre id="console"></pre>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            const line = `[${timestamp}] ${message}\n`;
+            consoleDiv.textContent += line;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function showStatus(message, type = 'success') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Sayfa yüklenince otomatik test
+        window.addEventListener('load', () => {
+            log('Sayfa yüklendi');
+            
+            setTimeout(() => {
+                if (typeof firebase === 'undefined') {
+                    showStatus('❌ Firebase SDK yüklenmedi!', 'error');
+                    log('HATA: Firebase SDK bulunamadı');
+                } else {
+                    log('✅ Firebase SDK yüklendi');
+                    testFirebase();
+                }
+            }, 1000);
+        });
+        
+        function testFirebase() {
+            log('🔍 Firebase bağlantısı test ediliyor...');
+            
+            if (typeof firebase === 'undefined') {
+                showStatus('❌ Firebase SDK yüklenmedi!', 'error');
+                log('HATA: Firebase undefined');
+                return;
+            }
+            
+            if (typeof db === 'undefined' || !db) {
+                showStatus('❌ Firestore bağlantısı yok!', 'error');
+                log('HATA: db undefined');
+                return;
+            }
+            
+            if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
+                showStatus('✅ Firebase hazır ve bağlı!', 'success');
+                log('✅ Firebase bağlantısı başarılı');
+                log('Firebase config:', 'info');
+                log(`  - Project ID: ${firebase.app().options.projectId}`);
+                log(`  - Auth Domain: ${firebase.app().options.authDomain}`);
+            } else {
+                showStatus('⚠️ Firebase henüz hazır değil', 'warning');
+                log('UYARI: isFirebaseReady() false döndü');
+            }
+        }
+        
+        async function loadProducts() {
+            log('📦 Ürünler yükleniyor...');
+            
+            if (!isFirebaseReady()) {
+                showStatus('❌ Firebase hazır değil!', 'error');
+                log('HATA: Firebase bağlantısı yok');
+                return;
+            }
+            
+            try {
+                const snapshot = await db.collection('products').get();
+                const products = [];
+                snapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                showStatus(`✅ ${products.length} ürün yüklendi!`, 'success');
+                log(`✅ Firebase'den ${products.length} ürün yüklendi`);
+                
+                products.forEach((p, i) => {
+                    log(`  ${i + 1}. ${p.title} - ${p.price}`);
+                });
+                
+                // LocalStorage'a kaydet
+                localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
+                log('✅ LocalStorage\'a kaydedildi');
+                
+            } catch (error) {
+                showStatus('❌ Ürünler yüklenemedi: ' + error.message, 'error');
+                log('HATA: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        async function addTestProduct() {
+            log('➕ Test ürünü ekleniyor...');
+            
+            if (!isFirebaseReady()) {
+                showStatus('❌ Firebase hazır değil!', 'error');
+                return;
+            }
+            
+            const testProduct = {
+                title: `Test Ürün ${Date.now()}`,
+                brand: 'TEST MARKA',
+                category: 'beyaz-esya',
+                price: '₺' + Math.floor(Math.random() * 10000 + 1000),
+                status: 'active',
+                isFeatured: true,
+                stock: 10,
+                description: 'Telefon veya bilgisayardan eklenen test ürünü',
+                images: [],
+                image: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                const docRef = await db.collection('products').add(testProduct);
+                showStatus(`✅ Test ürünü eklendi: ${docRef.id}`, 'success');
+                log(`✅ Ürün Firebase'e eklendi: ${docRef.id}`);
+                log(`   Başlık: ${testProduct.title}`);
+                log(`   Fiyat: ${testProduct.price}`);
+                
+                // Ürünleri yeniden yükle
+                setTimeout(loadProducts, 500);
+                
+            } catch (error) {
+                showStatus('❌ Ürün eklenemedi: ' + error.message, 'error');
+                log('HATA: ' + error.message);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
