@@ -538,10 +538,12 @@ function confirmDelete() {
 }
 
 // ─── RENDER ───────────────────────────────────────────────────
-function renderProducts() {
+async function renderProducts() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
-    let products = getProducts();
+    
+    // Firebase'den yükle (eğer hazırsa)
+    let products = await getProductsAsync();
 
     if (search) {
         products = products.filter(p =>
@@ -615,6 +617,7 @@ document.getElementById('deleteModal').addEventListener('click', e => {
     if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
 });
 
+// Sayfa yüklendiğinde Firebase'den yükle
 renderProducts();
 </script>
 </body>

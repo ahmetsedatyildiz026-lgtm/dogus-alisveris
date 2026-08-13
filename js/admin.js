@@ -32,19 +32,46 @@ function adminLogout() {
 
 // ─── DATA HELPERS ────────────────────────────────────────────────────────────
 
-// ===== ÜRÜN FONKSİYONLARI (Firebase + LocalStorage Hybrid) =====
+// ===== ÜRÜN FONKSİYONLARI (Firebase ÖNCE, LocalStorage Fallback) =====
 
+// Senkron getProducts - LocalStorage'dan oku (sayfa yüklemesi için)
 function getProducts() {
-    // Her zaman LocalStorage'dan oku (senkronize)
     const data = localStorage.getItem('dogusAdminProducts');
     return data ? JSON.parse(data) : [];
 }
 
+// Asenkron getProductsAsync - Firebase'den oku (gerçek veri)
+async function getProductsAsync() {
+    if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
+        try {
+            console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+            const snapshot = await db.collection('products').get();
+            const products = [];
+            snapshot.forEach(doc => {
+                products.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // LocalStorage'a cache olarak kaydet
+            localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
+            
+            console.log('✅ Firebase\'den', products.length, 'ürün yüklendi');
+            return products;
+        } catch (error) {
+            console.error('❌ Firebase okuma hatası:', error);
+            // Hata durumunda LocalStorage'dan oku
+            return getProducts();
+        }
+    } else {
+        // Firebase yoksa LocalStorage'dan oku
+        return getProducts();
+    }
+}
+
 function saveProducts(products) {
-    // LocalStorage'a kaydet (anında)
+    // LocalStorage'a anında kaydet (UI için)
     localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
     
-    // Firebase'e de kaydet (arka planda) - eğer Firebase hazırsa
+    // Firebase'e de kaydet (senkronizasyon için)
     if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
         syncProductsToFirebase(products).catch(err => {
             console.warn('⚠️ Firebase senkronizasyonu başarısız:', err);
@@ -57,12 +84,7 @@ async function syncProductsToFirebase(products) {
     if (!isFirebaseReady()) return;
     
     try {
-        // Mevcut Firebase ürünlerini al
-        const snapshot = await db.collection('products').get();
-        const existingIds = new Set();
-        snapshot.forEach(doc => existingIds.add(doc.id));
-        
-        // Yeni/güncel ürünleri Firebase'e kaydet
+        // Tüm ürünleri Firebase'e kaydet
         const promises = products.map(async (product) => {
             const docRef = db.collection('products').doc(product.id);
             await docRef.set({
