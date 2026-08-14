@@ -52,7 +52,61 @@ class AuthSystem {
     }
 
     // Register new user
-    register(userData) {
+    async register(userData) {
+        // Firebase'e kaydet
+        try {
+            if (typeof db !== 'undefined' && db) {
+                // Email kontrolü
+                const emailCheck = await db.collection('customers')
+                    .where('email', '==', userData.email)
+                    .get();
+                
+                if (!emailCheck.empty) {
+                    return { success: false, message: 'Bu e-posta adresi zaten kayıtlı!' };
+                }
+
+                // Telefon kontrolü
+                if (userData.phone) {
+                    const phoneCheck = await db.collection('customers')
+                        .where('phone', '==', userData.phone)
+                        .get();
+                    
+                    if (!phoneCheck.empty) {
+                        return { success: false, message: 'Bu telefon numarası zaten kayıtlı!' };
+                    }
+                }
+
+                // Yeni kullanıcı oluştur
+                const newUser = {
+                    name: userData.name,
+                    email: userData.email,
+                    phone: userData.phone,
+                    address: userData.address || '',
+                    password: this.hashPassword(userData.password),
+                    provider: 'email',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                const docRef = await db.collection('customers').add(newUser);
+                
+                console.log('✅ Müşteri Firebase\'e kaydedildi:', docRef.id);
+                
+                // LocalStorage'a da kaydet (eski sistemle uyum için)
+                const users = this.getAllUsers();
+                users.push({
+                    id: docRef.id,
+                    ...newUser,
+                    createdAt: new Date().toISOString()
+                });
+                this.saveUsers(users);
+
+                return { success: true, message: 'Kayıt başarılı! Giriş yapabilirsiniz.' };
+            }
+        } catch (error) {
+            console.error('❌ Firebase kayıt hatası:', error);
+        }
+
+        // Fallback: LocalStorage
         const users = this.getAllUsers();
         
         // Check if email already exists

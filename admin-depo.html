@@ -261,10 +261,10 @@ function renderStats(all) {
     document.getElementById('statValue').textContent = formatCurrency(val);
 }
 
-function renderStock() {
+async function renderStock() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
-    const allStock = getStock();
+    const allStock = await getStock();
     renderStats(allStock);
 
     let items = allStock.filter(s => (s.type || 'depo') === currentTab);
@@ -311,7 +311,7 @@ function renderStock() {
             </td>
             <td><strong>${formatCurrency(total)}</strong></td>
             <td>${statusBadge}</td>
-            <td style="font-size:.8rem;color:var(--admin-text-light);white-space:nowrap">${formatDate(s.addedAt)}</td>
+            <td style="font-size:.8rem;color:var(--admin-text-light);white-space:nowrap">${formatDate(s.addedAt || s.createdAt)}</td>
             <td>
                 <div style="display:flex;gap:.4rem">
                     <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="openEditStock('${s.id}')" title="Düzenle">
@@ -326,10 +326,11 @@ function renderStock() {
     }).join('');
 }
 
-function openStockModal(id = null) {
+async function openStockModal(id = null) {
     editingStockId = id;
     if (id) {
-        const s = getStock().find(s => s.id === id);
+        const allStock = await getStock();
+        const s = allStock.find(s => s.id === id);
         if (!s) return;
         document.getElementById('stockModalTitle').textContent = 'Stok Düzenle';
         document.getElementById('stockName').value = s.name || '';
@@ -354,7 +355,7 @@ function closeStockModal() {
     editingStockId = null;
 }
 
-function saveStock() {
+async function saveStock() {
     const name = document.getElementById('stockName').value.trim();
     const price = document.getElementById('stockPrice').value;
     const qty = document.getElementById('stockQty').value;
@@ -363,29 +364,42 @@ function saveStock() {
         return;
     }
     const data = {
-        name, price: '₺' + parseFloat(price).toLocaleString('tr-TR'),
+        name, 
+        price: '₺' + parseFloat(price).toLocaleString('tr-TR'),
         brand: document.getElementById('stockBrand').value.trim(),
         category: document.getElementById('stockCategory').value,
         type: document.getElementById('stockType').value,
         quantity: parseInt(qty),
         notes: document.getElementById('stockNotes').value.trim()
     };
-    if (editingStockId) {
-        updateStockItem(editingStockId, data);
-        showAdminNotification('Stok güncellendi!');
-    } else {
-        addStockItem(data);
-        showAdminNotification('Stok girişi yapıldı!');
+    
+    try {
+        if (editingStockId) {
+            await updateStockItem(editingStockId, data);
+            showAdminNotification('Stok güncellendi!');
+        } else {
+            await addStockItem(data);
+            showAdminNotification('Stok girişi yapıldı!');
+        }
+        closeStockModal();
+        await renderStock();
+    } catch (error) {
+        console.error('❌ Stok kayıt hatası:', error);
+        showAdminNotification('Stok kaydedilemedi!', 'error');
     }
-    closeStockModal();
-    renderStock();
 }
 
-function removeStock(id) {
+async function removeStock(id) {
     if (!confirm('Bu stok kaydını silmek istediğinize emin misiniz?')) return;
-    deleteStockItem(id);
-    renderStock();
-    showAdminNotification('Stok silindi!', 'error');
+    
+    try {
+        await deleteStockItem(id);
+        await renderStock();
+        showAdminNotification('Stok silindi!', 'error');
+    } catch (error) {
+        console.error('❌ Stok silme hatası:', error);
+        showAdminNotification('Stok silinemedi!', 'error');
+    }
 }
 
 let updatingName = '';

@@ -158,7 +158,7 @@
                 password: password
             };
 
-            const result = await authRegister(userData);
+            const result = await authSystem.register(userData);
 
             if (result.success) {
                 showNotification(result.message, 'success');
