@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===== ÜRÜNLER =====
+    // Herkes okuyabilir, sadece admin ekleyebilir/güncelleyebilir
+    match /products/{productId} {
+      allow read: if true; // Müşterilerin ürünleri görmesi için
+      allow write: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+    
+    // ===== MARKALAR =====
+    // Herkes okuyabilir, sadece admin yazabilir
+    match /brands/{brandDoc} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+    
+    // ===== MÜŞTERİLER =====
+    // Sadece admin görebilir
+    match /customers/{customerId} {
+      allow read, write: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+    
+    // ===== SİPARİŞLER =====
+    // Herkes kendi siparişini oluşturabilir, admin hepsini görebilir
+    match /orders/{orderId} {
+      allow create: if true; // Müşteriler sipariş oluşturabilir
+      allow read, update, delete: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+    
+    // ===== KATEGORİLER =====
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+    
+    // ===== AYARLAR =====
+    match /settings/{settingDoc} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+  }
+}

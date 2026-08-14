@@ -37,12 +37,12 @@ function adminLogout() {
 // CACHE - Ürünleri bellekte tut
 let productsCache = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 30000; // 30 saniye cache
+const CACHE_DURATION = 60000; // 60 saniye cache (500+ ürün için artırıldı)
 
-// SADECE Firebase'den oku (CACHE ile hızlandırılmış)
+// SADECE Firebase'den oku (CACHE ile hızlandırılmış + Persistence)
 async function getProducts(forceRefresh = false) {
     try {
-        // Cache kontrolü - 30 saniye içinde tekrar sorma
+        // Cache kontrolü - 60 saniye içinde tekrar sorma
         if (!forceRefresh && productsCache && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
             console.log('📦 Ürünler cache\'den yüklendi (hızlı)');
             return productsCache;
@@ -54,9 +54,12 @@ async function getProducts(forceRefresh = false) {
         }
         
         console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+        
+        // Firebase offline persistence kullan (mobil için önemli)
         const snapshot = await db.collection('products')
             .orderBy('createdAt', 'desc') // Son eklenenler önce
-            .get({ source: 'default' }); // Cache'den de alabilir
+            .limit(500) // İlk 500 ürün (performans için)
+            .get(); // Cache-first stratejisi (offline çalışır)
         
         const products = [];
         snapshot.forEach(doc => {
@@ -103,6 +106,10 @@ async function addProduct(product) {
         
         const docRef = await db.collection('products').add(productData);
         console.log('✅ Ürün Firebase\'e eklendi:', docRef.id);
+        
+        // Cache'i temizle ki yeni ürün görünsün
+        clearProductsCache();
+        
         return docRef.id;
     } catch (error) {
         console.error('❌ Ürün eklenemedi:', error);
@@ -123,6 +130,10 @@ async function updateProduct(productId, updates) {
         });
         
         console.log('✅ Ürün güncellendi:', productId);
+        
+        // Cache'i temizle
+        clearProductsCache();
+        
         return true;
     } catch (error) {
         console.error('❌ Ürün güncellenemedi:', error);
@@ -139,6 +150,10 @@ async function deleteProduct(productId) {
         
         await db.collection('products').doc(productId).delete();
         console.log('✅ Ürün silindi:', productId);
+        
+        // Cache'i temizle
+        clearProductsCache();
+        
         return true;
     } catch (error) {
         console.error('❌ Ürün silinemedi:', error);

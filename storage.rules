@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ===== ÜRÜN RESİMLERİ =====
+    match /products/{allPaths=**} {
+      // Herkes okuyabilir (ürün görselleri public)
+      allow read: if true;
+      // Sadece admin yükleyebilir
+      allow write: if request.auth != null 
+                   && request.auth.token.email == 'admin@dogus.com'
+                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // ===== MARKA RESİMLERİ =====
+    match /brands/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null 
+                   && request.auth.token.email == 'admin@dogus.com'
+                   && request.resource.size < 2 * 1024 * 1024 // Max 2MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // ===== DİĞER DOSYALAR =====
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@dogus.com';
+    }
+  }
+}
