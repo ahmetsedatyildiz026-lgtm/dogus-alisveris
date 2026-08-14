@@ -30,11 +30,36 @@ async function loadProductsFromAdmin(forceRefresh = false) {
             return categoryProductsCache;
         }
         
-        console.log('🔄 Ürünler LocalStorage\'dan yükleniyor...');
+        console.log('🔄 Ürünler yükleniyor...');
         
-        // SADECE LocalStorage'dan oku
-        let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
-        console.log(`📦 ${allProducts.length} ürün LocalStorage'dan yüklendi`);
+        let allProducts = [];
+        
+        // 1. LocalStorage'dan oku (admin aynı tarayıcıdaysa)
+        try {
+            const localData = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
+            if (localData.length > 0) {
+                console.log(`📦 ${localData.length} ürün LocalStorage'dan yüklendi`);
+                allProducts = localData;
+            }
+        } catch (e) {
+            console.warn('LocalStorage okunamadı:', e);
+        }
+        
+        // 2. JSON dosyasından oku (fallback - farklı tarayıcı/cihaz için)
+        if (allProducts.length === 0) {
+            try {
+                const response = await fetch('data/products.json?t=' + Date.now());
+                if (response.ok) {
+                    const jsonData = await response.json();
+                    console.log(`📦 ${jsonData.length} ürün JSON dosyasından yüklendi`);
+                    allProducts = jsonData;
+                }
+            } catch (e) {
+                console.warn('JSON dosyası okunamadı:', e);
+            }
+        }
+        
+        console.log(`📊 Toplam ${allProducts.length} ürün yüklendi`);
         
         const database = {};
         

@@ -40,6 +40,9 @@
         <div class="admin-topbar">
             <h2><i class="fas fa-box" style="color:var(--admin-accent);margin-right:.5rem"></i>Ürün Yönetimi</h2>
             <div class="admin-topbar-right">
+                <button class="btn-admin btn-admin-secondary" onclick="exportProductsJSON()" style="margin-right: 1rem;">
+                    <i class="fas fa-download"></i> JSON İndir
+                </button>
                 <button class="btn-admin btn-admin-primary" onclick="openProductModal()">
                     <i class="fas fa-plus"></i> Yeni Ürün Ekle
                 </button>
@@ -451,6 +454,42 @@ function closeProductModal() {
     }
 }
 
+// ─── JSON EXPORT FONKSİYONU ─────────────────────────────────────
+function exportProductsJSON() {
+    try {
+        const products = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
+        
+        if (products.length === 0) {
+            alert('Henüz kaydedilmiş ürün yok!');
+            return;
+        }
+        
+        // JSON dosyası oluştur ve indir
+        const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'products.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showAdminNotification(`✅ ${products.length} ürün JSON olarak indirildi!`, 'success');
+        console.log('💾 JSON dosyası indirildi, data/ klasörüne koyun');
+        
+        // Kullanıcıya talimat göster
+        setTimeout(() => {
+            alert(`✅ products.json indirildi!\n\n📁 Bu dosyayı projenizin "data" klasörüne kopyalayın.\n📍 Konum: /data/products.json\n\n🌐 Sonra GitHub'a push edin, böylece tüm cihazlarda ürünler görünür!`);
+        }, 500);
+        
+    } catch (error) {
+        console.error('JSON export hatası:', error);
+        showAdminNotification('❌ JSON export hatası!', 'error');
+    }
+}
+
+
 // ─── SAVE ─────────────────────────────────────────────────────
 async function saveProduct() {
     // ÇİFT TIKLAMAYI GLOBAL FLAG İLE ÖNLE!
@@ -512,7 +551,7 @@ async function saveProduct() {
     console.log('🏷️ Kategori değeri:', productData.category);
 
     try {
-        console.log('🚀 Ürün kaydediliyor (SADECE LocalStorage)...');
+        console.log('🚀 Ürün kaydediliyor (LocalStorage + JSON Dosyası)...');
         
         // LocalStorage'a kaydet
         const localProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
@@ -543,7 +582,7 @@ async function saveProduct() {
             console.log('✅ Ürün eklendi, ID:', newId);
             console.log('📦 Toplam ürün sayısı:', localProducts.length);
             
-            showAdminNotification('✅ Ürün eklendi! (ID: ' + newId + ')', 'success');
+            showAdminNotification('✅ Ürün eklendi! Üstteki "JSON İndir" butonuna basıp data/ klasörüne koyun', 'success');
         }
         
         console.log('🔄 Modal kapatılıyor...');

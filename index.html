@@ -708,9 +708,34 @@
             if (!grid) return;
 
             try {
-                // SADECE LocalStorage'dan yükle
-                let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
-                console.log(`📦 ${allProducts.length} ürün LocalStorage'dan yüklendi`);
+                let allProducts = [];
+                
+                // 1. LocalStorage'dan oku
+                try {
+                    const localData = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
+                    if (localData.length > 0) {
+                        console.log(`📦 ${localData.length} ürün LocalStorage'dan yüklendi`);
+                        allProducts = localData;
+                    }
+                } catch (e) {
+                    console.warn('LocalStorage okunamadı:', e);
+                }
+                
+                // 2. JSON dosyasından oku (fallback)
+                if (allProducts.length === 0) {
+                    try {
+                        const response = await fetch('data/products.json?t=' + Date.now());
+                        if (response.ok) {
+                            const jsonData = await response.json();
+                            console.log(`📦 ${jsonData.length} ürün JSON dosyasından yüklendi`);
+                            allProducts = jsonData;
+                        }
+                    } catch (e) {
+                        console.warn('JSON dosyası okunamadı:', e);
+                    }
+                }
+                
+                console.log(`📊 Toplam ${allProducts.length} ürün yüklendi`);
                 
                 // Sadece aktif ve stokta olanları filtrele
                 allProducts = allProducts.filter(p => 
