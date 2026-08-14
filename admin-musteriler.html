@@ -150,7 +150,6 @@ async function renderCustomers() {
     );
     if (providerFilter) customers = customers.filter(c => c.provider === providerFilter);
 
-    const orders = getOrders();
     const tbody = document.getElementById('customersTableBody');
     const empty = document.getElementById('emptyState');
 
