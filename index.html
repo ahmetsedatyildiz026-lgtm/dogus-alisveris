@@ -708,9 +708,9 @@
             if (!grid) return;
 
             try {
-                // localStorage'dan yükle
-                let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
-                console.log(`📦 ${allProducts.length} ürün yüklendi`);
+                // Firebase'den yükle
+                let allProducts = await getProductsFromFirebase();
+                console.log(`📦 ${allProducts.length} ürün Firebase'dan yüklendi`);
                 
                 // Sadece aktif ve stokta olanları filtrele
                 allProducts = allProducts.filter(p => 

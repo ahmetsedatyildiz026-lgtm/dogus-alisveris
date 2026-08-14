@@ -10,15 +10,15 @@ const productsPerPage = 12;
 let currentImageIndex = 0;
 let currentProductImages = [];
 
-// ===== GLOBAL ÜRÜN VERİTABANI - ADMİN'DEN YÜKLENECEK =====
+// ===== GLOBAL ÜRÜN VERİTABANI - FIREBASE'DEN YÜKLENECEK =====
 window.categoryDatabase = {};
 
-// ===== ADMİN'DEKİ ÜRÜNLERİ YÜKLE =====
-function loadProductsFromAdmin() {
+// ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
+async function loadProductsFromAdmin() {
     try {
-        // localStorage'dan ürünleri al
-        const products = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
-        console.log(`📦 ${products.length} ürün localStorage'dan yüklendi`);
+        // Firebase'den ürünleri al
+        const products = await getProductsFromFirebase();
+        console.log(`📦 ${products.length} ürün Firebase'dan yüklendi`);
         
         // Kategorilere göre grupla
         const database = {};
@@ -850,7 +850,7 @@ function showNotification(message, type = 'info') {
 
 
 // ===== SAYFA BAŞLATMA FONKSİYONU =====
-function initializeCategoryPage(categorySlug, categoryName) {
+async function initializeCategoryPage(categorySlug, categoryName) {
     console.log(`🚀 Kategori başlatılıyor: ${categorySlug}`);
     
     try {
@@ -858,7 +858,7 @@ function initializeCategoryPage(categorySlug, categoryName) {
         window.currentCategoryName = categoryName;
         
         // Ürünleri yükle
-        const database = loadProductsFromAdmin();
+        const database = await loadProductsFromAdmin();
         
         // Kategori ürünlerini al
         allProducts = database[categorySlug] || [];
