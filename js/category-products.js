@@ -20,17 +20,14 @@ const categoryDatabase = {};
 // Cache
 let categoryProductsCache = null;
 let categoryCacheTimestamp = 0;
-const CATEGORY_CACHE_DURATION = 60000; // 60 saniye
+const CATEGORY_CACHE_DURATION = 30000; // 30 saniye - daha hızlı güncelleme
 
 async function loadProductsFromAdmin(forceRefresh = false) {
     try {
-        // Cache kontrolü
+        // Cache kontrolü - hız için
         if (!forceRefresh && categoryProductsCache && (Date.now() - categoryCacheTimestamp < CATEGORY_CACHE_DURATION)) {
-            console.log('📦 Kategori ürünleri cache\'den yüklendi (hızlı)');
             return categoryProductsCache;
         }
-        
-        console.log('🔥 Ürünler Firebase\'den yükleniyor...');
         
         // Firebase kontrolü
         if (!db) {
@@ -39,28 +36,22 @@ async function loadProductsFromAdmin(forceRefresh = false) {
         }
         
         const snapshot = await db.collection('products')
-            .where('status', '==', 'active') // Sadece aktif ürünler
-            .get({ source: 'default' }); // Cache'den de alabilir
+            .where('status', '==', 'active')
+            .get({ source: 'default' });
         
         const products = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            console.log(`📦 Ürün: "${data.title}" - Kategori: "${data.category}" - Stok: ${data.stock}`);
-            if ((data.stock || 0) > 0) { // Stokta olanlar
+            if ((data.stock || 0) > 0) {
                 products.push({ id: doc.id, ...data });
             }
         });
-        
-        console.log(`✅ Firebase'den ${products.length} ürün yüklendi`);
         
         const database = {};
         
         // Kategorilere göre grupla
         products.forEach(product => {
-            if (!product.category) {
-                console.warn(`⚠️ Kategorisiz ürün: ${product.title}`);
-                return;
-            }
+            if (!product.category) return;
             
             if (!database[product.category]) {
                 database[product.category] = [];
@@ -72,11 +63,6 @@ async function loadProductsFromAdmin(forceRefresh = false) {
         // Cache'i güncelle
         categoryProductsCache = database;
         categoryCacheTimestamp = Date.now();
-        
-        console.log('📊 Kategorilere göre gruplama:');
-        Object.keys(database).forEach(cat => {
-            console.log(`  - "${cat}": ${database[cat].length} ürün`);
-        });
         
         return database;
         
@@ -100,7 +86,6 @@ class CartManager {
             const saved = localStorage.getItem(this.storageKey);
             if (!saved) {
                 localStorage.setItem(this.storageKey, JSON.stringify([]));
-                console.log('Yeni sepet oluşturuldu');
             }
         } catch (error) {
             console.error('Sepet başlatma hatası:', error);
@@ -141,20 +126,12 @@ class CartManager {
     }
 
     addItem(name, price, quantity = 1) {
-        console.log('🛒 CartManager.addItem başladı');
-        console.log('📦 Parametreler:', { name, price, quantity });
-        
         try {
             const cart = this.getCart();
-            console.log('📋 Mevcut sepet:', cart);
-            console.log('📊 Sepet tipi:', Array.isArray(cart), 'Uzunluk:', cart.length);
-            
             const existingItem = cart.find(item => item.name === name);
             
             if (existingItem) {
-                console.log('♻️ Mevcut ürün bulundu:', existingItem);
                 existingItem.quantity += quantity;
-                console.log('♻️ Ürün miktarı güncellendi:', existingItem);
             } else {
                 const newItem = {
                     id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -163,22 +140,11 @@ class CartManager {
                     quantity: quantity
                 };
                 cart.push(newItem);
-                console.log('✨ Yeni ürün eklendi:', newItem);
             }
             
-            console.log('💾 Sepet kaydediliyor...');
-            const success = this.saveCart(cart);
-            console.log('💾 Kaydetme sonucu:', success);
-            
-            if (success) {
-                const newCart = this.getCart();
-                console.log('✅ Kaydetme sonrası sepet:', newCart);
-                console.log('🔢 Toplam item sayısı:', this.getTotalItems());
-            }
-            
-            return success;
+            return this.saveCart(cart);
         } catch (error) {
-            console.error('❌ CartManager.addItem hatası:', error);
+            console.error('❌ Sepete ekleme hatası:', error);
             return false;
         }
     }
@@ -222,24 +188,17 @@ class CartManager {
             const countEl = document.getElementById('cartCount');
             const totalItems = this.getTotalItems();
             
-            console.log('🔄 Sepet sayısı güncelleniyor...');
-            console.log('📊 Toplam item:', totalItems);
-            console.log('🎯 Count element:', countEl);
-            
             if (countEl) {
                 countEl.textContent = totalItems;
-                console.log('✅ Sepet sayısı DOM\'da güncellendi:', totalItems);
                 
-                // Görsel feedback için kısa animasyon
+                // Görsel feedback - kısa animasyon
                 countEl.style.transform = 'scale(1.2)';
                 setTimeout(() => {
                     countEl.style.transform = 'scale(1)';
                 }, 200);
-            } else {
-                console.warn('⚠️ cartCount elementi bulunamadı!');
             }
         } catch (error) {
-            console.error('❌ updateCartCount hatası:', error);
+            console.error('❌ Sepet sayısı güncellenemedi:', error);
         }
     }
 }
@@ -247,46 +206,27 @@ class CartManager {
 // Global cart instance
 const cartManager = new CartManager();
 
-// Sepete ekle fonksiyonu - İyileştirilmiş ve Debug
+// Sepete ekle fonksiyonu - Optimize edilmiş
 function addToCart(productName) {
-    console.log('=== SEPETE EKLEME BAŞLADI ===');
-    console.log('Ürün adı:', productName);
-    console.log('Event:', window.event);
-    console.log('CartManager mevcut mu?', typeof cartManager !== 'undefined');
-    
     let price = '₺0';
     
-    // 1. Önce currentProduct'tan kontrol et (modal açıkken)
+    // 1. Modal'dan fiyat al
     if (typeof currentProduct !== 'undefined' && currentProduct && currentProduct.title === productName) {
         price = currentProduct.price;
-        console.log('✓ Modal\'dan fiyat alındı:', price);
     } else {
-        // 2. DOM'dan product card'larını ara
-        console.log('DOM\'dan fiyat aranıyor...');
+        // 2. DOM'dan fiyat ara
         const productCards = document.querySelectorAll('.product-card');
-        console.log('Bulunan product card sayısı:', productCards.length);
-        
         for (const card of productCards) {
             const titleEl = card.querySelector('.product-title');
-            if (titleEl) {
-                const cardTitle = titleEl.textContent.trim();
-                console.log('Kart başlığı:', cardTitle, '- Aranan:', productName);
-                
-                if (cardTitle === productName) {
-                    const priceEl = card.querySelector('.product-price');
-                    if (priceEl) {
-                        price = priceEl.textContent.trim();
-                        console.log('✓ DOM\'dan fiyat alındı:', price);
-                        break;
-                    } else {
-                        console.log('❌ Price element bulunamadı');
-                    }
+            if (titleEl && titleEl.textContent.trim() === productName) {
+                const priceEl = card.querySelector('.product-price');
+                if (priceEl) {
+                    price = priceEl.textContent.trim();
+                    break;
                 }
             }
         }
     }
-
-    console.log('Final fiyat:', price);
 
     // 3. Fiyat kontrolü
     if (price === '₺0') {
@@ -295,14 +235,9 @@ function addToCart(productName) {
         return;
     }
 
-    // 4. CartManager'a ekleme
-    console.log('CartManager\'a ekleniyor...');
+    // 4. Sepete ekle
     try {
         const success = cartManager.addItem(productName, price, 1);
-        
-        console.log('Sepete ekleme sonucu:', success);
-        console.log('Güncel sepet:', cartManager.getCart());
-        console.log('Sepet item sayısı:', cartManager.getTotalItems());
         
         if (success) {
             // 5. Buton animasyonu
@@ -311,8 +246,7 @@ function addToCart(productName) {
                 const originalText = btn.textContent;
                 const originalBg = btn.style.backgroundColor || '';
                 
-                console.log('Buton animasyonu başlatılıyor...');
-                btn.style.backgroundColor = '#10B981'; // success green
+                btn.style.backgroundColor = '#10B981';
                 btn.textContent = 'Eklendi!';
                 btn.disabled = true;
                 
@@ -320,14 +254,11 @@ function addToCart(productName) {
                     btn.style.backgroundColor = originalBg;
                     btn.textContent = originalText;
                     btn.disabled = false;
-                    console.log('Buton animasyonu tamamlandı');
                 }, 2000);
             }
             
             showNotification(`${productName} sepete eklendi!`, 'success');
-            console.log('=== SEPETE EKLEME BAŞARILI ===');
         } else {
-            console.error('❌ Sepete ekleme başarısız!');
             showNotification('Sepete ekleme başarısız!', 'error');
         }
     } catch (error) {
@@ -503,25 +434,19 @@ function closeInstallmentModal() {
 // ===== CATEGORY PAGE INITIALIZATION WITH REAL-TIME =====
 
 async function initializeCategoryPage(categoryName, categoryTitle) {
-    console.log(`Kategori sayfası başlatılıyor: ${categoryName}`);
-    
     // İlk yükleme
-    const adminDatabase = await loadProductsFromAdmin(true); // Force refresh
+    const adminDatabase = await loadProductsFromAdmin(true);
     Object.assign(categoryDatabase, adminDatabase);
     
     loadCategoryProducts(categoryName);
     cartManager.updateCartCount();
     setupEventListeners();
     
-    // REAL-TIME LISTENER - Firebase'den canlı güncellemeler
+    // REAL-TIME LISTENER - Sessiz güncelleme
     if (db) {
-        console.log('🔥 Real-time listener başlatılıyor...');
-        
         db.collection('products')
             .where('status', '==', 'active')
             .onSnapshot((snapshot) => {
-                console.log('🔄 Firebase değişikliği algılandı!');
-                
                 const products = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -529,8 +454,6 @@ async function initializeCategoryPage(categoryName, categoryTitle) {
                         products.push({ id: doc.id, ...data });
                     }
                 });
-                
-                console.log(`✅ ${products.length} ürün güncellendi`);
                 
                 // categoryDatabase'i güncelle
                 const newDatabase = {};
@@ -544,18 +467,14 @@ async function initializeCategoryPage(categoryName, categoryTitle) {
                     newDatabase[product.category].push(product);
                 });
                 
-                // Global database'i güncelle
                 Object.assign(categoryDatabase, newDatabase);
                 
-                // Cache'i güncelle
+                // Cache güncelle
                 categoryProductsCache = newDatabase;
                 categoryCacheTimestamp = Date.now();
                 
-                // Sayfayı yeniden yükle (smooth)
-                console.log('🔄 Kategori sayfası güncelleniyor...');
+                // Sayfayı sessizce yeniden yükle
                 loadCategoryProducts(categoryName);
-                
-                showNotification('Ürünler güncellendi!', 'info');
             }, (error) => {
                 console.error('❌ Real-time listener hatası:', error);
             });
@@ -566,12 +485,7 @@ function loadCategoryProducts(categoryName) {
     const productsGrid = document.getElementById('productsGrid');
     const productsCount = document.getElementById('productsCount');
     
-    console.log(`=== loadCategoryProducts başladı ===`);
-    console.log(`Kategori adı: ${categoryName}`);
-    console.log(`categoryDatabase objesi:`, categoryDatabase);
-    console.log(`categoryDatabase keys:`, Object.keys(categoryDatabase));
-    
-    // Kategori mapping - farklı isimleri eşle
+    // Kategori mapping
     const categoryMapping = {
         'beyaz-esya': ['Beyaz Eşya', 'beyaz-esya'],
         'mobilya': ['Mobilya', 'mobilya'],
@@ -585,78 +499,53 @@ function loadCategoryProducts(categoryName) {
         return;
     }
     
-    // Mapping'e göre kategoriyi bul
+    // Ürünleri bul
     let products = [];
     const possibleNames = categoryMapping[categoryName] || [categoryName];
-    
-    console.log(`Olası kategori isimleri:`, possibleNames);
     
     for (const name of possibleNames) {
         if (categoryDatabase[name]) {
             products = categoryDatabase[name];
-            console.log(`✅ "${name}" kategorisinde ${products.length} ürün bulundu`);
             break;
         }
     }
     
+    // Son çare: tüm kategorilerde ara
     if (products.length === 0) {
-        console.warn(`⚠️ Kategori bulunamadı, tüm kategorilerde aranıyor...`);
-        // Son çare: tüm ürünlerde ara
         Object.keys(categoryDatabase).forEach(cat => {
-            console.log(`  - Kontrol ediliyor: "${cat}"`);
             if (possibleNames.some(name => cat.toLowerCase().includes(name.toLowerCase()))) {
                 products = products.concat(categoryDatabase[cat]);
-                console.log(`  ✅ "${cat}" eşleşti, ${categoryDatabase[cat].length} ürün eklendi`);
             }
         });
     }
     
-    console.log(`Toplam ${products.length} ürün bulundu`);
-    console.log(`Ürünler:`, products);
-    
     allProducts = products;
     filteredProducts = [...allProducts];
     
-    // Ürün sayısını güncelle
     updateProductsCount();
     
-    // Arama kutusunu temizle
+    // Arama ve sıralamayı sıfırla
     const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.value = '';
-    }
+    if (searchInput) searchInput.value = '';
     
-    // Sıralama seçimini sıfırla
     const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.value = 'default';
-    }
+    if (sortSelect) sortSelect.value = 'default';
     
     renderProducts();
 }
 
 function renderProducts() {
-    console.log(`=== renderProducts başladı ===`);
-    console.log(`filteredProducts:`, filteredProducts);
-    console.log(`filteredProducts.length:`, filteredProducts.length);
-    console.log(`currentPage:`, currentPage, `productsPerPage:`, productsPerPage);
-    
     const productsGrid = document.getElementById('productsGrid');
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
     const pageProducts = filteredProducts.slice(startIndex, endIndex);
     
-    console.log(`startIndex: ${startIndex}, endIndex: ${endIndex}`);
-    console.log(`pageProducts:`, pageProducts);
-    
     if (pageProducts.length === 0) {
-        console.log(`Ürün bulunamadı, boş mesaj gösteriliyor`);
         productsGrid.innerHTML = `
             <div class="no-products">
                 <i class="fas fa-search"></i>
                 <h3>Ürün bulunamadı</h3>
                 <p>Bu kategoride henüz ürün bulunmuyor veya arama kriterlerinize uygun ürün yok.</p>
-                <p><strong>Admin panelden ürün ekleyin!</strong></p>
             </div>
         `;
         return;
@@ -665,8 +554,6 @@ function renderProducts() {
     let productsHTML = '';
     
     pageProducts.forEach(product => {
-        console.log(`Ürün işleniyor:`, product.title);
-        
         let discountHtml = '';
         if (product.originalPrice) {
             const current = parseFloat(product.price.replace('₺', '').replace(/\./g, ''));
@@ -705,9 +592,7 @@ function renderProducts() {
         `;
     });
     
-    console.log(`productsHTML uzunluğu:`, productsHTML.length);
     productsGrid.innerHTML = productsHTML;
-    console.log(`DOM güncellendi`);
     updatePagination();
 }
 
@@ -857,13 +742,8 @@ function searchProducts() {
     const searchInput = document.getElementById('searchInput');
     const searchTerm = searchInput.value.toLowerCase().trim();
     
-    console.log(`=== searchProducts ===`);
-    console.log(`Arama terimi: "${searchTerm}"`);
-    console.log(`Tüm ürünler:`, allProducts.length);
-    
     if (searchTerm === '') {
         filteredProducts = [...allProducts];
-        console.log(`Arama boş, tüm ürünler gösteriliyor: ${filteredProducts.length}`);
     } else {
         filteredProducts = allProducts.filter(product => {
             const titleMatch = product.title.toLowerCase().includes(searchTerm);
@@ -879,16 +759,10 @@ function searchProducts() {
             
             return titleMatch || descMatch || specMatch;
         });
-        console.log(`Filtrelenmiş ürünler: ${filteredProducts.length}`);
     }
     
-    // Sayacı güncelle
     updateProductsCount();
-    
-    // İlk sayfaya dön
     currentPage = 1;
-    
-    // Ürünleri yeniden render et
     renderProducts();
 }
 
@@ -896,19 +770,13 @@ function sortProducts() {
     const sortSelect = document.getElementById('sortSelect');
     const sortValue = sortSelect.value;
     
-    console.log(`=== sortProducts ===`);
-    console.log(`Sıralama değeri: ${sortValue}`);
-    console.log(`Sıralanacak ürün sayısı: ${filteredProducts.length}`);
-    
     switch (sortValue) {
         case 'price-low':
             filteredProducts.sort((a, b) => {
                 const priceA = parseFloat(a.price.replace('₺', '').replace(/\./g, '').replace(/,/g, ''));
                 const priceB = parseFloat(b.price.replace('₺', '').replace(/\./g, '').replace(/,/g, ''));
-                console.log(`${a.title}: ${priceA} vs ${b.title}: ${priceB}`);
                 return priceA - priceB;
             });
-            console.log(`Düşükten yükseğe sıralandı`);
             break;
         case 'price-high':
             filteredProducts.sort((a, b) => {
@@ -916,25 +784,21 @@ function sortProducts() {
                 const priceB = parseFloat(b.price.replace('₺', '').replace(/\./g, '').replace(/,/g, ''));
                 return priceB - priceA;
             });
-            console.log(`Yüksekten düşüğe sıralandı`);
             break;
         case 'name':
             filteredProducts.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
-            console.log(`İsme göre sıralandı`);
             break;
         default:
-            // Varsayılan sıralama - orijinal sıraya dön
+            // Varsayılan - orijinal sıraya dön
             const searchInput = document.getElementById('searchInput');
             const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
             
             if (searchTerm === '') {
                 filteredProducts = [...allProducts];
             } else {
-                // Arama varsa arama sonucunu koru
                 searchProducts();
-                return; // searchProducts zaten renderProducts'ı çağırıyor
+                return;
             }
-            console.log(`Varsayılan sıraya döndü`);
             break;
     }
     
