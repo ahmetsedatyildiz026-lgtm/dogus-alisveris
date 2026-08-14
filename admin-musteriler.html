@@ -133,10 +133,10 @@
 <script>
 checkAdminAuth();
 
-function renderCustomers() {
+async function renderCustomers() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const providerFilter = document.getElementById('filterProvider').value;
-    let customers = getCustomers();
+    let customers = await getCustomers();
 
     if (search) customers = customers.filter(c =>
         (c.name||'').toLowerCase().includes(search) ||
@@ -150,7 +150,8 @@ function renderCustomers() {
     const empty = document.getElementById('emptyState');
 
     // Stats
-    const all = getCustomers();
+    const all = await getCustomers();
+    const orders = await getOrders();
     document.getElementById('statTotal').textContent = all.length;
     document.getElementById('statGoogle').textContent = all.filter(c => c.provider === 'google').length;
     document.getElementById('statEmail').textContent = all.filter(c => c.provider !== 'google').length;
@@ -198,10 +199,10 @@ function renderCustomers() {
     }).join('');
 }
 
-function showCustomerDetail(id) {
-    const c = getCustomers().find(u => u.id === id);
+async function showCustomerDetail(id) {
+    const c = (await getCustomers()).find(u => u.id === id);
     if (!c) return;
-    const orders = getOrders().filter(o => o.customerId === id || o.customerEmail === c.email);
+    const orders = (await getOrders()).filter(o => o.customerId === id || o.customerEmail === c.email);
     const totalSpent = orders.reduce((sum, o) => {
         const val = parseFloat((o.total||'0').replace(/[₺.,]/g,'')) || 0;
         return sum + val;
@@ -270,7 +271,25 @@ document.getElementById('customerModal').addEventListener('click', e => {
     if (e.target === document.getElementById('customerModal')) closeCustomerModal();
 });
 
-renderCustomers();
+// Firebase hazır olduğunda müşterileri yükle
+window.addEventListener('load', function() {
+    let attempts = 0;
+    const maxAttempts = 20;
+    
+    const checkFirebase = setInterval(() => {
+        attempts++;
+        
+        if (typeof db !== 'undefined' && db) {
+            console.log('✅ Firebase hazır, müşteriler yükleniyor...');
+            clearInterval(checkFirebase);
+            renderCustomers();
+        } else if (attempts >= maxAttempts) {
+            console.error('❌ Firebase hazır olmadı, LocalStorage kullanılıyor');
+            clearInterval(checkFirebase);
+            renderCustomers();
+        }
+    }, 500);
+});
 </script>
 </body>
 </html>
