@@ -49,18 +49,26 @@ function initializeFirebase() {
     if (typeof firebase !== 'undefined') {
       app = firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      storage = firebase.storage();  // storage() parantezli
+      
+      // Storage opsiyonel - varsa yükle, yoksa null
+      try {
+        storage = firebase.storage();
+        console.log('✅ Storage başlatıldı:', typeof storage);
+      } catch (storageError) {
+        console.warn('⚠️ Storage SDK yüklenmedi, dosya yükleme çalışmayacak');
+        storage = null;
+      }
+      
       auth = firebase.auth();
       
       console.log('✅ Firebase App başlatıldı');
       console.log('✅ Firestore başlatıldı:', typeof db);
-      console.log('✅ Storage başlatıldı:', typeof storage);
       console.log('✅ Auth başlatıldı:', typeof auth);
       
       // OFFLINE PERSISTENCE - Hızlı yüklenme için
       db.enablePersistence({ synchronizeTabs: true })
         .then(() => {
-          console.log('✅ Firebase offline persistence aktif - Hızlı yüklenme!');
+          console.log('✅ Firebase offline persistence aktif');
         })
         .catch((err) => {
           if (err.code == 'failed-precondition') {
@@ -93,24 +101,16 @@ function initializeFirebase() {
 
 // Hemen başlatmayı dene
 if (!initializeFirebase()) {
-  // Firebase henüz yüklenmediyse, DOMContentLoaded'da tekrar dene
-  console.log('⏳ Firebase SDK henüz yüklenmedi, bekleniyor...');
+  // Firebase henüz yüklenmediyse, 2 saniye bekle ve bir kere daha dene
+  console.log('⏳ Firebase SDK henüz yüklenmedi, 2 saniye bekleniyor...');
   
-  // Maksimum 10 saniye bekle
-  let attempts = 0;
-  const checkInterval = setInterval(() => {
-    attempts++;
-    console.log(`⏳ Firebase SDK kontrol ediliyor... (${attempts}/20)`);
-    
-    if (initializeFirebase()) {
-      clearInterval(checkInterval);
-    } else if (attempts >= 20) {
-      clearInterval(checkInterval);
-      const error = new Error('Firebase SDK 10 saniye içinde yüklenemedi');
+  setTimeout(() => {
+    if (!initializeFirebase()) {
+      const error = new Error('Firebase SDK yüklenemedi');
       console.error('❌', error.message);
       firebaseReadyReject(error);
     }
-  }, 500);
+  }, 2000);
 }
 
 // ===== FİREBASE HELPER FUNCTIONS =====
