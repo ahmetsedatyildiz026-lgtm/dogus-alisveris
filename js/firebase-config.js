@@ -34,9 +34,16 @@ const firebaseConfig = {
 // Firebase'i başlat
 let app, db, storage, auth;
 let firebaseReady = false;
+let firebaseReadyResolve, firebaseReadyReject;
 
 // Firebase hazır promise
 const firebaseReadyPromise = new Promise((resolve, reject) => {
+  firebaseReadyResolve = resolve;
+  firebaseReadyReject = reject;
+});
+
+// Firebase başlatma fonksiyonu
+function initializeFirebase() {
   try {
     // Firebase SDK'ları yüklendiyse başlat
     if (typeof firebase !== 'undefined') {
@@ -72,16 +79,39 @@ const firebaseReadyPromise = new Promise((resolve, reject) => {
       window.storage = storage;
       window.auth = auth;
       
-      resolve({ app, db, storage, auth });
+      firebaseReadyResolve({ app, db, storage, auth });
+      return true;
     } else {
-      console.error('❌ Firebase SDK yüklenmedi! HTML dosyalarında Firebase script taglerini kontrol et.');
-      reject(new Error('Firebase SDK yüklenmedi'));
+      return false;
     }
   } catch (error) {
     console.error('❌ Firebase başlatma hatası:', error);
-    reject(error);
+    firebaseReadyReject(error);
+    return false;
   }
-});
+}
+
+// Hemen başlatmayı dene
+if (!initializeFirebase()) {
+  // Firebase henüz yüklenmediyse, DOMContentLoaded'da tekrar dene
+  console.log('⏳ Firebase SDK henüz yüklenmedi, bekleniyor...');
+  
+  // Maksimum 10 saniye bekle
+  let attempts = 0;
+  const checkInterval = setInterval(() => {
+    attempts++;
+    console.log(`⏳ Firebase SDK kontrol ediliyor... (${attempts}/20)`);
+    
+    if (initializeFirebase()) {
+      clearInterval(checkInterval);
+    } else if (attempts >= 20) {
+      clearInterval(checkInterval);
+      const error = new Error('Firebase SDK 10 saniye içinde yüklenemedi');
+      console.error('❌', error.message);
+      firebaseReadyReject(error);
+    }
+  }, 500);
+}
 
 // ===== FİREBASE HELPER FUNCTIONS =====
 

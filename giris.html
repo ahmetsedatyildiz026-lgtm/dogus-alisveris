@@ -98,10 +98,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script src="js/firebase-config.js?v=20241214"></script>
+    <script src="js/firebase-config.js?v=20241225"></script>
     
     <!-- SCRIPTS -->
-    <script src="js/auth.js?v=20241214"></script>
+    <script src="js/auth.js?v=20241225"></script>
     <script>
         // Check if already logged in
         if (authSystem.isLoggedIn()) {
@@ -148,9 +148,14 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bağlanıyor...';
 
             try {
-                // Firebase hazır olana kadar bekle
                 console.log('⏳ Firebase Auth bekleniyor...');
-                await window.waitForFirebase();
+                
+                // 15 saniye timeout ekle
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Firebase yükleme zaman aşımına uğradı')), 15000)
+                );
+                
+                await Promise.race([window.waitForFirebase(), timeoutPromise]);
                 console.log('✅ Firebase Auth hazır!');
 
                 console.log('🔐 Google giriş butonu tıklandı');
@@ -167,7 +172,15 @@
                 }
             } catch (error) {
                 console.error('❌ Firebase yükleme hatası:', error);
-                showNotification('Firebase yüklenemedi. Sayfayı yenileyin.', 'error');
+                let errorMsg = 'Firebase yüklenemedi. ';
+                
+                if (error.message.includes('zaman aşımı')) {
+                    errorMsg += 'İnternet bağlantınızı kontrol edin.';
+                } else {
+                    errorMsg += 'Sayfayı yenileyin veya tarayıcı cache\'ini temizleyin.';
+                }
+                
+                showNotification(errorMsg, 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fab fa-google"></i> Google ile Giriş Yap';
             }
