@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Müşteri Kaydı</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .log {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        button {
+            background: #D4AF37;
+            color: #1a1a1a;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #b8960c;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Firebase Müşteri Kaydı Testi</h1>
+    
+    <div id="logs"></div>
+    
+    <h3>Müşteri Bilgileri:</h3>
+    <input type="text" id="name" placeholder="Ad Soyad" value="Test Müşteri">
+    <input type="email" id="email" placeholder="E-posta" value="test@example.com">
+    <input type="tel" id="phone" placeholder="Telefon" value="05551234567">
+    <input type="text" id="address" placeholder="Adres" value="Test Adres">
+    <input type="password" id="password" placeholder="Şifre" value="123456">
+    
+    <button onclick="testCustomerRegister()">📝 Müşteri Kaydı Yap</button>
+    <button onclick="testGetCustomers()">👥 Müşterileri Listele</button>
+    <button onclick="clearLogs()">🗑️ Logları Temizle</button>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // Firebase hazır olana kadar bekle
+        window.addEventListener('load', function() {
+            log('⏳ Sayfa yüklendi, Firebase kontrol ediliyor...', 'info');
+            
+            let attempts = 0;
+            const checkFirebase = setInterval(() => {
+                attempts++;
+                
+                if (typeof db !== 'undefined' && db) {
+                    log('✅ Firebase bağlantısı HAZIR!', 'success');
+                    log(`📊 Firebase Project: ${db.app.options.projectId}`, 'info');
+                    clearInterval(checkFirebase);
+                } else if (attempts >= 20) {
+                    log('❌ Firebase 10 saniye içinde hazır olmadı!', 'error');
+                    clearInterval(checkFirebase);
+                } else {
+                    log(`⏳ Firebase bekleniyor... (${attempts}/20)`, 'info');
+                }
+            }, 500);
+        });
+
+        async function testCustomerRegister() {
+            log('🚀 Müşteri kaydı başlatılıyor...', 'info');
+            
+            // Firebase kontrolü
+            if (typeof db === 'undefined' || !db) {
+                log('❌ HATA: Firebase bağlantısı yok!', 'error');
+                log('💡 İPUCU: Sayfayı yenileyin ve Firebase\'in hazır olmasını bekleyin', 'info');
+                return;
+            }
+            
+            const customerData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                password: btoa(document.getElementById('password').value + 'dogus_salt_2024'),
+                provider: 'email'
+            };
+            
+            log(`📝 Müşteri verisi hazırlandı: ${customerData.name} (${customerData.email})`, 'info');
+            
+            try {
+                log('💾 Firebase\'e kaydediliyor...', 'info');
+                
+                const docRef = await db.collection('customers').add({
+                    ...customerData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                log(`✅ BAŞARILI! Müşteri kaydedildi!`, 'success');
+                log(`🆔 Document ID: ${docRef.id}`, 'success');
+                log(`🔗 Firebase Console: https://console.firebase.google.com/project/${db.app.options.projectId}/firestore/data/customers/${docRef.id}`, 'info');
+                
+            } catch (error) {
+                log(`❌ HATA: ${error.message}`, 'error');
+                log(`📋 Hata detayı: ${JSON.stringify(error)}`, 'error');
+            }
+        }
+
+        async function testGetCustomers() {
+            log('📥 Müşteriler getiriliyor...', 'info');
+            
+            if (typeof db === 'undefined' || !db) {
+                log('❌ HATA: Firebase bağlantısı yok!', 'error');
+                return;
+            }
+            
+            try {
+                const snapshot = await db.collection('customers').get();
+                log(`✅ ${snapshot.size} müşteri bulundu`, 'success');
+                
+                snapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    log(`${index + 1}. ${data.name} - ${data.email}`, 'info');
+                });
+                
+                if (snapshot.empty) {
+                    log('ℹ️ Henüz müşteri yok. Önce "Müşteri Kaydı Yap" butonuna basın.', 'info');
+                }
+                
+            } catch (error) {
+                log(`❌ HATA: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
