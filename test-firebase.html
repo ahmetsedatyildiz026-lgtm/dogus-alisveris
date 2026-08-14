@@ -12,234 +12,135 @@
             padding: 20px;
             background: #f5f5f5;
         }
-        .status {
-            padding: 20px;
-            margin: 10px 0;
-            border-radius: 8px;
+        .log {
             background: white;
-            border-left: 4px solid #ddd;
-        }
-        .status.success { border-color: #22c55e; }
-        .status.error { border-color: #ef4444; }
-        .status.warning { border-color: #f59e0b; }
-        pre {
-            background: #1a1a1a;
-            color: #00ff00;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
-            overflow-x: auto;
-            font-size: 12px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-left: 3px solid #ccc;
+            padding-left: 12px;
+        }
+        .log-item.success {
+            border-color: #4CAF50;
+            background: #f1f8f4;
+        }
+        .log-item.error {
+            border-color: #f44336;
+            background: #fef1f1;
+        }
+        .log-item.info {
+            border-color: #2196F3;
+            background: #e3f2fd;
         }
         button {
-            background: #3b82f6;
+            background: #4285f4;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
-            margin: 5px;
+            margin: 10px 5px;
         }
         button:hover {
-            background: #2563eb;
+            background: #357ae8;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
     <h1>🔥 Firebase Bağlantı Testi</h1>
     
-    <div id="status"></div>
-    
-    <div style="margin: 20px 0;">
-        <button onclick="testFirebase()">Firebase Bağlantısını Test Et</button>
-        <button onclick="loadProducts()">Ürünleri Yükle</button>
-        <button onclick="addTestProduct()">Test Ürünü Ekle</button>
-        <button onclick="startRealtimeSync()">🔄 Gerçek Zamanlı Senkronizasyon Başlat</button>
+    <div class="log" id="logContainer">
+        <h3>Test Logları:</h3>
+        <div id="logs"></div>
     </div>
     
-    <div id="realtimeStatus" style="display:none; padding: 15px; background: #dbeafe; border-left: 4px solid #3b82f6; margin: 20px 0; border-radius: 8px;">
-        <strong>🔄 Gerçek Zamanlı Dinleme Aktif</strong>
-        <p style="margin: 5px 0 0 0; font-size: 14px;">Firebase'deki değişiklikler otomatik yansıyacak</p>
-    </div>
-    
-    <pre id="console"></pre>
+    <button onclick="testGoogleSignIn()">Google ile Giriş Yap</button>
+    <button onclick="clearLogs()">Logları Temizle</button>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script src="js/firebase-config.js"></script>
-    
+    <script src="js/firebase-config.js?v=20241225"></script>
+
     <script>
-        const statusDiv = document.getElementById('status');
-        const consoleDiv = document.getElementById('console');
-        
-        function log(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString('tr-TR');
-            const line = `[${timestamp}] ${message}\n`;
-            consoleDiv.textContent += line;
-            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logItem = document.createElement('div');
+            logItem.className = `log-item ${type}`;
+            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(logItem);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
             console.log(message);
         }
-        
-        function showStatus(message, type = 'success') {
-            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
         }
+
+        // Test Firebase SDK
+        addLog('🔍 Firebase SDK kontrolü başlıyor...', 'info');
         
-        // Sayfa yüklenince otomatik test
-        window.addEventListener('load', () => {
-            log('Sayfa yüklendi');
-            
-            setTimeout(() => {
-                if (typeof firebase === 'undefined') {
-                    showStatus('❌ Firebase SDK yüklenmedi!', 'error');
-                    log('HATA: Firebase SDK bulunamadı');
-                } else {
-                    log('✅ Firebase SDK yüklendi');
-                    testFirebase();
-                }
-            }, 1000);
-        });
-        
-        function testFirebase() {
-            log('🔍 Firebase bağlantısı test ediliyor...');
-            
-            if (typeof firebase === 'undefined') {
-                showStatus('❌ Firebase SDK yüklenmedi!', 'error');
-                log('HATA: Firebase undefined');
-                return;
-            }
-            
-            if (typeof db === 'undefined' || !db) {
-                showStatus('❌ Firestore bağlantısı yok!', 'error');
-                log('HATA: db undefined');
-                return;
-            }
-            
-            if (typeof isFirebaseReady === 'function' && isFirebaseReady()) {
-                showStatus('✅ Firebase hazır ve bağlı!', 'success');
-                log('✅ Firebase bağlantısı başarılı');
-                log('Firebase config:', 'info');
-                log(`  - Project ID: ${firebase.app().options.projectId}`);
-                log(`  - Auth Domain: ${firebase.app().options.authDomain}`);
-            } else {
-                showStatus('⚠️ Firebase henüz hazır değil', 'warning');
-                log('UYARI: isFirebaseReady() false döndü');
-            }
+        if (typeof firebase === 'undefined') {
+            addLog('❌ Firebase SDK yüklenmedi!', 'error');
+        } else {
+            addLog('✅ Firebase SDK yüklendi', 'success');
+            addLog(`   Firebase version: ${firebase.SDK_VERSION}`, 'info');
         }
+
+        // Test waitForFirebase
+        addLog('⏳ waitForFirebase() fonksiyonu bekleniyor...', 'info');
         
-        async function loadProducts() {
-            log('📦 Ürünler yükleniyor...');
+        if (typeof window.waitForFirebase === 'undefined') {
+            addLog('❌ waitForFirebase() fonksiyonu bulunamadı!', 'error');
+        } else {
+            addLog('✅ waitForFirebase() fonksiyonu mevcut', 'success');
             
-            if (!isFirebaseReady()) {
-                showStatus('❌ Firebase hazır değil!', 'error');
-                log('HATA: Firebase bağlantısı yok');
-                return;
-            }
+            window.waitForFirebase()
+                .then(({ app, db, storage, auth }) => {
+                    addLog('✅ Firebase başarıyla başlatıldı!', 'success');
+                    addLog(`   App: ${typeof app}`, 'success');
+                    addLog(`   Firestore: ${typeof db}`, 'success');
+                    addLog(`   Storage: ${typeof storage}`, 'success');
+                    addLog(`   Auth: ${typeof auth}`, 'success');
+                })
+                .catch(error => {
+                    addLog(`❌ Firebase başlatılamadı: ${error.message}`, 'error');
+                });
+        }
+
+        async function testGoogleSignIn() {
+            addLog('🔐 Google Sign-In testi başlıyor...', 'info');
             
             try {
-                const snapshot = await db.collection('products').get();
-                const products = [];
-                snapshot.forEach(doc => {
-                    products.push({ id: doc.id, ...doc.data() });
-                });
+                addLog('⏳ Firebase Auth bekleniyor...', 'info');
+                const { auth } = await window.waitForFirebase();
+                addLog('✅ Firebase Auth hazır', 'success');
                 
-                showStatus(`✅ ${products.length} ürün yüklendi!`, 'success');
-                log(`✅ Firebase'den ${products.length} ürün yüklendi`);
+                addLog('🔐 Google popup açılıyor...', 'info');
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
                 
-                products.forEach((p, i) => {
-                    log(`  ${i + 1}. ${p.title} - ${p.price}`);
-                });
-                
-                // LocalStorage'a kaydet
-                localStorage.setItem('dogusAdminProducts', JSON.stringify(products));
-                log('✅ LocalStorage\'a kaydedildi');
+                addLog(`✅ Giriş başarılı: ${result.user.email}`, 'success');
+                addLog(`   Kullanıcı adı: ${result.user.displayName}`, 'success');
+                addLog(`   UID: ${result.user.uid}`, 'success');
                 
             } catch (error) {
-                showStatus('❌ Ürünler yüklenemedi: ' + error.message, 'error');
-                log('HATA: ' + error.message);
-                console.error(error);
+                addLog(`❌ Hata: ${error.code || 'unknown'}`, 'error');
+                addLog(`   Mesaj: ${error.message}`, 'error');
             }
-        }
-        
-        async function addTestProduct() {
-            log('➕ Test ürünü ekleniyor...');
-            
-            if (!isFirebaseReady()) {
-                showStatus('❌ Firebase hazır değil!', 'error');
-                return;
-            }
-            
-            const testProduct = {
-                title: `Test Ürün ${Date.now()}`,
-                brand: 'TEST MARKA',
-                category: 'beyaz-esya',
-                price: '₺' + Math.floor(Math.random() * 10000 + 1000),
-                status: 'active',
-                isFeatured: true,
-                stock: 10,
-                description: 'Telefon veya bilgisayardan eklenen test ürünü',
-                images: [],
-                image: '',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            
-            try {
-                const docRef = await db.collection('products').add(testProduct);
-                showStatus(`✅ Test ürünü eklendi: ${docRef.id}`, 'success');
-                log(`✅ Ürün Firebase'e eklendi: ${docRef.id}`);
-                log(`   Başlık: ${testProduct.title}`);
-                log(`   Fiyat: ${testProduct.price}`);
-                
-                // Ürünleri yeniden yükle
-                setTimeout(loadProducts, 500);
-                
-            } catch (error) {
-                showStatus('❌ Ürün eklenemedi: ' + error.message, 'error');
-                log('HATA: ' + error.message);
-                console.error(error);
-            }
-        }
-        
-        // Gerçek zamanlı senkronizasyon
-        let unsubscribe = null;
-        
-        function startRealtimeSync() {
-            if (unsubscribe) {
-                showStatus('⚠️ Gerçek zamanlı dinleme zaten aktif', 'warning');
-                return;
-            }
-            
-            log('🔄 Gerçek zamanlı senkronizasyon başlatılıyor...');
-            
-            unsubscribe = db.collection('products').onSnapshot(snapshot => {
-                log(`🔥 DEĞİŞİKLİK ALGILANDI! ${snapshot.size} ürün`);
-                
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        log(`  ➕ Eklendi: ${change.doc.data().title}`);
-                    }
-                    if (change.type === 'modified') {
-                        log(`  ✏️ Güncellendi: ${change.doc.data().title}`);
-                    }
-                    if (change.type === 'removed') {
-                        log(`  ❌ Silindi: ${change.doc.id}`);
-                    }
-                });
-                
-                // Otomatik yükle
-                loadProducts();
-            }, error => {
-                log('HATA: ' + error.message);
-                showStatus('❌ Gerçek zamanlı dinleme hatası', 'error');
-            });
-            
-            document.getElementById('realtimeStatus').style.display = 'block';
-            showStatus('✅ Gerçek zamanlı senkronizasyon başlatıldı!', 'success');
-            log('✅ Artık Firebase\'deki her değişiklik otomatik yansıyacak');
         }
     </script>
 </body>
