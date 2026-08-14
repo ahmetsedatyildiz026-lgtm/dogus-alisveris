@@ -276,13 +276,41 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+
     <!-- CATEGORY PAGE JAVASCRIPT -->
     <script src="js/category-products.js"></script>
     <script src="js/auth.js?v=202412251225"></script>
     <script>
-        // Initialize category page
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeCategoryPage('beyaz-esya', 'Beyaz Eşya');
+        // Initialize category page - Firebase yüklendikten sonra
+        window.addEventListener('load', function() {
+            console.log('🚀 Sayfa yüklendi, kategori başlatılıyor...');
+            console.log('🔍 Firebase durumu:', typeof db !== 'undefined' && db ? 'Hazır' : 'Hazır değil');
+            
+            // Firebase hazır olana kadar bekle
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            const checkFirebase = setInterval(() => {
+                attempts++;
+                
+                if (typeof db !== 'undefined' && db) {
+                    console.log('✅ Firebase hazır, kategori başlatılıyor...');
+                    clearInterval(checkFirebase);
+                    initializeCategoryPage('beyaz-esya', 'Beyaz Eşya');
+                } else if (attempts >= maxAttempts) {
+                    console.error('❌ Firebase 10 saniye içinde hazır olmadı!');
+                    clearInterval(checkFirebase);
+                    alert('Firebase bağlantısı kurulamadı. Sayfayı yenileyin.');
+                } else {
+                    console.log('⏳ Firebase bekleniyor... (' + attempts + '/' + maxAttempts + ')');
+                }
+            }, 500);
         });
     </script>
 </body>
