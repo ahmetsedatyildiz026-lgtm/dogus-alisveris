@@ -495,18 +495,66 @@ function closeInstallmentModal() {
     document.getElementById('installmentModal').style.display = 'none';
 }
 
-// ===== CATEGORY PAGE INITIALIZATION =====
+// ===== CATEGORY PAGE INITIALIZATION WITH REAL-TIME =====
 
 async function initializeCategoryPage(categoryName, categoryTitle) {
     console.log(`Kategori sayfası başlatılıyor: ${categoryName}`);
     
-    // Admin'den ürünleri yükle ve categoryDatabase'e ekle
-    const adminDatabase = await loadProductsFromAdmin();
+    // İlk yükleme
+    const adminDatabase = await loadProductsFromAdmin(true); // Force refresh
     Object.assign(categoryDatabase, adminDatabase);
     
     loadCategoryProducts(categoryName);
     cartManager.updateCartCount();
     setupEventListeners();
+    
+    // REAL-TIME LISTENER - Firebase'den canlı güncellemeler
+    if (db) {
+        console.log('🔥 Real-time listener başlatılıyor...');
+        
+        db.collection('products')
+            .where('status', '==', 'active')
+            .onSnapshot((snapshot) => {
+                console.log('🔄 Firebase değişikliği algılandı!');
+                
+                const products = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if ((data.stock || 0) > 0) {
+                        products.push({ id: doc.id, ...data });
+                    }
+                });
+                
+                console.log(`✅ ${products.length} ürün güncellendi`);
+                
+                // categoryDatabase'i güncelle
+                const newDatabase = {};
+                products.forEach(product => {
+                    if (!product.category) return;
+                    
+                    if (!newDatabase[product.category]) {
+                        newDatabase[product.category] = [];
+                    }
+                    
+                    newDatabase[product.category].push(product);
+                });
+                
+                // Global database'i güncelle
+                Object.assign(categoryDatabase, newDatabase);
+                
+                // Cache'i güncelle
+                categoryProductsCache = newDatabase;
+                categoryCacheTimestamp = Date.now();
+                
+                // Sayfayı yeniden yükle (smooth)
+                console.log('🔄 Kategori sayfası güncelleniyor...');
+                loadCategoryProducts(categoryName);
+                
+                showNotification('Ürünler güncellendi!', 'info');
+            }, (error) => {
+                console.error('❌ Real-time listener hatası:', error);
+            });
+    }
 }
 
 function loadCategoryProducts(categoryName) {
@@ -517,15 +565,48 @@ function loadCategoryProducts(categoryName) {
     console.log(`Kategori adı: ${categoryName}`);
     console.log(`categoryDatabase objesi:`, categoryDatabase);
     console.log(`categoryDatabase keys:`, Object.keys(categoryDatabase));
-    console.log(`Aranan kategori var mı?`, categoryDatabase.hasOwnProperty(categoryName));
+    
+    // Kategori mapping - farklı isimleri eşle
+    const categoryMapping = {
+        'beyaz-esya': ['Beyaz Eşya', 'beyaz-esya'],
+        'mobilya': ['Mobilya', 'mobilya'],
+        'kucuk-ev-aletleri': ['Küçük Ev Aletleri', 'kucuk-ev-aletleri', 'Ev Aletleri'],
+        'klima-ventilator': ['Klima & Vantilatör', 'klima-ventilator', 'Klima', 'Klima&Vantilatör'],
+        'kisisel-bakim': ['Kişisel Bakım', 'kisisel-bakim', 'Bakım']
+    };
     
     if (!productsGrid) {
         console.error('Products grid bulunamadı');
         return;
     }
     
-    const products = categoryDatabase[categoryName] || [];
-    console.log(`${categoryName} kategorisinde ${products.length} ürün bulundu`);
+    // Mapping'e göre kategoriyi bul
+    let products = [];
+    const possibleNames = categoryMapping[categoryName] || [categoryName];
+    
+    console.log(`Olası kategori isimleri:`, possibleNames);
+    
+    for (const name of possibleNames) {
+        if (categoryDatabase[name]) {
+            products = categoryDatabase[name];
+            console.log(`✅ "${name}" kategorisinde ${products.length} ürün bulundu`);
+            break;
+        }
+    }
+    
+    if (products.length === 0) {
+        console.warn(`⚠️ Kategori bulunamadı, tüm kategorilerde aranıyor...`);
+        // Son çare: tüm ürünlerde ara
+        Object.keys(categoryDatabase).forEach(cat => {
+            console.log(`  - Kontrol ediliyor: "${cat}"`);
+            if (possibleNames.some(name => cat.toLowerCase().includes(name.toLowerCase()))) {
+                products = products.concat(categoryDatabase[cat]);
+                console.log(`  ✅ "${cat}" eşleşti, ${categoryDatabase[cat].length} ürün eklendi`);
+            }
+        });
+    }
+    
+    console.log(`Toplam ${products.length} ürün bulundu`);
     console.log(`Ürünler:`, products);
     
     allProducts = products;
