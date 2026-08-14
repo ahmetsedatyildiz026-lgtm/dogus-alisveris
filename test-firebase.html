@@ -54,6 +54,12 @@
         <button onclick="testFirebase()">Firebase Bağlantısını Test Et</button>
         <button onclick="loadProducts()">Ürünleri Yükle</button>
         <button onclick="addTestProduct()">Test Ürünü Ekle</button>
+        <button onclick="startRealtimeSync()">🔄 Gerçek Zamanlı Senkronizasyon Başlat</button>
+    </div>
+    
+    <div id="realtimeStatus" style="display:none; padding: 15px; background: #dbeafe; border-left: 4px solid #3b82f6; margin: 20px 0; border-radius: 8px;">
+        <strong>🔄 Gerçek Zamanlı Dinleme Aktif</strong>
+        <p style="margin: 5px 0 0 0; font-size: 14px;">Firebase'deki değişiklikler otomatik yansıyacak</p>
     </div>
     
     <pre id="console"></pre>
@@ -196,6 +202,44 @@
                 log('HATA: ' + error.message);
                 console.error(error);
             }
+        }
+        
+        // Gerçek zamanlı senkronizasyon
+        let unsubscribe = null;
+        
+        function startRealtimeSync() {
+            if (unsubscribe) {
+                showStatus('⚠️ Gerçek zamanlı dinleme zaten aktif', 'warning');
+                return;
+            }
+            
+            log('🔄 Gerçek zamanlı senkronizasyon başlatılıyor...');
+            
+            unsubscribe = db.collection('products').onSnapshot(snapshot => {
+                log(`🔥 DEĞİŞİKLİK ALGILANDI! ${snapshot.size} ürün`);
+                
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        log(`  ➕ Eklendi: ${change.doc.data().title}`);
+                    }
+                    if (change.type === 'modified') {
+                        log(`  ✏️ Güncellendi: ${change.doc.data().title}`);
+                    }
+                    if (change.type === 'removed') {
+                        log(`  ❌ Silindi: ${change.doc.id}`);
+                    }
+                });
+                
+                // Otomatik yükle
+                loadProducts();
+            }, error => {
+                log('HATA: ' + error.message);
+                showStatus('❌ Gerçek zamanlı dinleme hatası', 'error');
+            });
+            
+            document.getElementById('realtimeStatus').style.display = 'block';
+            showStatus('✅ Gerçek zamanlı senkronizasyon başlatıldı!', 'success');
+            log('✅ Artık Firebase\'deki her değişiklik otomatik yansıyacak');
         }
     </script>
 </body>
