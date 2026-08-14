@@ -49,7 +49,7 @@ function initializeFirebase() {
     if (typeof firebase !== 'undefined') {
       app = firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      storage = firebase.storage();
+      storage = firebase.storage();  // storage() parantezli
       auth = firebase.auth();
       
       console.log('✅ Firebase App başlatıldı');
