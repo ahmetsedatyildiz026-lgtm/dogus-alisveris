@@ -216,43 +216,38 @@ function stopListeningProducts() {
 // ESKİ saveProducts fonksiyonu - artık kullanılmıyor
 // Firebase async fonksiyonları kullanın: addProduct(), updateProduct(), deleteProduct()
 
-// ─── CUSTOMERS (Firebase) ─────────────────────────────────────────────────────
+// ─── CUSTOMERS (LocalStorage ONLY - HIZLI) ─────────────────────────────────────────────────────
 
 async function getCustomers() {
     console.log('📥 getCustomers() çağrıldı');
-    console.log('🔥 db durumu:', typeof db !== 'undefined' && db ? 'HAZIR' : 'YOK');
     
+    // LocalStorage'dan oku (dogusUsers)
     try {
-        if (typeof db !== 'undefined' && db) {
-            console.log('✅ Firebase\'den müşteriler yükleniyor...');
-            const snapshot = await db.collection('customers').get();
-            const customers = [];
-            snapshot.forEach(doc => {
-                customers.push({ id: doc.id, ...doc.data() });
-            });
-            console.log(`✅ ${customers.length} müşteri Firebase\'den yüklendi:`, customers);
-            return customers;
-        } else {
-            console.warn('⚠️ Firebase hazır değil, boş array dönüyor');
-        }
+        const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+        console.log(`✅ ${users.length} müşteri LocalStorage'dan yüklendi:`, users);
+        return users;
     } catch (error) {
         console.error('❌ Müşteriler yüklenirken hata:', error);
+        return [];
     }
-    console.log('📤 getCustomers() boş array döndü');
-    return [];
 }
 
 async function addCustomer(customer) {
     try {
-        if (!db) throw new Error('Firebase bağlantısı yok!');
+        const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
         
-        const docRef = await db.collection('customers').add({
+        // ID oluştur
+        const newCustomer = {
+            id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             ...customer,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+            createdAt: new Date().toISOString()
+        };
         
-        console.log('✅ Müşteri eklendi:', docRef.id);
-        return docRef.id;
+        users.push(newCustomer);
+        localStorage.setItem('dogusUsers', JSON.stringify(users));
+        
+        console.log('✅ Müşteri eklendi:', newCustomer.id);
+        return newCustomer.id;
     } catch (error) {
         console.error('❌ Müşteri eklenirken hata:', error);
         throw error;
