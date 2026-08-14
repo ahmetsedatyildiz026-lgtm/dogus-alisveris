@@ -165,7 +165,13 @@
                 password: password
             };
 
+            console.log('🚀 Kayıt başlatılıyor...');
+            console.log('📝 Kullanıcı verisi:', { ...userData, password: '***' });
+            console.log('🔥 Firebase durumu:', typeof db !== 'undefined' && db ? 'HAZIR ✅' : 'YOK ❌');
+
             const result = await authSystem.register(userData);
+            
+            console.log('📊 Kayıt sonucu:', result);
 
             if (result.success) {
                 showNotification(result.message, 'success');

@@ -134,9 +134,14 @@
 checkAdminAuth();
 
 async function renderCustomers() {
+    console.log('🔄 Müşteriler yükleniyor...');
+    console.log('🔥 Firebase durumu:', typeof db !== 'undefined' && db ? 'HAZIR ✅' : 'YOK ❌');
+    
     const search = document.getElementById('searchInput').value.toLowerCase();
     const providerFilter = document.getElementById('filterProvider').value;
     let customers = await getCustomers();
+    
+    console.log(`✅ ${customers.length} müşteri yüklendi:`, customers);
 
     if (search) customers = customers.filter(c =>
         (c.name||'').toLowerCase().includes(search) ||
