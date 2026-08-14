@@ -880,3 +880,221 @@ function showNotification(message, type = 'info') {
         }, 300);
     }, 3000);
 }
+
+
+// ===== SAYFA BAŞLATMA FONKSİYONU =====
+async function initializeCategoryPage(categorySlug, categoryName) {
+    console.log(`🚀 initializeCategoryPage çağrıldı: ${categorySlug}`);
+    
+    try {
+        // Global kategori bilgisini sakla
+        window.currentCategory = categorySlug;
+        window.currentCategoryName = categoryName;
+        
+        // Ürünleri yükle
+        console.log('📦 Ürünler yükleniyor...');
+        const database = await loadProductsFromAdmin(true); // Force refresh
+        
+        console.log('📊 Yüklenen database:', database);
+        console.log(`📦 ${categorySlug} kategorisinde ${(database[categorySlug] || []).length} ürün var`);
+        
+        // Kategori ürünlerini global değişkene ata
+        allProducts = database[categorySlug] || [];
+        filteredProducts = [...allProducts];
+        
+        console.log(`✅ ${allProducts.length} ürün kategoriye yüklendi`);
+        
+        // Ürünleri render et
+        renderProducts();
+        setupEventListeners();
+        updateCartCount();
+        
+        console.log('✅ Kategori sayfası başlatıldı!');
+        
+    } catch (error) {
+        console.error('❌ Kategori başlatma hatası:', error);
+        
+        // Hata durumunda boş mesaj göster
+        const grid = document.getElementById('productsGrid');
+        if (grid) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                    <p style="color: #1a1a1a; font-size: 1.2rem; margin-bottom: 0.5rem;">Ürünler yüklenirken hata oluştu</p>
+                    <small style="color: #666;">Lütfen sayfayı yenileyin veya daha sonra tekrar deneyin</small>
+                </div>
+            `;
+        }
+    }
+}
+
+// Global scope'a ekle
+window.initializeCategoryPage = initializeCategoryPage;
+
+
+// ===== ÜRÜN RENDER FONKSİYONU =====
+function renderProducts() {
+    const grid = document.getElementById('productsGrid');
+    const pagination = document.getElementById('pagination');
+    const productsCount = document.getElementById('productsCount');
+    
+    if (!grid) {
+        console.error('❌ productsGrid elementi bulunamadı!');
+        return;
+    }
+    
+    console.log(`🎨 renderProducts: ${filteredProducts.length} ürün render ediliyor`);
+    
+    if (filteredProducts.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+                <p style="color: var(--text-light); font-size: 1.2rem;">Bu kategoride henüz ürün yok</p>
+                <small style="color: var(--text-light);">Admin panelden ürün ekleyebilirsiniz</small>
+            </div>
+        `;
+        if (pagination) pagination.innerHTML = '';
+        if (productsCount) productsCount.textContent = '0';
+        return;
+    }
+    
+    // Sayfalama hesapla
+    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const endIndex = startIndex + productsPerPage;
+    const pageProducts = filteredProducts.slice(startIndex, endIndex);
+    
+    // Ürün sayısını güncelle
+    if (productsCount) {
+        productsCount.textContent = filteredProducts.length;
+    }
+    
+    // Ürünleri render et
+    grid.innerHTML = pageProducts.map(product => {
+        const mainImage = product.images && product.images[0] 
+            ? product.images[0] 
+            : (product.image || 'https://via.placeholder.com/400x300?text=Ürün');
+        
+        return `
+            <div class="product-card" onclick='showProductDetail(${JSON.stringify(product).replace(/'/g, "&#39;")})'>
+                <div class="product-image">
+                    <img src="${mainImage}" alt="${product.title}" loading="lazy" 
+                         onerror="this.src='https://via.placeholder.com/400x300?text=Ürün'">
+                    ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
+                    ${product.originalPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">${product.title}</h3>
+                    <div class="product-meta">
+                        <span class="product-brand">${product.brand || 'Marka'}</span>
+                        ${product.stock > 0 ? `<span class="product-stock">Stokta ${product.stock} adet</span>` : '<span class="product-stock out-of-stock">Stokta Yok</span>'}
+                    </div>
+                    <div class="product-price-section">
+                        ${product.originalPrice ? `<span class="product-price-old">${product.originalPrice}</span>` : ''}
+                        <span class="product-price">${product.price}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Sayfalama render et
+    if (pagination && totalPages > 1) {
+        let paginationHTML = '';
+        
+        // Önceki butonu
+        if (currentPage > 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+        }
+        
+        // Sayfa numaraları
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === currentPage) {
+                paginationHTML += `<button class="pagination-btn active">${i}</button>`;
+            } else if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                paginationHTML += `<button class="pagination-btn" onclick="changePage(${i})">${i}</button>`;
+            } else if (i === currentPage - 2 || i === currentPage + 2) {
+                paginationHTML += `<span class="pagination-dots">...</span>`;
+            }
+        }
+        
+        // Sonraki butonu
+        if (currentPage < totalPages) {
+            paginationHTML += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+        }
+        
+        pagination.innerHTML = paginationHTML;
+    } else if (pagination) {
+        pagination.innerHTML = '';
+    }
+    
+    console.log(`✅ ${pageProducts.length} ürün render edildi (Sayfa ${currentPage}/${totalPages})`);
+}
+
+// Sayfa değiştirme
+function changePage(page) {
+    currentPage = page;
+    renderProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Arama
+function searchProducts() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    if (searchTerm === '') {
+        filteredProducts = [...allProducts];
+    } else {
+        filteredProducts = allProducts.filter(product => 
+            product.title.toLowerCase().includes(searchTerm) ||
+            product.brand.toLowerCase().includes(searchTerm) ||
+            (product.description && product.description.toLowerCase().includes(searchTerm))
+        );
+    }
+    
+    currentPage = 1;
+    renderProducts();
+}
+
+// Sıralama
+function sortProducts() {
+    const sortSelect = document.getElementById('sortSelect');
+    if (!sortSelect) return;
+    
+    const sortValue = sortSelect.value;
+    
+    switch (sortValue) {
+        case 'price-low':
+            filteredProducts.sort((a, b) => {
+                const priceA = parseFloat(a.price.replace(/[₺.,]/g, '')) || 0;
+                const priceB = parseFloat(b.price.replace(/[₺.,]/g, '')) || 0;
+                return priceA - priceB;
+            });
+            break;
+        case 'price-high':
+            filteredProducts.sort((a, b) => {
+                const priceA = parseFloat(a.price.replace(/[₺.,]/g, '')) || 0;
+                const priceB = parseFloat(b.price.replace(/[₺.,]/g, '')) || 0;
+                return priceB - priceA;
+            });
+            break;
+        case 'name':
+            filteredProducts.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
+            break;
+        default:
+            filteredProducts = [...allProducts];
+            break;
+    }
+    
+    currentPage = 1;
+    renderProducts();
+}
+
+// Global scope'a ekle
+window.renderProducts = renderProducts;
+window.changePage = changePage;
+window.searchProducts = searchProducts;
+window.sortProducts = sortProducts;

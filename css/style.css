@@ -3458,7 +3458,7 @@ select:focus {
         display: flex !important;
         align-items: center;
         justify-content: center;
-        background: #ef4444;
+        background: #1a1a1a;
         color: white !important;
         border-radius: 50%;
         cursor: pointer;
@@ -3466,7 +3466,7 @@ select:focus {
         line-height: 1;
         padding: 0;
         border: none;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     
     .modal-header .close:active {
