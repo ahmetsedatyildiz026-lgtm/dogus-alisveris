@@ -15,6 +15,14 @@
     
     <link rel="stylesheet" href="css/style.css?v=202412251225">
     <link rel="stylesheet" href="css/auth.css?v=202412251225">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
 </head>
 <body>
     <!-- HEADER -->
@@ -127,6 +135,83 @@
             window.location.href = 'profil.html';
         }
 
+        // ===== AUTH FUNCTIONS =====
+        
+        // Simple password hash
+        function hashPassword(password) {
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+        
+        // Login function (Firebase + LocalStorage)
+        async function authLogin(email, password) {
+            // Firebase'den kontrol et
+            try {
+                if (typeof db !== 'undefined' && db) {
+                    console.log('🔥 Firebase girişi kontrol ediliyor...');
+                    
+                    const snapshot = await db.collection('customers')
+                        .where('email', '==', email)
+                        .limit(1)
+                        .get();
+                    
+                    if (!snapshot.empty) {
+                        const doc = snapshot.docs[0];
+                        const user = { id: doc.id, ...doc.data() };
+                        
+                        // Şifre kontrolü
+                        if (user.password === hashPassword(password)) {
+                            // Başarılı giriş
+                            const { password: _, ...userWithoutPassword } = user;
+                            localStorage.setItem('dogusCurrentUser', JSON.stringify(userWithoutPassword));
+                            
+                            console.log('✅ Firebase giriş başarılı');
+                            return { success: true, message: 'Giriş başarılı!' };
+                        } else {
+                            console.log('❌ Şifre hatalı');
+                            return { success: false, message: 'Şifre hatalı!' };
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Firebase login hatası:', error);
+            }
+            
+            // Fallback: LocalStorage
+            console.log('📝 LocalStorage kontrolü...');
+            const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+            const user = users.find(u => u.email === email);
+
+            if (!user) {
+                return { success: false, message: 'E-posta adresi bulunamadı!' };
+            }
+
+            if (user.password !== hashPassword(password)) {
+                return { success: false, message: 'Şifre hatalı!' };
+            }
+
+            // Başarılı giriş
+            const { password: _, ...userWithoutPassword } = user;
+            localStorage.setItem('dogusCurrentUser', JSON.stringify(userWithoutPassword));
+            
+            console.log('✅ LocalStorage giriş başarılı');
+            return { success: true, message: 'Giriş başarılı!' };
+        }
+        
+        // Email validation
+        async function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return { valid: false, message: 'Geçerli bir e-posta adresi girin!' };
+            }
+            return { valid: true };
+        }
+        
         // Login form handler
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();

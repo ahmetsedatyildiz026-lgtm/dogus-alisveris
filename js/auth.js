@@ -137,8 +137,45 @@ class AuthSystem {
         return { success: true, message: 'Kayıt başarılı! Giriş yapabilirsiniz.' };
     }
 
-    // Login user
-    login(email, password) {
+    // Login user (Firebase + LocalStorage)
+    async login(email, password) {
+        // Önce Firebase'den kontrol et
+        try {
+            if (typeof db !== 'undefined' && db) {
+                console.log('🔥 Firebase\'den giriş kontrol ediliyor...');
+                
+                const snapshot = await db.collection('customers')
+                    .where('email', '==', email)
+                    .limit(1)
+                    .get();
+                
+                if (!snapshot.empty) {
+                    const doc = snapshot.docs[0];
+                    const user = { id: doc.id, ...doc.data() };
+                    
+                    // Şifre kontrolü
+                    if (user.password === this.hashPassword(password)) {
+                        // Başarılı giriş
+                        const { password: _, ...userWithoutPassword } = user;
+                        this.currentUser = userWithoutPassword;
+                        localStorage.setItem(this.sessionKey, JSON.stringify(userWithoutPassword));
+                        
+                        console.log('✅ Firebase giriş başarılı:', email);
+                        return { success: true, message: 'Giriş başarılı!', user: userWithoutPassword };
+                    } else {
+                        console.log('❌ Şifre hatalı');
+                        return { success: false, message: 'Şifre hatalı!' };
+                    }
+                } else {
+                    console.log('❌ Kullanıcı Firebase\'de bulunamadı');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Firebase login hatası:', error);
+        }
+        
+        // Fallback: LocalStorage
+        console.log('📝 LocalStorage\'dan kontrol ediliyor...');
         const users = this.getAllUsers();
         const user = users.find(u => u.email === email);
 
@@ -155,6 +192,7 @@ class AuthSystem {
         this.currentUser = userWithoutPassword;
         localStorage.setItem(this.sessionKey, JSON.stringify(userWithoutPassword));
 
+        console.log('✅ LocalStorage giriş başarılı:', email);
         return { success: true, message: 'Giriş başarılı!', user: userWithoutPassword };
     }
 
