@@ -204,18 +204,26 @@ function stopListeningProducts() {
 // ─── CUSTOMERS (Firebase) ─────────────────────────────────────────────────────
 
 async function getCustomers() {
+    console.log('📥 getCustomers() çağrıldı');
+    console.log('🔥 db durumu:', typeof db !== 'undefined' && db ? 'HAZIR' : 'YOK');
+    
     try {
         if (typeof db !== 'undefined' && db) {
+            console.log('✅ Firebase\'den müşteriler yükleniyor...');
             const snapshot = await db.collection('customers').get();
             const customers = [];
             snapshot.forEach(doc => {
                 customers.push({ id: doc.id, ...doc.data() });
             });
+            console.log(`✅ ${customers.length} müşteri Firebase\'den yüklendi:`, customers);
             return customers;
+        } else {
+            console.warn('⚠️ Firebase hazır değil, boş array dönüyor');
         }
     } catch (error) {
         console.error('❌ Müşteriler yüklenirken hata:', error);
     }
+    console.log('📤 getCustomers() boş array döndü');
     return [];
 }
 
