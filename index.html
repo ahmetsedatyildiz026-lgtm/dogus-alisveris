@@ -729,7 +729,7 @@
                     })));
                 }
                 
-                // isFeatured=true olanları al (boolean kontrolü)
+                // SADECE isFeatured=true olanları al (boolean kontrolü)
                 let featuredProducts = allProducts.filter(p => {
                     const featured = p.isFeatured === true || p.isFeatured === 'true';
                     console.log(`${p.title}: isFeatured=${p.isFeatured} (${typeof p.isFeatured}), featured=${featured}`);
@@ -738,28 +738,15 @@
 
                 console.log(`✅ ${featuredProducts.length} öne çıkan ürün bulundu`);
 
-                // Eğer featured ürün yoksa veya 4'ten azsa, son eklenen aktif ürünleri ekle
-                if (featuredProducts.length < 4) {
-                    console.log('⚠️ Featured ürün 4\'ten az, diğer ürünler ekleniyor...');
-                    const activeProducts = allProducts.filter(p => 
-                        !(p.isFeatured === true || p.isFeatured === 'true')
-                    ).sort((a, b) => {
-                        const dateA = a.createdAt ? (a.createdAt.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime()) : 0;
-                        const dateB = b.createdAt ? (b.createdAt.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime()) : 0;
-                        return dateB - dateA;
-                    });
-                    
-                    featuredProducts = [...featuredProducts, ...activeProducts].slice(0, 4);
-                } else {
-                    featuredProducts = featuredProducts.slice(0, 4);
-                }
+                // En fazla 8 ürün göster
+                featuredProducts = featuredProducts.slice(0, 8);
 
                 if (featuredProducts.length === 0) {
                     grid.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                            <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
-                            <p style="color: var(--text-light);">Henüz ürün eklenmemiş</p>
-                            <small style="color: var(--text-light);">Admin panelinden ürün ekleyebilirsiniz</small>
+                            <i class="fas fa-star" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+                            <p style="color: var(--text-light);">Henüz öne çıkan ürün eklenmemiş</p>
+                            <small style="color: var(--text-light);">Admin panelinde ürün eklerken "En Çok Satanlarda Göster" seçeneğini işaretleyin</small>
                         </div>
                     `;
                     return;
