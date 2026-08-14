@@ -119,7 +119,8 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const result = await authLogin(email, password);
+            // authSystem.login() kullan
+            const result = await authSystem.login(email, password);
 
             if (result.success) {
                 showNotification(result.message, 'success');
