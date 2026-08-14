@@ -470,7 +470,7 @@ async function saveProduct() {
     const productData = {
         title: name,
         brand: brand,
-        category: category,
+        category: category,  // beyaz-esya, klima-ventilator gibi
         price: '₺' + parseFloat(price).toLocaleString('tr-TR'),
         originalPrice: originalPrice ? '₺' + parseFloat(originalPrice).toLocaleString('tr-TR') : '',
         stock: parseInt(document.getElementById('prodStock').value) || 0,
@@ -483,6 +483,7 @@ async function saveProduct() {
     };
 
     console.log('📦 Ürün verisi:', productData);
+    console.log('🏷️ Kategori değeri:', productData.category);
 
     try {
         console.log('🚀 Firebase işlemi başlatılıyor...');

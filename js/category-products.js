@@ -45,6 +45,7 @@ async function loadProductsFromAdmin(forceRefresh = false) {
         const products = [];
         snapshot.forEach(doc => {
             const data = doc.data();
+            console.log(`📦 Ürün: "${data.title}" - Kategori: "${data.category}" - Stok: ${data.stock}`);
             if ((data.stock || 0) > 0) { // Stokta olanlar
                 products.push({ id: doc.id, ...data });
             }
@@ -56,7 +57,10 @@ async function loadProductsFromAdmin(forceRefresh = false) {
         
         // Kategorilere göre grupla
         products.forEach(product => {
-            if (!product.category) return;
+            if (!product.category) {
+                console.warn(`⚠️ Kategorisiz ürün: ${product.title}`);
+                return;
+            }
             
             if (!database[product.category]) {
                 database[product.category] = [];
@@ -69,8 +73,9 @@ async function loadProductsFromAdmin(forceRefresh = false) {
         categoryProductsCache = database;
         categoryCacheTimestamp = Date.now();
         
+        console.log('📊 Kategorilere göre gruplama:');
         Object.keys(database).forEach(cat => {
-            console.log(`  - ${cat}: ${database[cat].length} ürün`);
+            console.log(`  - "${cat}": ${database[cat].length} ürün`);
         });
         
         return database;
