@@ -42,6 +42,11 @@ try {
     storage = firebase.storage();
     auth = firebase.auth();
     
+    console.log('✅ Firebase App başlatıldı');
+    console.log('✅ Firestore başlatıldı:', typeof db);
+    console.log('✅ Storage başlatıldı:', typeof storage);
+    console.log('✅ Auth başlatıldı:', typeof auth);
+    
     // OFFLINE PERSISTENCE - Hızlı yüklenme için
     db.enablePersistence({ synchronizeTabs: true })
       .then(() => {
