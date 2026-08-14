@@ -289,30 +289,13 @@
     <script src="js/category-products.js?v=202501251600"></script>
     <script src="js/auth.js?v=202412251225"></script>
     <script>
-        // Initialize category page - Firebase yüklendikten sonra
+        // Initialize category page - FIREBASE YOK, SADECE LOCALSTORAGE!
         window.addEventListener('load', function() {
             console.log('🚀 Sayfa yüklendi, kategori başlatılıyor...');
-            console.log('🔍 Firebase durumu:', typeof db !== 'undefined' && db ? 'Hazır' : 'Hazır değil');
+            console.log('📦 localStorage kullanılıyor (Firebase yok)');
             
-            // Firebase hazır olana kadar bekle
-            let attempts = 0;
-            const maxAttempts = 20;
-            
-            const checkFirebase = setInterval(() => {
-                attempts++;
-                
-                if (typeof db !== 'undefined' && db) {
-                    console.log('✅ Firebase hazır, kategori başlatılıyor...');
-                    clearInterval(checkFirebase);
-                    initializeCategoryPage('beyaz-esya', 'Beyaz Eşya');
-                } else if (attempts >= maxAttempts) {
-                    console.error('❌ Firebase 10 saniye içinde hazır olmadı!');
-                    clearInterval(checkFirebase);
-                    alert('Firebase bağlantısı kurulamadı. Sayfayı yenileyin.');
-                } else {
-                    console.log('⏳ Firebase bekleniyor... (' + attempts + '/' + maxAttempts + ')');
-                }
-            }, 500);
+            // Direkt başlat - Firebase bekleme yok!
+            initializeCategoryPage('beyaz-esya', 'Beyaz Eşya');
         });
     </script>
 </body>
