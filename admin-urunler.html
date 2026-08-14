@@ -445,8 +445,17 @@ function closeProductModal() {
 // ─── SAVE ─────────────────────────────────────────────────────
 async function saveProduct() {
     console.log('💾 saveProduct çağrıldı');
-    console.log('🔍 Firebase durumu:', typeof db !== 'undefined' && db ? 'Bağlı' : 'Bağlı değil');
-    console.log('🔍 addProduct fonksiyonu:', typeof addProduct);
+    
+    // ÇİFT TIKLAMAYI ÖNLE!
+    const saveBtn = document.querySelector('#productModal button[onclick="saveProduct()"]');
+    if (saveBtn && saveBtn.disabled) {
+        console.warn('⚠️ Buton zaten disabled, işlem devam ediyor...');
+        return;
+    }
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
     
     const name = document.getElementById('prodName').value.trim();
     const brand = document.getElementById('prodBrand').value.trim();
@@ -459,6 +468,10 @@ async function saveProduct() {
     if (!name || !brand || !category || !price || !description) {
         console.error('❌ Zorunlu alanlar eksik!');
         showAdminNotification('Zorunlu alanları doldurun!', 'error');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Kaydet';
+        }
         return;
     }
 

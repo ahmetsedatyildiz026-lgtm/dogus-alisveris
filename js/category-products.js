@@ -40,18 +40,31 @@ async function loadProductsFromAdmin(forceRefresh = false) {
         
         // Kategorilere göre grupla (sadece aktif ve stokta olanlar)
         allProducts.forEach(product => {
-            if (!product.category) return;
-            if (product.status !== 'active') return; // Sadece aktif ürünler
-            if ((product.stock || 0) <= 0) return; // Sadece stokta olanlar
+            console.log(`🔍 Ürün: ${product.title}, Kategori: "${product.category}", Status: "${product.status}", Stok: ${product.stock}`);
+            
+            if (!product.category) {
+                console.warn(`⚠️ ${product.title} - Kategori yok!`);
+                return;
+            }
+            if (product.status !== 'active') {
+                console.warn(`⚠️ ${product.title} - Status: ${product.status} (aktif değil)`);
+                return;
+            }
+            if ((product.stock || 0) <= 0) {
+                console.warn(`⚠️ ${product.title} - Stok: ${product.stock} (stokta yok)`);
+                return;
+            }
             
             if (!database[product.category]) {
                 database[product.category] = [];
             }
             
             database[product.category].push(product);
+            console.log(`✅ ${product.title} → ${product.category} kategorisine eklendi`);
         });
         
         console.log('📊 Kategorilere göre ürünler:', Object.keys(database).map(k => `${k}: ${database[k].length}`));
+        console.log('📦 Database:', database);
         
         // Cache'i güncelle
         categoryProductsCache = database;
