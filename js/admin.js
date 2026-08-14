@@ -32,29 +32,55 @@ function adminLogout() {
 
 // ─── DATA HELPERS ────────────────────────────────────────────────────────────
 
-// ===== ÜRÜN FONKSİYONLARI (SADECE Firebase) =====
+// ===== ÜRÜN FONKSİYONLARI (SADECE Firebase + CACHE) =====
 
-// SADECE Firebase'den oku
-async function getProducts() {
+// CACHE - Ürünleri bellekte tut
+let productsCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 30000; // 30 saniye cache
+
+// SADECE Firebase'den oku (CACHE ile hızlandırılmış)
+async function getProducts(forceRefresh = false) {
     try {
+        // Cache kontrolü - 30 saniye içinde tekrar sorma
+        if (!forceRefresh && productsCache && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
+            console.log('📦 Ürünler cache\'den yüklendi (hızlı)');
+            return productsCache;
+        }
+        
         if (!db) {
             console.error('❌ Firebase bağlantısı yok!');
-            return [];
+            return productsCache || []; // Cache varsa onu döndür
         }
         
         console.log('🔥 Ürünler Firebase\'den yükleniyor...');
-        const snapshot = await db.collection('products').get();
+        const snapshot = await db.collection('products')
+            .orderBy('createdAt', 'desc') // Son eklenenler önce
+            .get({ source: 'default' }); // Cache'den de alabilir
+        
         const products = [];
         snapshot.forEach(doc => {
             products.push({ id: doc.id, ...doc.data() });
         });
         
+        // Cache'i güncelle
+        productsCache = products;
+        cacheTimestamp = Date.now();
+        
         console.log(`✅ ${products.length} ürün Firebase'den yüklendi`);
         return products;
     } catch (error) {
         console.error('❌ Firebase okuma hatası:', error);
-        return [];
+        // Hata durumunda cache'deki veriyi döndür
+        return productsCache || [];
     }
+}
+
+// Cache'i temizle (ürün ekleme/silme/güncelleme sonrası)
+function clearProductsCache() {
+    productsCache = null;
+    cacheTimestamp = 0;
+    console.log('🗑️ Ürün cache temizlendi');
 }
 
 // Geriye uyumluluk için
@@ -273,6 +299,9 @@ async function addProduct(productData) {
         const docRef = await db.collection('products').add(product);
         console.log('✅ Ürün Firebase\'e eklendi:', docRef.id);
         
+        // Cache'i temizle
+        clearProductsCache();
+        
         // Site ile senkronizasyon için event dispatch
         window.dispatchEvent(new CustomEvent('productsUpdated'));
         
@@ -297,6 +326,9 @@ async function updateProduct(id, productData) {
         
         console.log('✅ Ürün güncellendi:', id);
         
+        // Cache'i temizle
+        clearProductsCache();
+        
         // Site ile senkronizasyon için event dispatch
         window.dispatchEvent(new CustomEvent('productsUpdated'));
         
@@ -316,6 +348,9 @@ async function deleteProduct(id) {
         
         await db.collection('products').doc(id).delete();
         console.log('✅ Ürün silindi:', id);
+        
+        // Cache'i temizle
+        clearProductsCache();
         
         // Site ile senkronizasyon için event dispatch
         window.dispatchEvent(new CustomEvent('productsUpdated'));

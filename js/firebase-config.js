@@ -41,10 +41,11 @@ try {
     db = firebase.firestore();
     storage = firebase.storage();
     
-    console.log('✅ Firebase başarıyla başlatıldı');
-    
-    // Firestore offline persistence (çevrimdışı çalışma)
+    // OFFLINE PERSISTENCE - Hızlı yüklenme için
     db.enablePersistence({ synchronizeTabs: true })
+      .then(() => {
+        console.log('✅ Firebase offline persistence aktif - Hızlı yüklenme!');
+      })
       .catch((err) => {
         if (err.code == 'failed-precondition') {
           console.warn('⚠️ Persistence sadece bir tab\'ta aktif olabilir');
@@ -52,6 +53,8 @@ try {
           console.warn('⚠️ Tarayıcı offline persistence desteklemiyor');
         }
       });
+    
+    console.log('✅ Firebase başarıyla başlatıldı');
   } else {
     console.error('❌ Firebase SDK yüklenmedi! HTML dosyalarında Firebase script taglerini kontrol et.');
   }

@@ -15,21 +15,39 @@ let currentProductImages = [];
 // Boş kategori veritabanı - Admin'den doldurulacak
 const categoryDatabase = {};
 
-// ===== ADMİN PANELDEKİ ÜRÜNLERİ YÜKLE (Firebase'den) =====
-async function loadProductsFromAdmin() {
+// ===== ADMİN PANELDEKİ ÜRÜNLERİ YÜKLE (Firebase'den + CACHE) =====
+
+// Cache
+let categoryProductsCache = null;
+let categoryCacheTimestamp = 0;
+const CATEGORY_CACHE_DURATION = 60000; // 60 saniye
+
+async function loadProductsFromAdmin(forceRefresh = false) {
     try {
+        // Cache kontrolü
+        if (!forceRefresh && categoryProductsCache && (Date.now() - categoryCacheTimestamp < CATEGORY_CACHE_DURATION)) {
+            console.log('📦 Kategori ürünleri cache\'den yüklendi (hızlı)');
+            return categoryProductsCache;
+        }
+        
         console.log('🔥 Ürünler Firebase\'den yükleniyor...');
         
         // Firebase kontrolü
         if (!db) {
             console.error('❌ Firebase bağlantısı yok!');
-            return {};
+            return categoryProductsCache || {};
         }
         
-        const snapshot = await db.collection('products').get();
+        const snapshot = await db.collection('products')
+            .where('status', '==', 'active') // Sadece aktif ürünler
+            .get({ source: 'default' }); // Cache'den de alabilir
+        
         const products = [];
         snapshot.forEach(doc => {
-            products.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            if ((data.stock || 0) > 0) { // Stokta olanlar
+                products.push({ id: doc.id, ...data });
+            }
         });
         
         console.log(`✅ Firebase'den ${products.length} ürün yüklendi`);
@@ -44,11 +62,12 @@ async function loadProductsFromAdmin() {
                 database[product.category] = [];
             }
             
-            // Sadece aktif ve stokta olan ürünleri göster
-            if (product.status === 'active' && (product.stock || 0) > 0) {
-                database[product.category].push(product);
-            }
+            database[product.category].push(product);
         });
+        
+        // Cache'i güncelle
+        categoryProductsCache = database;
+        categoryCacheTimestamp = Date.now();
         
         Object.keys(database).forEach(cat => {
             console.log(`  - ${cat}: ${database[cat].length} ürün`);
@@ -58,7 +77,7 @@ async function loadProductsFromAdmin() {
         
     } catch (error) {
         console.error('❌ Ürünler yüklenemedi:', error);
-        return {};
+        return categoryProductsCache || {};
     }
 }
 
