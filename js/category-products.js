@@ -30,36 +30,46 @@ async function loadProductsFromAdmin(forceRefresh = false) {
             return categoryProductsCache;
         }
         
-        // Firebase kontrolü
-        if (!db) {
-            console.error('❌ Firebase bağlantısı yok!');
-            return categoryProductsCache || {};
-        }
+        console.log('🔄 Ürünler yükleniyor...');
         
-        console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+        // LocalStorage'dan oku (ÖNCE LocalStorage - HIZLI!)
+        let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
+        console.log(`📦 ${allProducts.length} ürün LocalStorage'dan yüklendi`);
         
-        // Firebase offline-first: önce cache'den oku, sonra network'ten güncelle
-        const snapshot = await db.collection('products')
-            .where('status', '==', 'active')
-            .get({ source: 'cache' }) // ÖNCE CACHE'DEN!
-            .catch(() => db.collection('products')
-                .where('status', '==', 'active')
-                .get({ source: 'server' }) // Sonra server'dan
-            );
-        
-        const products = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if ((data.stock || 0) > 0) {
-                products.push({ id: doc.id, ...data });
+        // Firebase'den de oku (opsiyonel, birleştir)
+        try {
+            if (typeof db !== 'undefined' && db) {
+                console.log('🔥 Firebase\'den de ürünler yükleniyor...');
+                const snapshot = await db.collection('products')
+                    .where('status', '==', 'active')
+                    .get({ source: 'cache' })
+                    .catch(() => db.collection('products')
+                        .where('status', '==', 'active')
+                        .get({ source: 'server' })
+                    );
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if ((data.stock || 0) > 0) {
+                        // Duplicate kontrolü
+                        if (!allProducts.find(p => p.id === doc.id)) {
+                            allProducts.push({ id: doc.id, ...data });
+                        }
+                    }
+                });
+                console.log(`🔥 Firebase ile toplam ${allProducts.length} ürün`);
             }
-        });
+        } catch (fbError) {
+            console.warn('⚠️ Firebase okuma hatası (LocalStorage çalışıyor):', fbError);
+        }
         
         const database = {};
         
-        // Kategorilere göre grupla
-        products.forEach(product => {
+        // Kategorilere göre grupla (sadece aktif ve stokta olanlar)
+        allProducts.forEach(product => {
             if (!product.category) return;
+            if (product.status !== 'active') return; // Sadece aktif ürünler
+            if ((product.stock || 0) <= 0) return; // Sadece stokta olanlar
             
             if (!database[product.category]) {
                 database[product.category] = [];
@@ -67,6 +77,8 @@ async function loadProductsFromAdmin(forceRefresh = false) {
             
             database[product.category].push(product);
         });
+        
+        console.log('📊 Kategorilere göre ürünler:', Object.keys(database).map(k => `${k}: ${database[k].length}`));
         
         // Cache'i güncelle
         categoryProductsCache = database;

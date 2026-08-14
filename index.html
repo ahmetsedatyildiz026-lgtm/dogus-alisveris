@@ -708,33 +708,47 @@
             if (!grid) return;
 
             try {
-                let allProducts = [];
+                // LocalStorage'dan yükle (ÖNCE LocalStorage!)
+                let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
+                console.log(`📦 ${allProducts.length} ürün LocalStorage'dan yüklendi`);
                 
-                // Firebase'den HIZLI yükle (cache-first)
-                if (typeof db !== 'undefined' && db) {
-                    console.log('🔥 Ürünler yükleniyor (cache-first)...');
-                    
-                    // ÖNCE CACHE'DEN OKU (anında yüklenme!)
-                    const snapshot = await db.collection('products')
-                        .where('status', '==', 'active')
-                        .get({ source: 'cache' })
-                        .catch(() => {
-                            // Cache yoksa server'dan oku
-                            console.log('📡 Cache yok, server\'dan yükleniyor...');
-                            return db.collection('products')
-                                .where('status', '==', 'active')
-                                .get({ source: 'server' });
+                // Firebase'den de yükle (opsiyonel, birleştir)
+                try {
+                    if (typeof db !== 'undefined' && db) {
+                        console.log('🔥 Firebase\'den de ürünler yükleniyor...');
+                        
+                        const snapshot = await db.collection('products')
+                            .where('status', '==', 'active')
+                            .get({ source: 'cache' })
+                            .catch(() => {
+                                console.log('📡 Cache yok, server\'dan yükleniyor...');
+                                return db.collection('products')
+                                    .where('status', '==', 'active')
+                                    .get({ source: 'server' });
+                            });
+                        
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            if ((data.stock || 0) > 0) {
+                                // Duplicate kontrolü
+                                if (!allProducts.find(p => p.id === doc.id)) {
+                                    allProducts.push({ id: doc.id, ...data });
+                                }
+                            }
                         });
-                    
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if ((data.stock || 0) > 0) {
-                            allProducts.push({ id: doc.id, ...data });
-                        }
-                    });
-                    
-                    console.log(`✅ ${allProducts.length} aktif ürün yüklendi (HIZLI!)`);
+                        
+                        console.log(`✅ Toplam ${allProducts.length} ürün (LocalStorage + Firebase)`);
+                    }
+                } catch (fbError) {
+                    console.warn('⚠️ Firebase okuma hatası (LocalStorage çalışıyor):', fbError);
                 }
+                
+                // Sadece aktif ve stokta olanları filtrele
+                allProducts = allProducts.filter(p => 
+                    p.status === 'active' && (p.stock || 0) > 0
+                );
+                console.log(`✅ ${allProducts.length} aktif ürün (stokta)`);
+                
                 
                 // SADECE isFeatured=true olanları al (boolean kontrolü)
                 let featuredProducts = allProducts.filter(p => {
