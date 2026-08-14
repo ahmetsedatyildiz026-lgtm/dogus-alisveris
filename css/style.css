@@ -3054,3 +3054,366 @@ body {
     border-radius: 8px;
     color: var(--admin-text-light, #94a3b8);
 }
+
+/* ===== MODERN ANIMATIONS - SUBTLE & ELEGANT ===== */
+
+/* Fade-in animation for page load */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Smooth pulse for loading */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Shimmer effect for loading */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Slide from top */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gentle bounce */
+@keyframes gentleBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Rotate animation for icons */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== APPLY ANIMATIONS TO ELEMENTS ===== */
+
+/* Header animation */
+.header {
+    animation: slideDown 0.6s ease-out;
+}
+
+/* Hero section animation */
+.hero {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.hero-content h1 {
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-content p {
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.hero-buttons {
+    animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+/* Section animations - stagger effect */
+.section {
+    animation: fadeInUp 0.8s ease-out both;
+}
+
+.section:nth-child(1) { animation-delay: 0.1s; }
+.section:nth-child(2) { animation-delay: 0.2s; }
+.section:nth-child(3) { animation-delay: 0.3s; }
+
+/* Cards hover effects - elegant lift */
+.category-card,
+.product-card,
+.brand-card,
+.contact-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInScale 0.6s ease-out both;
+}
+
+.category-card:hover,
+.product-card:hover,
+.brand-card:hover,
+.contact-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Card stagger animation */
+.category-card:nth-child(1) { animation-delay: 0.1s; }
+.category-card:nth-child(2) { animation-delay: 0.2s; }
+.category-card:nth-child(3) { animation-delay: 0.3s; }
+.category-card:nth-child(4) { animation-delay: 0.4s; }
+.category-card:nth-child(5) { animation-delay: 0.5s; }
+
+.product-card:nth-child(1) { animation-delay: 0.05s; }
+.product-card:nth-child(2) { animation-delay: 0.1s; }
+.product-card:nth-child(3) { animation-delay: 0.15s; }
+.product-card:nth-child(4) { animation-delay: 0.2s; }
+
+/* Icon animations on hover */
+.category-icon {
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Button animations */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Link arrow animation */
+.category-link,
+.contact-action {
+    transition: all 0.3s ease;
+}
+
+.category-link i,
+.contact-action i {
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+.category-link:hover i,
+.contact-action:hover i {
+    transform: translateX(5px);
+}
+
+/* Smooth scroll indicator */
+.scroll-indicator {
+    animation: gentleBounce 2s ease-in-out infinite;
+}
+
+/* Loading spinner animation */
+.fa-spinner {
+    animation: rotate 1s linear infinite;
+}
+
+/* Notification animation */
+.notification {
+    animation: slideDown 0.4s ease-out;
+}
+
+/* Image hover effect */
+.product-image img,
+.modal-product-image img {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+/* Accordion smooth animation */
+.accordion-content {
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease;
+}
+
+/* Modal animation */
+.modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+/* Smooth fade for images */
+img {
+    transition: opacity 0.3s ease;
+}
+
+img:not([src]) {
+    opacity: 0;
+}
+
+/* Price tag pulse effect (subtle) */
+.product-price,
+.modal-product-price {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .product-price {
+    color: var(--secondary);
+    transform: scale(1.05);
+}
+
+/* Badge animations */
+.badge,
+.cart-count {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+/* Input focus animation */
+input:focus,
+textarea:focus,
+select:focus {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Loading state shimmer */
+.loading-state {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Skeleton loader */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--gray-200) 0%,
+        var(--gray-100) 20%,
+        var(--gray-200) 40%,
+        var(--gray-200) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+}
+
+/* Hover lift for interactive elements */
+.user-menu-btn,
+.cart-btn,
+.nav-link {
+    transition: all 0.2s ease;
+}
+
+.user-menu-btn:hover,
+.cart-btn:hover,
+.nav-link:hover {
+    transform: translateY(-2px);
+}
+
+/* Smooth opacity transitions */
+.fade-enter {
+    opacity: 0;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* ===== RESPONSIVE: Reduce animations on mobile ===== */
+@media (max-width: 768px) {
+    .category-card:hover,
+    .product-card:hover,
+    .brand-card:hover {
+        transform: translateY(-4px); /* Daha az hareket */
+    }
+    
+    /* Mobile'da tap için animasyon */
+    .category-card:active,
+    .product-card:active,
+    .brand-card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* ===== ACCESSIBILITY: Respect user preferences ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
