@@ -201,36 +201,67 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bağlanıyor...';
 
             try {
-                console.log('⏳ Firebase Auth bekleniyor...');
-                
-                // 15 saniye timeout ekle
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Firebase yükleme zaman aşımına uğradı')), 15000)
-                );
-                
-                await Promise.race([window.waitForFirebase(), timeoutPromise]);
-                console.log('✅ Firebase Auth hazır!');
-
-                console.log('🔐 Google giriş butonu tıklandı');
-                const result = await authSystem.googleSignIn();
-                console.log('📊 Google giriş sonucu:', result);
-
-                if (result.success) {
-                    showNotification(result.message, 'success');
-                    setTimeout(() => { window.location.href = 'profil.html'; }, 1000);
-                } else {
-                    showNotification(result.message, 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fab fa-google"></i> Google ile Üye Ol';
+                // Direkt firebase kontrolü
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase SDK yüklenmedi');
                 }
-            } catch (error) {
-                console.error('❌ Firebase yükleme hatası:', error);
-                let errorMsg = 'Firebase yüklenemedi. ';
                 
-                if (error.message.includes('zaman aşımı')) {
-                    errorMsg += 'İnternet bağlantınızı kontrol edin.';
+                // firebase.auth() direkt kullan - global değişkenleri beklemeden
+                const auth = firebase.auth();
+                if (!auth) {
+                    throw new Error('Firebase Auth başlatılamadı');
+                }
+                
+                console.log('✅ Firebase Auth hazır!');
+                console.log('🔐 Google giriş butonu tıklandı');
+                
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                
+                const user = result.user;
+                console.log('✅ Google ile giriş başarılı:', user.email);
+                
+                // Kullanıcıyı Firestore'a kaydet
+                const db = firebase.firestore();
+                const userDoc = await db.collection('customers').doc(user.uid).get();
+                
+                let userData;
+                if (!userDoc.exists) {
+                    userData = {
+                        id: user.uid,
+                        name: user.displayName,
+                        email: user.email,
+                        phone: user.phoneNumber || '',
+                        address: '',
+                        provider: 'google',
+                        photoURL: user.photoURL,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    await db.collection('customers').doc(user.uid).set(userData);
+                    console.log('✅ Yeni kullanıcı Firestore\'a kaydedildi');
                 } else {
-                    errorMsg += 'Sayfayı yenileyin veya tarayıcı cache\'ini temizleyin.';
+                    userData = { id: user.uid, ...userDoc.data() };
+                }
+                
+                // LocalStorage'a kaydet
+                localStorage.setItem('dogusCurrentUser', JSON.stringify(userData));
+                
+                showNotification('Google ile giriş başarılı!', 'success');
+                setTimeout(() => { window.location.href = 'profil.html'; }, 1000);
+                
+            } catch (error) {
+                console.error('❌ Google giriş hatası:', error);
+                
+                let errorMsg = 'Giriş yapılamadı. ';
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMsg = 'Google girişi iptal edildi.';
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    errorMsg = 'Bu domain yetkili değil. Firebase Console\'da authorized domains ekleyin.';
+                } else if (error.message.includes('SDK')) {
+                    errorMsg = 'Firebase yüklenemedi. Sayfayı yenileyin veya internet bağlantınızı kontrol edin.';
+                } else {
+                    errorMsg += error.message;
                 }
                 
                 showNotification(errorMsg, 'error');
