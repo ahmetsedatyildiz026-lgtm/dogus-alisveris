@@ -944,7 +944,7 @@
         // Sayfa yüklendiğinde katalog markalarını da yükle
         loadCatalogBrands();
 
-        // ===== ANLAŞMALI MARKALAR YÜKLEME =====
+        // ===== ANLAŞMALI MARKALAR YÜKLEME (Firebase Real-time) =====
         async function loadContractedBrands() {
             const container = document.getElementById('contractedBrandsAccordion');
             if (!container) return;
@@ -953,39 +953,42 @@
                 let brands = {};
                 
                 // Firebase varsa Firebase'den yükle
-                if (isFirebaseReady()) {
+                if (typeof db !== 'undefined' && db) {
                     console.log('🔥 Markalar Firebase\'den yükleniyor...');
-                    brands = await getBrandsFromFirebase();
-                    console.log('✅ Markalar Firebase\'den yüklendi');
-                } else {
-                    // Firebase yoksa LocalStorage'dan yükle
-                    console.log('📦 Markalar LocalStorage\'dan yükleniyor...');
-                    const brandsData = localStorage.getItem('dogusBrands');
-                    brands = brandsData ? JSON.parse(brandsData) : null;
-                }
-
-                // Eğer admin'de marka yoksa, varsayılan markaları kullan
-                if (!brands || Object.keys(brands).length === 0) {
-                    brands = {
-                        'Beyaz Eşya': ['ALTUS', 'HOOVER', 'GRUNDİG', 'SUNNY', 'ÇETİNTAŞ', 'TEKA', 'VENTİNO', 'SİMFER', 'REGAL', 'TELEFUNKEN'],
-                        'Küçük Ev Aletleri': ['FANTOM', 'FAKİR', 'ONVO', 'APRİLLA', 'SİNBO', 'İNOVA', 'ARÇELİK', 'CVS', 'KİWİ', 'ARZUM', 'KORKMAZ', 'PHİLİPS', 'DUBBO', 'VEVANDİN', 'SAREX', 'SUNNY', 'RANGE', 'ARNİCA', 'CONTİ', 'AKSU', 'İTİMAT', 'ALTUS', 'KİNG'],
-                        'Klima & Vantilatör': ['RAKS', 'İNOVA', 'ALTUS', 'REGAL'],
-                        'Mobilya': ['PUFFY', 'AKYOL MOBİLYA', 'SUNA SANDALYE', 'MASSA', 'HOMESET', 'BODE', 'TUTKU', 'EVONA', 'SİES', 'RAVİZZA', 'ÇINARCA', 'ASRASAN'],
-                        'Kişisel Bakım': ['REMİNGTON', 'APRİLLA', 'BABYLİSS', 'FAKİR', 'BRAUN', 'İNOVA', 'RAKS', 'POWERTEC'],
-                        'Tekstil': ['COTTONBOX', 'ALTINBAŞAK', 'TAC', 'KRİSTAL', 'HOBBY'],
-                        'Züccaciye': ['TAÇ', 'SCHAFER', 'AKPA', 'FALEZ', 'KORKMAZ', 'İMZA', 'TEFAL']
-                    };
+                    const doc = await db.collection('brands').doc('brandsList').get();
                     
-                    // Varsayılan markaları Firebase'e kaydet (eğer Firebase varsa)
-                    if (isFirebaseReady()) {
-                        await saveBrandsToFirebase(brands);
-                        console.log('✅ Varsayılan markalar Firebase\'e kaydedildi');
+                    if (doc.exists) {
+                        brands = doc.data().brands || {};
+                        console.log('✅ Markalar Firebase\'den yüklendi:', Object.keys(brands).length, 'kategori');
                     } else {
-                        // LocalStorage'a kaydet
-                        localStorage.setItem('dogusBrands', JSON.stringify(brands));
+                        console.log('⚠️ Firebase\'de marka yok, varsayılanlar yüklenecek');
                     }
                 }
 
+                // Eğer Firebase'de marka yoksa, varsayılan markaları kullan
+                if (!brands || Object.keys(brands).length === 0) {
+                    console.log('📝 Varsayılan markalar yükleniyor...');
+                    brands = {
+                        'Beyaz Eşya': ['ALTUS', 'HOOVER', 'GRUNDİG', 'SUNNY', 'ÇETİNTAŞ', 'TEKA', 'VENTİNO', 'SİMFER', 'REGAL', 'TELEFUNKEN'],
+                        'Küçük Ev Aletleri': ['FANTOM', 'FAKİR', 'ONVO', 'APRİLLA', 'SİNBO', 'İNOVA', 'ARÇELİK', 'CVS', 'KİWİ', 'ARZUM', 'KORKMAZ', 'PHİLİPS'],
+                        'Klima & Vantilatör': ['RAKS', 'İNOVA', 'ALTUS', 'REGAL'],
+                        'Mobilya': ['PUFFY', 'AKYOL MOBİLYA', 'SUNA SANDALYE', 'MASSA', 'HOMESET', 'BODE', 'TUTKU'],
+                        'Kişisel Bakım': ['REMİNGTON', 'APRİLLA', 'BABYLİSS', 'FAKİR', 'BRAUN'],
+                        'Tekstil': ['COTTONBOX', 'ALTINBAŞAK', 'TAC', 'KRİSTAL', 'HOBBY'],
+                        'Züccaciye': ['TAÇ', 'SCHAFER', 'AKPA', 'FALEZ', 'KORKMAZ']
+                    };
+                    
+                    // Varsayılan markaları Firebase'e kaydet
+                    if (typeof db !== 'undefined' && db) {
+                        await db.collection('brands').doc('brandsList').set({
+                            brands: brands,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        console.log('✅ Varsayılan markalar Firebase\'e kaydedildi');
+                    }
+                }
+
+                // Markaları render et
                 if (Object.keys(brands).length === 0) {
                     container.innerHTML = `
                         <div style="text-align: center; padding: 3rem; color: var(--text-light);">
@@ -1024,24 +1027,15 @@
             }
         }
 
-        // Storage değişikliklerini dinle (farklı tab'lar için)
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'dogusBrands' || e.key === 'dogusBrandsUpdated') {
-                console.log('🔄 Markalar güncellendi (storage event)');
+        // Firebase'den markaları gerçek zamanlı dinle
+        if (typeof db !== 'undefined' && db) {
+            db.collection('brands').doc('brandsList').onSnapshot(doc => {
+                console.log('🔄 Markalar güncellendi, yeniden yükleniyor...');
                 loadContractedBrands();
-            }
-        });
-
-        // Aynı tab için periyodik kontrol (admin ile aynı tab'da çalışırsa)
-        let lastBrandsUpdate = localStorage.getItem('dogusBrandsUpdated') || '0';
-        setInterval(() => {
-            const currentUpdate = localStorage.getItem('dogusBrandsUpdated') || '0';
-            if (currentUpdate !== lastBrandsUpdate) {
-                console.log('🔄 Markalar güncellendi (polling)');
-                lastBrandsUpdate = currentUpdate;
-                loadContractedBrands();
-            }
-        }, 2000); // Her 2 saniyede bir kontrol et
+            }, error => {
+                console.error('❌ Marka dinleme hatası:', error);
+            });
+        }
 
         // İlk yükleme
         loadContractedBrands();
