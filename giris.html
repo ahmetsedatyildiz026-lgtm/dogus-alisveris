@@ -148,17 +148,24 @@
             return hash.toString();
         }
         
-        // Login function (Firebase + LocalStorage)
+        // Login function (Firebase + LocalStorage) - WITH TIMEOUT
         async function authLogin(email, password) {
-            // Firebase'den kontrol et
+            // Firebase'den kontrol et (5 saniye timeout)
             try {
                 if (typeof db !== 'undefined' && db) {
                     console.log('🔥 Firebase girişi kontrol ediliyor...');
                     
-                    const snapshot = await db.collection('customers')
+                    // 5 saniye timeout
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Firebase timeout')), 5000)
+                    );
+                    
+                    const firebasePromise = db.collection('customers')
                         .where('email', '==', email)
                         .limit(1)
                         .get();
+                    
+                    const snapshot = await Promise.race([firebasePromise, timeoutPromise]);
                     
                     if (!snapshot.empty) {
                         const doc = snapshot.docs[0];
@@ -179,7 +186,8 @@
                     }
                 }
             } catch (error) {
-                console.error('❌ Firebase login hatası:', error);
+                console.error('❌ Firebase login hatası:', error.message);
+                // Timeout veya hata olursa LocalStorage'a geç
             }
             
             // Fallback: LocalStorage
