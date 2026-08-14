@@ -903,12 +903,12 @@
         };
 
         // ===== GERÇEK ZAMANLI FİREBASE DİNLEME =====
-        // Firebase'deki değişiklikleri anında yakala
+        // Firebase'deki değişiklikleri anında yakala (SESSIZ GÜNCELLEME)
         if (typeof db !== 'undefined' && db) {
             console.log('🔥 Gerçek zamanlı dinleme başlatılıyor...');
             db.collection('products').onSnapshot(snapshot => {
-                console.log('🔄 Ürünler güncellendi, yeniden yükleniyor...');
-                loadFeaturedProducts();
+                console.log('🔄 Ürünler güncellendi (sessiz yükleme)');
+                loadFeaturedProducts(); // Sessiz yükleme - bildirim YOK
             }, error => {
                 console.error('❌ Firebase dinleme hatası:', error);
             });
@@ -1027,11 +1027,15 @@
             }
         }
 
-        // Firebase'den markaları gerçek zamanlı dinle
+        // Firebase'den markaları gerçek zamanlı dinle (SESSIZ GÜNCELLEME)
         if (typeof db !== 'undefined' && db) {
             db.collection('brands').doc('brandsList').onSnapshot(doc => {
-                console.log('🔄 Markalar güncellendi, yeniden yükleniyor...');
-                loadContractedBrands();
+                console.log('🔄 Markalar güncellendi (sessiz yükleme)');
+                loadContractedBrands(); // Sessiz yükleme - bildirim YOK
+            }, error => {
+                console.error('❌ Marka dinleme hatası:', error);
+            });
+        }
             }, error => {
                 console.error('❌ Marka dinleme hatası:', error);
             });

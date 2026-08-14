@@ -175,7 +175,7 @@ function listenToProducts(callback) {
         snapshot.forEach(doc => {
             products.push({ id: doc.id, ...doc.data() });
         });
-        console.log('🔄 Ürünler güncellendi:', products.length);
+        console.log('🔄 Ürünler güncellendi (sessiz):', products.length);
         callback(products);
     }, error => {
         console.error('❌ Ürün dinleme hatası:', error);
@@ -183,7 +183,7 @@ function listenToProducts(callback) {
 }
 
 /**
- * Gerçek zamanlı dinlemeyi başlat (admin panelde kullan)
+ * Gerçek zamanlı dinlemeyi başlat (admin panelde kullan) - SESSIZ GÜNCELLEME
  */
 let unsubscribeProducts = null;
 
@@ -194,11 +194,11 @@ function startListeningProducts() {
     }
     
     unsubscribeProducts = listenToProducts((products) => {
-        console.log('🔥 Ürünler güncellendi, sayfa yenileniyor...');
+        console.log('🔥 Ürünler güncellendi (sessiz güncelleme)');
         if (typeof renderProducts === 'function') {
-            renderProducts();
+            renderProducts(); // Sessiz yükleme - bildirim YOK
         }
-        // Admin panelde event gönder
+        // Admin panelde event gönder (sessiz)
         window.dispatchEvent(new CustomEvent('productsUpdated', { detail: { products } }));
     });
     
