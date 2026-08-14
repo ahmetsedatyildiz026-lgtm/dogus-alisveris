@@ -201,7 +201,9 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bağlanıyor...';
 
-            const result = await authGoogleSignIn();
+            console.log('🔐 Google giriş butonu tıklandı');
+            const result = await authSystem.googleSignIn();
+            console.log('📊 Google giriş sonucu:', result);
 
             if (result.success) {
                 showNotification(result.message, 'success');
