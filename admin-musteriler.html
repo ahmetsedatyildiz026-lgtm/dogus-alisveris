@@ -135,13 +135,25 @@ checkAdminAuth();
 
 async function renderCustomers() {
     console.log('🔄 Müşteriler yükleniyor...');
-    console.log('🔥 Firebase durumu:', typeof db !== 'undefined' && db ? 'HAZIR ✅' : 'YOK ❌');
+    
+    // DOĞRUDAN LOCALSTORAGE'DAN OKU (Firebase bekleme!)
+    let customers = [];
+    try {
+        const stored = localStorage.getItem('dogusUsers');
+        console.log('📦 LocalStorage ham veri:', stored);
+        
+        if (stored) {
+            customers = JSON.parse(stored);
+            console.log(`✅ ${customers.length} müşteri LocalStorage'dan yüklendi:`, customers);
+        } else {
+            console.log('⚠️ LocalStorage\'da dogusUsers yok!');
+        }
+    } catch (error) {
+        console.error('❌ LocalStorage okuma hatası:', error);
+    }
     
     const search = document.getElementById('searchInput').value.toLowerCase();
     const providerFilter = document.getElementById('filterProvider').value;
-    let customers = await getCustomers();
-    
-    console.log(`✅ ${customers.length} müşteri yüklendi:`, customers);
 
     if (search) customers = customers.filter(c =>
         (c.name||'').toLowerCase().includes(search) ||
@@ -153,21 +165,29 @@ async function renderCustomers() {
     const tbody = document.getElementById('customersTableBody');
     const empty = document.getElementById('emptyState');
 
-    // Stats
-    const all = await getCustomers();
-    const orders = await getOrders();
+    // Stats - LOCALSTORAGE'DAN
+    const all = customers; // Zaten LocalStorage'dan yüklü
+    let orders = [];
+    try {
+        orders = await getOrders(); // Firebase'den siparişler
+    } catch (error) {
+        console.error('❌ Siparişler yüklenemedi:', error);
+    }
+    
     document.getElementById('statTotal').textContent = all.length;
     document.getElementById('statGoogle').textContent = all.filter(c => c.provider === 'google').length;
     document.getElementById('statEmail').textContent = all.filter(c => c.provider !== 'google').length;
-    document.getElementById('statOrdered').textContent = new Set(orders.map(o => o.customerId)).size;
+    document.getElementById('statOrdered').textContent = orders.length ? new Set(orders.map(o => o.customerId)).size : 0;
     document.getElementById('totalCount').textContent = customers.length + ' müşteri';
 
     if (!customers.length) {
         tbody.innerHTML = '';
         empty.style.display = 'block';
+        console.log('⚠️ Müşteri bulunamadı - Empty state gösteriliyor');
         return;
     }
     empty.style.display = 'none';
+    console.log(`✅ ${customers.length} müşteri tabloya yükleniyor...`);
 
     tbody.innerHTML = customers.map((c, i) => {
         const custOrders = orders.filter(o => o.customerId === c.id || o.customerEmail === c.email);
@@ -204,9 +224,28 @@ async function renderCustomers() {
 }
 
 async function showCustomerDetail(id) {
-    const c = (await getCustomers()).find(u => u.id === id);
-    if (!c) return;
-    const orders = (await getOrders()).filter(o => o.customerId === id || o.customerEmail === c.email);
+    // LOCALSTORAGE'DAN OKU
+    let customers = [];
+    try {
+        customers = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+    } catch (error) {
+        console.error('❌ Müşteri detayı yüklenemedi:', error);
+        return;
+    }
+    
+    const c = customers.find(u => u.id === id);
+    if (!c) {
+        console.error('❌ Müşteri bulunamadı:', id);
+        return;
+    }
+    
+    let orders = [];
+    try {
+        orders = (await getOrders()).filter(o => o.customerId === id || o.customerEmail === c.email);
+    } catch (error) {
+        console.error('❌ Siparişler yüklenemedi:', error);
+    }
+    
     const totalSpent = orders.reduce((sum, o) => {
         const val = parseFloat((o.total||'0').replace(/[₺.,]/g,'')) || 0;
         return sum + val;
@@ -275,24 +314,11 @@ document.getElementById('customerModal').addEventListener('click', e => {
     if (e.target === document.getElementById('customerModal')) closeCustomerModal();
 });
 
-// Firebase hazır olduğunda müşterileri yükle
+// Sayfa yüklendiğinde HEMEN müşterileri yükle (Firebase bekleme!)
 window.addEventListener('load', function() {
-    let attempts = 0;
-    const maxAttempts = 20;
-    
-    const checkFirebase = setInterval(() => {
-        attempts++;
-        
-        if (typeof db !== 'undefined' && db) {
-            console.log('✅ Firebase hazır, müşteriler yükleniyor...');
-            clearInterval(checkFirebase);
-            renderCustomers();
-        } else if (attempts >= maxAttempts) {
-            console.error('❌ Firebase hazır olmadı, LocalStorage kullanılıyor');
-            clearInterval(checkFirebase);
-            renderCustomers();
-        }
-    }, 500);
+    console.log('🚀 Admin müşteriler sayfası yüklendi');
+    console.log('📦 LocalStorage dogusUsers:', localStorage.getItem('dogusUsers'));
+    renderCustomers();
 });
 </script>
 </body>
