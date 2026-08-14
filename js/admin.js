@@ -201,30 +201,173 @@ function stopListeningProducts() {
 // ESKİ saveProducts fonksiyonu - artık kullanılmıyor
 // Firebase async fonksiyonları kullanın: addProduct(), updateProduct(), deleteProduct()
 
-function getCustomers() {
-    // Merge kayıtlı kullanıcılar
-    const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
-    return users;
+// ─── CUSTOMERS (Firebase) ─────────────────────────────────────────────────────
+
+async function getCustomers() {
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const snapshot = await db.collection('customers').get();
+            const customers = [];
+            snapshot.forEach(doc => {
+                customers.push({ id: doc.id, ...doc.data() });
+            });
+            return customers;
+        }
+    } catch (error) {
+        console.error('❌ Müşteriler yüklenirken hata:', error);
+    }
+    return [];
 }
 
-function getOrders() {
-    return JSON.parse(localStorage.getItem('dogusOrders') || '[]');
+async function addCustomer(customer) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        const docRef = await db.collection('customers').add({
+            ...customer,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Müşteri eklendi:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Müşteri eklenirken hata:', error);
+        throw error;
+    }
 }
 
-function saveOrders(orders) {
-    localStorage.setItem('dogusOrders', JSON.stringify(orders));
+// ─── ORDERS (Firebase) ────────────────────────────────────────────────────────
+
+async function getOrders() {
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').get();
+            const orders = [];
+            snapshot.forEach(doc => {
+                orders.push({ id: doc.id, ...doc.data() });
+            });
+            return orders;
+        }
+    } catch (error) {
+        console.error('❌ Siparişler yüklenirken hata:', error);
+    }
+    return [];
 }
 
-function getStock() {
-    return JSON.parse(localStorage.getItem('dogusStock') || '[]');
+async function saveOrder(order) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        const docRef = await db.collection('orders').add({
+            ...order,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Sipariş kaydedildi:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Sipariş kaydedilirken hata:', error);
+        throw error;
+    }
 }
 
-function saveStock(stock) {
-    localStorage.setItem('dogusStock', JSON.stringify(stock));
+async function updateOrderStatus(orderId, status) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        await db.collection('orders').doc(orderId).update({
+            status: status,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Sipariş durumu güncellendi:', orderId);
+    } catch (error) {
+        console.error('❌ Sipariş güncellenirken hata:', error);
+        throw error;
+    }
 }
 
-function getBrands() {
-    const defaultBrands = {
+// ─── STOCK (Firebase) ─────────────────────────────────────────────────────────
+
+async function getStock() {
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const snapshot = await db.collection('stock').get();
+            const stock = [];
+            snapshot.forEach(doc => {
+                stock.push({ id: doc.id, ...doc.data() });
+            });
+            return stock;
+        }
+    } catch (error) {
+        console.error('❌ Stok yüklenirken hata:', error);
+    }
+    return [];
+}
+
+async function addStockItem(item) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        const docRef = await db.collection('stock').add({
+            ...item,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Stok eklendi:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Stok eklenirken hata:', error);
+        throw error;
+    }
+}
+
+async function updateStockItem(id, data) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        await db.collection('stock').doc(id).update({
+            ...data,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Stok güncellendi:', id);
+    } catch (error) {
+        console.error('❌ Stok güncellenirken hata:', error);
+        throw error;
+    }
+}
+
+async function deleteStockItem(id) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        await db.collection('stock').doc(id).delete();
+        console.log('✅ Stok silindi:', id);
+    } catch (error) {
+        console.error('❌ Stok silinirken hata:', error);
+        throw error;
+    }
+}
+
+// ─── BRANDS (Firebase) ────────────────────────────────────────────────────────
+
+async function getBrands() {
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const doc = await db.collection('settings').doc('brands').get();
+            if (doc.exists) {
+                return doc.data().brands || getDefaultBrands();
+            }
+        }
+    } catch (error) {
+        console.error('❌ Markalar yüklenirken hata:', error);
+    }
+    return getDefaultBrands();
+}
+
+function getDefaultBrands() {
+    return {
         'Beyaz Eşya': ['ALTUS', 'HOOVER', 'GRUNDİG', 'SUNNY', 'ÇETİNTAŞ', 'TEKA', 'VENTİNO', 'SİMFER', 'REGAL', 'TELEFUNKEN'],
         'Küçük Ev Aletleri': ['FANTOM', 'FAKİR', 'ONVO', 'APRİLLA', 'SİNBO', 'İNOVA', 'ARÇELİK', 'CVS', 'KİWİ', 'ARZUM', 'KORKMAZ', 'PHİLİPS', 'DUBBO', 'VEVANDİN', 'SAREX', 'SUNNY', 'RANGE', 'ARNİCA', 'CONTİ', 'AKSU', 'İTİMAT', 'ALTUS', 'KİNG'],
         'Klima & Vantilatör': ['RAKS', 'İNOVA', 'ALTUS', 'REGAL'],
@@ -233,22 +376,32 @@ function getBrands() {
         'Tekstil': ['COTTONBOX', 'ALTINBAŞAK', 'TAC', 'KRİSTAL', 'HOBBY'],
         'Züccaciye': ['TAÇ', 'SCHAFER', 'AKPA', 'FALEZ', 'KORKMAZ', 'İMZA', 'TEFAL']
     };
-    const saved = localStorage.getItem('dogusBrands');
-    return saved ? JSON.parse(saved) : defaultBrands;
 }
 
-function saveBrands(brands) {
-    localStorage.setItem('dogusBrands', JSON.stringify(brands));
+async function saveBrands(brands) {
+    try {
+        if (!db) throw new Error('Firebase bağlantısı yok!');
+        
+        await db.collection('settings').doc('brands').set({
+            brands: brands,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Markalar kaydedildi');
+    } catch (error) {
+        console.error('❌ Markalar kaydedilirken hata:', error);
+        throw error;
+    }
 }
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
 
 async function getDashboardStats() {
     const products = await getProducts();
-    const customers = getCustomers();
-    const orders = getOrders();
-    const stock = getStock();
-    const brands = getBrands();
+    const customers = await getCustomers();
+    const orders = await getOrders();
+    const stock = await getStock();
+    const brands = await getBrands();
 
     const totalBrands = Object.values(brands).reduce((sum, arr) => sum + arr.length, 0);
     const brandCategories = Object.keys(brands).length;
@@ -375,43 +528,6 @@ async function deleteProduct(id) {
 }
 
 // ─── STOCK CRUD ───────────────────────────────────────────────────────────────
-
-function addStockItem(item) {
-    const stock = getStock();
-    const entry = {
-        id: 'stk_' + Date.now(),
-        ...item,
-        addedAt: new Date().toISOString()
-    };
-    stock.push(entry);
-    saveStock(stock);
-    return entry;
-}
-
-function updateStockItem(id, data) {
-    const stock = getStock();
-    const idx = stock.findIndex(s => s.id === id);
-    if (idx === -1) return null;
-    stock[idx] = { ...stock[idx], ...data };
-    saveStock(stock);
-    return stock[idx];
-}
-
-function deleteStockItem(id) {
-    saveStock(getStock().filter(s => s.id !== id));
-}
-
-// ─── ORDER STATUS ─────────────────────────────────────────────────────────────
-
-function updateOrderStatus(orderId, status) {
-    const orders = getOrders();
-    const order = orders.find(o => o.id === orderId);
-    if (order) {
-        order.status = status;
-        order.updatedAt = new Date().toISOString();
-        saveOrders(orders);
-    }
-}
 
 // ─── IMAGE HELPERS ────────────────────────────────────────────────────────────
 
@@ -547,10 +663,10 @@ function markNotificationRead(id) {
 
 // ─── ANALYTICS & REPORTS ──────────────────────────────────────────────────────
 
-function getMonthlyReport(month, year) {
-    const orders = getOrders();
-    const products = getProducts();
-    const customers = getCustomers();
+async function getMonthlyReport(month, year) {
+    const orders = await getOrders();
+    const products = await getProducts();
+    const customers = await getCustomers();
     
     const monthOrders = orders.filter(o => {
         const orderDate = new Date(o.createdAt);
@@ -591,8 +707,8 @@ function getMonthlyReport(month, year) {
     };
 }
 
-function getSalesChartData(days = 30) {
-    const orders = getOrders();
+async function getSalesChartData(days = 30) {
+    const orders = await getOrders();
     const now = new Date();
     const data = [];
     

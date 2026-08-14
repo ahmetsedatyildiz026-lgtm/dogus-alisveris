@@ -335,14 +335,14 @@ function initReportSelects() {
     }
 }
 
-function generateReport() {
+async function generateReport() {
     const month = parseInt(document.getElementById('reportMonth').value);
     const year = parseInt(document.getElementById('reportYear').value);
     
-    const report = getMonthlyReport(month, year);
-    const stats = getDashboardStats();
-    const products = getProducts();
-    const customers = getCustomers();
+    const report = await getMonthlyReport(month, year);
+    const stats = await getDashboardStats();
+    const products = await getProducts();
+    const customers = await getCustomers();
     
     const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -497,11 +497,11 @@ function exportReportPDF() {
 
 // ─── MESAJLAŞMA ────────────────────────────────────────────────────────────────
 
-function updateRecipients() {
+async function updateRecipients() {
     const selected = document.querySelector('input[name="recipients"]:checked').value;
     const customDiv = document.getElementById('customRecipients');
     const customerList = document.getElementById('customerList');
-    const customers = getCustomers();
+    const customers = await getCustomers();
     
     document.getElementById('totalCustomers').textContent = customers.length;
     
@@ -548,7 +548,7 @@ function clearMessageForm() {
     updateMessagePreview();
 }
 
-function sendBulkMessage() {
+async function sendBulkMessage() {
     const title = document.getElementById('messageTitle').value.trim();
     const content = document.getElementById('messageContent').value.trim();
     const recipientType = document.querySelector('input[name="recipients"]:checked').value;
@@ -559,14 +559,14 @@ function sendBulkMessage() {
         return;
     }
     
-    let customers = getCustomers();
+    let customers = await getCustomers();
     
     if (recipientType === 'active') {
         // Son 30 gün içinde sipariş verenler
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
-        const orders = getOrders();
+        const orders = await getOrders();
         const activeCustomerIds = [...new Set(orders
             .filter(o => new Date(o.createdAt) > thirtyDaysAgo)
             .map(o => o.customerId)
@@ -656,7 +656,7 @@ function loadNotifications() {
                     <p>${n.message}</p>
                     <small>${formatDate(n.createdAt)}</small>
                 </div>
-                ${!n.read ? '<span class="notification-badge"></span>' : ''}
+                $!n.read ? '<span class="notification-badge"></span>' : ''
             </div>
         `;
     }).join('');
@@ -692,8 +692,8 @@ initReportSelects();
 updateRecipients();
 
 // Otomatik bildirim oluştur (demo)
-window.addEventListener('load', function() {
-    const products = getProducts();
+window.addEventListener('load', async function() {
+    const products = await getProducts();
     const lowStockProducts = products.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= 3);
     
     if (lowStockProducts.length > 0) {
