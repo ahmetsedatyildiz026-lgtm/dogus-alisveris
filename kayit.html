@@ -246,10 +246,30 @@
             
             // KAYDET ve DOĞRULA
             try {
+                // 1. LocalStorage'a kaydet
                 localStorage.setItem('dogusUsers', JSON.stringify(users));
                 console.log('💾 LocalStorage\'a yazıldı');
                 
-                // HEMEN OKU VE DOĞRULA
+                // 2. Firebase'e de kaydet (async)
+                try {
+                    if (typeof db !== 'undefined' && db) {
+                        await db.collection('customers').add({
+                            name: newUser.name,
+                            email: newUser.email,
+                            phone: newUser.phone,
+                            address: newUser.address,
+                            provider: 'email',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        console.log('🔥 Firebase\'e de kaydedildi');
+                    } else {
+                        console.warn('⚠️ Firebase bağlantısı yok, sadece LocalStorage kullanıldı');
+                    }
+                } catch (firebaseError) {
+                    console.error('⚠️ Firebase kayıt hatası (LocalStorage çalışıyor):', firebaseError);
+                }
+                
+                // 3. DOĞRULA
                 const verification = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
                 console.log('✅ Doğrulama: ' + verification.length + ' kullanıcı okundu');
                 

@@ -3,145 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Test</title>
+    <title>Firebase Test - Doğuş</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 2rem;
+            min-height: 100vh;
         }
-        .log {
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        .log-item {
-            padding: 8px;
-            margin: 4px 0;
-            border-left: 3px solid #ccc;
-            padding-left: 12px;
+        h1 {
+            color: #f5576c;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
         }
-        .log-item.success {
-            border-color: #4CAF50;
-            background: #f1f8f4;
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1rem;
         }
-        .log-item.error {
-            border-color: #f44336;
-            background: #fef1f1;
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #f5576c;
         }
-        .log-item.info {
-            border-color: #2196F3;
-            background: #e3f2fd;
+        .section h2 {
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
         }
         button {
-            background: #4285f4;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             cursor: pointer;
-            margin: 10px 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: transform 0.2s;
         }
         button:hover {
-            background: #357ae8;
+            transform: translateY(-2px);
         }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+        #output {
+            background: #1e1e1e;
+            color: #4facfe;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        .warning { color: #fbbf24; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f5576c;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
         }
     </style>
 </head>
 <body>
-    <h1>🔥 Firebase Bağlantı Testi</h1>
-    
-    <div class="log" id="logContainer">
-        <h3>Test Logları:</h3>
-        <div id="logs"></div>
+    <div class="container">
+        <h1>🔥 Firebase Bağlantı Testi</h1>
+        <p class="subtitle">Firebase veritabanı bağlantısını ve içeriğini kontrol edin</p>
+
+        <!-- İSTATİSTİKLER -->
+        <div class="section">
+            <h2>📊 Firebase Durumu</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="firebaseStatus">❓</div>
+                    <div class="stat-label">Firebase Bağlantı</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="productsCount">0</div>
+                    <div class="stat-label">Ürünler</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="customersCount">0</div>
+                    <div class="stat-label">Müşteriler</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="ordersCount">0</div>
+                    <div class="stat-label">Siparişler</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TESTLER -->
+        <div class="section">
+            <h2>🧪 Firebase Testleri</h2>
+            <button onclick="testFirebaseConnection()">Firebase Bağlantı Testi</button>
+            <button onclick="testProducts()">Ürünleri Kontrol Et</button>
+            <button onclick="testCustomers()">Müşterileri Kontrol Et</button>
+            <button onclick="testOrders()">Siparişleri Kontrol Et</button>
+        </div>
+
+        <!-- COLLECTIONS -->
+        <div class="section">
+            <h2>📦 Firestore Collections</h2>
+            <button onclick="listAllCollections()">Tüm Collection'ları Listele</button>
+        </div>
+
+        <!-- KONSOL ÇIKTISI -->
+        <div class="section">
+            <h2>📝 Test Çıktısı</h2>
+            <div id="output">Hazır. Bir test butonuna basın...</div>
+        </div>
     </div>
-    
-    <button onclick="testGoogleSignIn()">Google ile Giriş Yap</button>
-    <button onclick="clearLogs()">Logları Temizle</button>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <!-- Firebase Config -->
-    <script src="js/firebase-config.js?v=20241225"></script>
+    <script src="js/firebase-config.js"></script>
 
     <script>
-        function addLog(message, type = 'info') {
-            const logsDiv = document.getElementById('logs');
-            const logItem = document.createElement('div');
-            logItem.className = `log-item ${type}`;
-            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logsDiv.appendChild(logItem);
-            logsDiv.scrollTop = logsDiv.scrollHeight;
+        let output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            const icon = {
+                success: '✅',
+                error: '❌',
+                info: '📘',
+                warning: '⚠️'
+            }[type] || '📘';
+            
+            output.innerHTML += `<span class="${type}">[${timestamp}] ${icon} ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
             console.log(message);
         }
 
-        function clearLogs() {
-            document.getElementById('logs').innerHTML = '';
+        function clearOutput() {
+            output.innerHTML = '';
         }
 
-        // Test Firebase SDK
-        addLog('🔍 Firebase SDK kontrolü başlıyor...', 'info');
-        
-        if (typeof firebase === 'undefined') {
-            addLog('❌ Firebase SDK yüklenmedi!', 'error');
-        } else {
-            addLog('✅ Firebase SDK yüklendi', 'success');
-            addLog(`   Firebase version: ${firebase.SDK_VERSION}`, 'info');
-        }
-
-        // Test waitForFirebase
-        addLog('⏳ waitForFirebase() fonksiyonu bekleniyor...', 'info');
-        
-        if (typeof window.waitForFirebase === 'undefined') {
-            addLog('❌ waitForFirebase() fonksiyonu bulunamadı!', 'error');
-        } else {
-            addLog('✅ waitForFirebase() fonksiyonu mevcut', 'success');
+        // Firebase bağlantı testi
+        async function testFirebaseConnection() {
+            clearOutput();
+            log('Firebase bağlantı testi başlatılıyor...', 'info');
             
-            window.waitForFirebase()
-                .then(({ app, db, storage, auth }) => {
-                    addLog('✅ Firebase başarıyla başlatıldı!', 'success');
-                    addLog(`   App: ${typeof app}`, 'success');
-                    addLog(`   Firestore: ${typeof db}`, 'success');
-                    addLog(`   Storage: ${typeof storage}`, 'success');
-                    addLog(`   Auth: ${typeof auth}`, 'success');
-                })
-                .catch(error => {
-                    addLog(`❌ Firebase başlatılamadı: ${error.message}`, 'error');
-                });
-        }
-
-        async function testGoogleSignIn() {
-            addLog('🔐 Google Sign-In testi başlıyor...', 'info');
+            if (typeof firebase === 'undefined') {
+                log('Firebase SDK yüklenmemiş! ❌', 'error');
+                document.getElementById('firebaseStatus').textContent = '❌';
+                return;
+            }
+            
+            if (typeof db === 'undefined' || !db) {
+                log('Firestore bağlantısı yok! ❌', 'error');
+                document.getElementById('firebaseStatus').textContent = '❌';
+                return;
+            }
             
             try {
-                addLog('⏳ Firebase Auth bekleniyor...', 'info');
-                const { auth } = await window.waitForFirebase();
-                addLog('✅ Firebase Auth hazır', 'success');
+                // Basit bir okuma işlemi yap
+                const testDoc = await db.collection('_test').doc('test').get();
+                log('Firebase bağlantısı ÇALIŞIYOR! ✅', 'success');
+                document.getElementById('firebaseStatus').textContent = '✅';
                 
-                addLog('🔐 Google popup açılıyor...', 'info');
-                const provider = new firebase.auth.GoogleAuthProvider();
-                const result = await auth.signInWithPopup(provider);
-                
-                addLog(`✅ Giriş başarılı: ${result.user.email}`, 'success');
-                addLog(`   Kullanıcı adı: ${result.user.displayName}`, 'success');
-                addLog(`   UID: ${result.user.uid}`, 'success');
-                
+                // Proje bilgisi
+                const app = firebase.app();
+                log(`Proje: ${app.options.projectId}`, 'info');
+                log(`Auth Domain: ${app.options.authDomain}`, 'info');
             } catch (error) {
-                addLog(`❌ Hata: ${error.code || 'unknown'}`, 'error');
-                addLog(`   Mesaj: ${error.message}`, 'error');
+                log('Firebase bağlantı hatası: ' + error.message, 'error');
+                document.getElementById('firebaseStatus').textContent = '❌';
             }
         }
+
+        // Ürünleri kontrol et
+        async function testProducts() {
+            clearOutput();
+            log('Ürünler kontrol ediliyor...', 'info');
+            
+            try {
+                if (!db) {
+                    log('Firestore bağlantısı yok!', 'error');
+                    return;
+                }
+                
+                const snapshot = await db.collection('products').limit(10).get();
+                const count = snapshot.size;
+                
+                document.getElementById('productsCount').textContent = count;
+                
+                if (count === 0) {
+                    log('Firebase\'de ÜRÜN YOK! ⚠️', 'warning');
+                    log('Ürünler admin panelden eklenebilir.', 'info');
+                } else {
+                    log(`Firebase\'de ${count} ürün bulundu! ✅`, 'success');
+                    
+                    // İlk 5 ürünü göster
+                    log('\nİlk 5 ürün:', 'info');
+                    let index = 1;
+                    snapshot.forEach(doc => {
+                        if (index <= 5) {
+                            const data = doc.data();
+                            log(`  ${index}. ${data.name || 'İsimsiz'} - ${data.price || 'Fiyatsız'}`, 'info');
+                            index++;
+                        }
+                    });
+                }
+            } catch (error) {
+                log('Ürün kontrolü hatası: ' + error.message, 'error');
+            }
+        }
+
+        // Müşterileri kontrol et
+        async function testCustomers() {
+            clearOutput();
+            log('Müşteriler kontrol ediliyor...', 'info');
+            
+            try {
+                if (!db) {
+                    log('Firestore bağlantısı yok!', 'error');
+                    return;
+                }
+                
+                const snapshot = await db.collection('customers').get();
+                const count = snapshot.size;
+                
+                document.getElementById('customersCount').textContent = count;
+                
+                if (count === 0) {
+                    log('Firebase\'de MÜŞTERİ YOK! ⚠️', 'warning');
+                    log('Müşteriler kayit.html üzerinden eklenebilir.', 'info');
+                } else {
+                    log(`Firebase\'de ${count} müşteri bulundu! ✅`, 'success');
+                    
+                    // İlk 5 müşteriyi göster
+                    log('\nİlk 5 müşteri:', 'info');
+                    let index = 1;
+                    snapshot.forEach(doc => {
+                        if (index <= 5) {
+                            const data = doc.data();
+                            log(`  ${index}. ${data.name || 'İsimsiz'} - ${data.email || 'Email yok'}`, 'info');
+                            index++;
+                        }
+                    });
+                }
+            } catch (error) {
+                log('Müşteri kontrolü hatası: ' + error.message, 'error');
+            }
+        }
+
+        // Siparişleri kontrol et
+        async function testOrders() {
+            clearOutput();
+            log('Siparişler kontrol ediliyor...', 'info');
+            
+            try {
+                if (!db) {
+                    log('Firestore bağlantısı yok!', 'error');
+                    return;
+                }
+                
+                const snapshot = await db.collection('orders').get();
+                const count = snapshot.size;
+                
+                document.getElementById('ordersCount').textContent = count;
+                
+                if (count === 0) {
+                    log('Firebase\'de SİPARİŞ YOK! ⚠️', 'warning');
+                } else {
+                    log(`Firebase\'de ${count} sipariş bulundu! ✅`, 'success');
+                }
+            } catch (error) {
+                log('Sipariş kontrolü hatası: ' + error.message, 'error');
+            }
+        }
+
+        // Tüm collection'ları listele
+        async function listAllCollections() {
+            clearOutput();
+            log('Firebase collection\'ları kontrol ediliyor...', 'info');
+            log('NOT: Web SDK ile collection listesi alınamaz.', 'warning');
+            log('Bilinen collection\'lar test ediliyor...\n', 'info');
+            
+            const collections = ['products', 'customers', 'orders', 'stock', 'settings'];
+            
+            for (const collName of collections) {
+                try {
+                    const snapshot = await db.collection(collName).limit(1).get();
+                    if (snapshot.size > 0) {
+                        log(`✅ ${collName} collection\'ı mevcut (en az 1 belge var)`, 'success');
+                    } else {
+                        log(`⚠️ ${collName} collection\'ı boş`, 'warning');
+                    }
+                } catch (error) {
+                    log(`❌ ${collName} collection\'ı kontrol edilemedi: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Sayfa yüklendiğinde otomatik test
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                log('Test paneli hazır!', 'success');
+                testFirebaseConnection();
+            }, 1000);
+        });
     </script>
 </body>
 </html>

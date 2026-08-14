@@ -136,20 +136,42 @@ checkAdminAuth();
 async function renderCustomers() {
     console.log('🔄 Müşteriler yükleniyor...');
     
-    // DOĞRUDAN LOCALSTORAGE'DAN OKU (Firebase bekleme!)
     let customers = [];
+    
+    // 1. LocalStorage'dan oku
     try {
         const stored = localStorage.getItem('dogusUsers');
-        console.log('📦 LocalStorage ham veri:', stored);
-        
         if (stored) {
-            customers = JSON.parse(stored);
-            console.log(`✅ ${customers.length} müşteri LocalStorage'dan yüklendi:`, customers);
-        } else {
-            console.log('⚠️ LocalStorage\'da dogusUsers yok!');
+            const localCustomers = JSON.parse(stored);
+            console.log(`📦 ${localCustomers.length} müşteri LocalStorage'dan yüklendi`);
+            customers = [...localCustomers];
         }
     } catch (error) {
         console.error('❌ LocalStorage okuma hatası:', error);
+    }
+    
+    // 2. Firebase'den de oku (varsa ekle)
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const snapshot = await db.collection('customers').get();
+            const firebaseCustomers = [];
+            snapshot.forEach(doc => {
+                firebaseCustomers.push({ id: doc.id, ...doc.data() });
+            });
+            console.log(`🔥 ${firebaseCustomers.length} müşteri Firebase'den yüklendi`);
+            
+            // Firebase'dekileri de ekle (duplicate kontrolü ile)
+            firebaseCustomers.forEach(fc => {
+                if (!customers.find(c => c.email === fc.email)) {
+                    customers.push(fc);
+                }
+            });
+            console.log(`✅ Toplam ${customers.length} benzersiz müşteri`);
+        } else {
+            console.warn('⚠️ Firebase bağlantısı yok, sadece LocalStorage kullanılıyor');
+        }
+    } catch (error) {
+        console.error('❌ Firebase okuma hatası:', error);
     }
     
     const search = document.getElementById('searchInput').value.toLowerCase();
