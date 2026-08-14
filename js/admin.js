@@ -120,6 +120,58 @@ async function deleteProduct(productId) {
     }
 }
 
+/**
+ * Gerçek zamanlı dinleme - Firebase'deki değişiklikleri anında yakala
+ */
+function listenToProducts(callback) {
+    if (!db) {
+        console.error('❌ Firebase bağlantısı yok!');
+        return null;
+    }
+    
+    return db.collection('products').onSnapshot(snapshot => {
+        const products = [];
+        snapshot.forEach(doc => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+        console.log('🔄 Ürünler güncellendi:', products.length);
+        callback(products);
+    }, error => {
+        console.error('❌ Ürün dinleme hatası:', error);
+    });
+}
+
+/**
+ * Gerçek zamanlı dinlemeyi başlat (admin panelde kullan)
+ */
+let unsubscribeProducts = null;
+
+function startListeningProducts() {
+    if (unsubscribeProducts) {
+        console.log('⚠️ Zaten dinleniyor');
+        return;
+    }
+    
+    unsubscribeProducts = listenToProducts((products) => {
+        console.log('🔥 Ürünler güncellendi, sayfa yenileniyor...');
+        if (typeof renderProducts === 'function') {
+            renderProducts();
+        }
+        // Admin panelde event gönder
+        window.dispatchEvent(new CustomEvent('productsUpdated', { detail: { products } }));
+    });
+    
+    console.log('✅ Gerçek zamanlı dinleme başlatıldı');
+}
+
+function stopListeningProducts() {
+    if (unsubscribeProducts) {
+        unsubscribeProducts();
+        unsubscribeProducts = null;
+        console.log('❌ Gerçek zamanlı dinleme durduruldu');
+    }
+}
+
 // ESKİ saveProducts fonksiyonu - artık kullanılmıyor
 // Firebase async fonksiyonları kullanın: addProduct(), updateProduct(), deleteProduct()
 

@@ -606,8 +606,13 @@ document.getElementById('deleteModal').addEventListener('click', e => {
     if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
 });
 
-// Sayfa yüklendiğinde Firebase'den yükle
+// Sayfa yüklendiğinde Firebase'den yükle ve gerçek zamanlı dinleme başlat
 renderProducts();
+
+// Gerçek zamanlı dinleme başlat
+if (typeof startListeningProducts === 'function') {
+    startListeningProducts();
+}
 </script>
 </body>
 </html>
