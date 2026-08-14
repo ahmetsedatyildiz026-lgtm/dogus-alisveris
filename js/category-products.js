@@ -932,16 +932,17 @@ window.initializeCategoryPage = initializeCategoryPage;
 
 // ===== ÜRÜN RENDER FONKSİYONU =====
 function renderProducts() {
-    const grid = document.getElementById('productsGrid');
-    const pagination = document.getElementById('pagination');
-    const productsCount = document.getElementById('productsCount');
-    
-    if (!grid) {
-        console.error('❌ productsGrid elementi bulunamadı!');
-        return;
-    }
-    
-    console.log(`🎨 renderProducts: ${filteredProducts.length} ürün render ediliyor`);
+    try {
+        const grid = document.getElementById('productsGrid');
+        const pagination = document.getElementById('pagination');
+        const productsCount = document.getElementById('productsCount');
+        
+        if (!grid) {
+            console.error('❌ productsGrid elementi bulunamadı!');
+            return;
+        }
+        
+        console.log(`🎨 renderProducts: ${filteredProducts.length} ürün render ediliyor`);
     
     if (filteredProducts.length === 0) {
         grid.innerHTML = `
@@ -1027,6 +1028,24 @@ function renderProducts() {
     }
     
     console.log(`✅ ${pageProducts.length} ürün render edildi (Sayfa ${currentPage}/${totalPages})`);
+    
+    } catch (error) {
+        console.error('❌ renderProducts HATA:', error);
+        console.error('❌ Hata detayı:', error.message);
+        console.error('❌ Stack:', error.stack);
+        
+        const grid = document.getElementById('productsGrid');
+        if (grid) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: #fff3cd; border-radius: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #856404; margin-bottom: 1rem;"></i>
+                    <p style="color: #856404; font-size: 1.2rem; font-weight: 600;">Ürünler yüklenirken hata oluştu</p>
+                    <small style="color: #856404;">Hata: ${error.message}</small><br>
+                    <small style="color: #856404;">Konsolu kontrol edin (F12)</small>
+                </div>
+            `;
+        }
+    }
 }
 
 // Sayfa değiştirme

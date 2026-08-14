@@ -201,7 +201,7 @@
         </div>
         <div class="admin-modal-footer">
             <button class="btn-admin btn-admin-ghost" onclick="closeProductModal()">İptal</button>
-            <button class="btn-admin btn-admin-primary" onclick="saveProduct()">
+            <button id="saveProductBtn" class="btn-admin btn-admin-primary" onclick="saveProduct()">
                 <i class="fas fa-save"></i> Kaydet
             </button>
         </div>
@@ -255,6 +255,7 @@ let editingProductId = null;
 let deletingProductId = null;
 let currentSlotIndex = null;
 let productImages = ['', '', '', '', '', '']; // 6 slot
+let isSaving = false; // ÇİFT KAYIT ENGELLEYİCİ!
 
 // ─── PHOTO SLOTS ──────────────────────────────────────────────
 function buildPhotoGrid() {
@@ -440,18 +441,29 @@ async function openProductModal(productId = null) {
 function closeProductModal() {
     document.getElementById('productModal').classList.remove('show');
     editingProductId = null;
+    isSaving = false; // FLAG'i sıfırla
+    
+    // Butonu resetle
+    const saveBtn = document.getElementById('saveProductBtn');
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Kaydet';
+    }
 }
 
 // ─── SAVE ─────────────────────────────────────────────────────
 async function saveProduct() {
-    console.log('💾 saveProduct çağrıldı');
-    
-    // ÇİFT TIKLAMAYI ÖNLE!
-    const saveBtn = document.querySelector('#productModal button[onclick="saveProduct()"]');
-    if (saveBtn && saveBtn.disabled) {
-        console.warn('⚠️ Buton zaten disabled, işlem devam ediyor...');
+    // ÇİFT TIKLAMAYI GLOBAL FLAG İLE ÖNLE!
+    if (isSaving) {
+        console.warn('⚠️ İşlem devam ediyor, lütfen bekleyin...');
         return;
     }
+    isSaving = true;
+    
+    console.log('💾 saveProduct çağrıldı');
+    
+    // Butonu disable et
+    const saveBtn = document.getElementById('saveProductBtn');
     if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
@@ -468,6 +480,7 @@ async function saveProduct() {
     if (!name || !brand || !category || !price || !description) {
         console.error('❌ Zorunlu alanlar eksik!');
         showAdminNotification('Zorunlu alanları doldurun!', 'error');
+        isSaving = false; // FLAG'i sıfırla
         if (saveBtn) {
             saveBtn.disabled = false;
             saveBtn.innerHTML = '<i class="fas fa-save"></i> Kaydet';
@@ -540,6 +553,7 @@ async function saveProduct() {
         await renderProducts();
         
         console.log('✅ İşlem tamamen tamamlandı!');
+        isSaving = false; // FLAG'i sıfırla
         
     } catch (error) {
         console.error('❌ Kaydetme hatası:', error);
@@ -547,6 +561,7 @@ async function saveProduct() {
         console.error('❌ Hata stack:', error.stack);
         showAdminNotification('❌ Hata: ' + error.message, 'error');
         alert('HATA: ' + error.message + '\n\nKonsolu kontrol edin!');
+        isSaving = false; // HATA durumunda da sıfırla
     }
 }
 
