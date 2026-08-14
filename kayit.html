@@ -199,25 +199,35 @@
                 email:    email,
                 phone:    document.getElementById('phone').value,
                 address:  document.getElementById('address').value,
-                password: password
+                password: password // DÜZ ŞİFRE - HASH YOK
             };
 
             console.log('🚀 Kayıt başlatılıyor...');
-            console.log('📝 Kullanıcı verisi:', { ...userData, password: '***' });
-            console.log('🔥 Firebase durumu:', typeof db !== 'undefined' && db ? 'HAZIR ✅' : 'YOK ❌');
 
-            const result = await authSystem.register(userData);
+            // LocalStorage'a kaydet (DÜZ ŞİFRE)
+            const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
             
-            console.log('📊 Kayıt sonucu:', result);
-
-            if (result.success) {
-                showNotification(result.message, 'success');
-                setTimeout(() => { window.location.href = 'giris.html'; }, 1500);
-            } else {
-                showNotification(result.message, 'error');
+            // Email kontrolü
+            if (users.find(u => u.email === email)) {
+                showNotification('Bu e-posta zaten kayıtlı!', 'error');
                 btn.disabled = false;
                 btn.innerHTML = 'Üye Ol';
+                return;
             }
+
+            // Yeni kullanıcı ekle
+            const newUser = {
+                id: 'user_' + Date.now(),
+                ...userData,
+                createdAt: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('dogusUsers', JSON.stringify(users));
+            
+            console.log('✅ Kullanıcı kaydedildi:', newUser);
+            showNotification('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...', 'success');
+            setTimeout(() => { window.location.href = 'giris.html'; }, 1000);
         });
 
         function togglePassword(inputId) {
