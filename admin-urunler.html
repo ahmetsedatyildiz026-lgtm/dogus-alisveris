@@ -486,9 +486,9 @@ async function saveProduct() {
     console.log('🏷️ Kategori değeri:', productData.category);
 
     try {
-        console.log('🚀 Ürün kaydediliyor (LocalStorage + Firebase)...');
+        console.log('🚀 Ürün kaydediliyor (SADECE LocalStorage)...');
         
-        // LocalStorage'a kaydet (HER ZAMAN)
+        // LocalStorage'a kaydet
         const localProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
         
         if (editingProductId) {
@@ -496,43 +496,28 @@ async function saveProduct() {
             console.log('✏️ Güncelleme modu, ID:', editingProductId);
             const index = localProducts.findIndex(p => p.id === editingProductId);
             if (index !== -1) {
-                localProducts[index] = { ...localProducts[index], ...productData };
+                localProducts[index] = { ...localProducts[index], ...productData, updatedAt: new Date().toISOString() };
                 localStorage.setItem('dogusProducts', JSON.stringify(localProducts));
-                console.log('✅ LocalStorage\'da güncellendi');
+                console.log('✅ Ürün güncellendi');
             }
-            
-            // Firebase'e de kaydet (opsiyonel)
-            try {
-                if (typeof db !== 'undefined' && db) {
-                    await updateProduct(editingProductId, productData);
-                    console.log('✅ Firebase\'de güncellendi');
-                }
-            } catch (fbError) {
-                console.warn('⚠️ Firebase güncelleme hatası (LocalStorage çalışıyor):', fbError);
-            }
-            
             showAdminNotification('✅ Ürün güncellendi!', 'success');
         } else {
             // Yeni ekleme
-            console.log('➕ Yeni ekleme modu');
+            console.log('➕ Yeni ürün ekleniyor');
             const newId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            const newProduct = { id: newId, ...productData, createdAt: new Date().toISOString() };
+            const newProduct = { 
+                id: newId, 
+                ...productData, 
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
             
             localProducts.push(newProduct);
             localStorage.setItem('dogusProducts', JSON.stringify(localProducts));
-            console.log('✅ LocalStorage\'a eklendi, ID:', newId);
+            console.log('✅ Ürün eklendi, ID:', newId);
+            console.log('📦 Toplam ürün sayısı:', localProducts.length);
             
-            // Firebase'e de kaydet (opsiyonel)
-            try {
-                if (typeof db !== 'undefined' && db) {
-                    await addProduct(productData);
-                    console.log('✅ Firebase\'e de eklendi');
-                }
-            } catch (fbError) {
-                console.warn('⚠️ Firebase ekleme hatası (LocalStorage çalışıyor):', fbError);
-            }
-            
-            showAdminNotification('✅ Ürün eklendi! ID: ' + newId, 'success');
+            showAdminNotification('✅ Ürün eklendi! (ID: ' + newId + ')', 'success');
         }
         
         console.log('🔄 Modal kapatılıyor...');
@@ -571,21 +556,11 @@ async function confirmDelete() {
     if (!deletingProductId) return;
     
     try {
-        // LocalStorage'dan sil
+        // SADECE LocalStorage'dan sil
         let localProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
         localProducts = localProducts.filter(p => p.id !== deletingProductId);
         localStorage.setItem('dogusProducts', JSON.stringify(localProducts));
-        console.log('✅ LocalStorage\'dan silindi');
-        
-        // Firebase'den de sil (opsiyonel)
-        try {
-            if (typeof db !== 'undefined' && db) {
-                await deleteProduct(deletingProductId);
-                console.log('✅ Firebase\'den silindi');
-            }
-        } catch (fbError) {
-            console.warn('⚠️ Firebase silme hatası (LocalStorage çalışıyor):', fbError);
-        }
+        console.log('✅ Ürün silindi, kalan ürün:', localProducts.length);
         
         showAdminNotification('✅ Ürün silindi!', 'success');
         closeDeleteModal();
@@ -600,27 +575,9 @@ async function renderProducts() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
     
-    // LocalStorage'dan yükle (ÖNCE LocalStorage!)
+    // SADECE LocalStorage'dan yükle
     let products = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
     console.log(`📦 ${products.length} ürün LocalStorage'dan yüklendi`);
-    
-    // Firebase'den de yükle (opsiyonel, birleştir)
-    try {
-        if (typeof db !== 'undefined' && db) {
-            const fbProducts = await getProducts();
-            console.log(`🔥 ${fbProducts.length} ürün Firebase'den yüklendi`);
-            
-            // Firebase'dekileri ekle (duplicate kontrolü)
-            fbProducts.forEach(fbp => {
-                if (!products.find(p => p.id === fbp.id)) {
-                    products.push(fbp);
-                }
-            });
-            console.log(`✅ Toplam ${products.length} benzersiz ürün`);
-        }
-    } catch (error) {
-        console.warn('⚠️ Firebase okuma hatası (LocalStorage çalışıyor):', error);
-    }
 
     if (search) {
         products = products.filter(p =>

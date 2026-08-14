@@ -30,38 +30,11 @@ async function loadProductsFromAdmin(forceRefresh = false) {
             return categoryProductsCache;
         }
         
-        console.log('🔄 Ürünler yükleniyor...');
+        console.log('🔄 Ürünler LocalStorage\'dan yükleniyor...');
         
-        // LocalStorage'dan oku (ÖNCE LocalStorage - HIZLI!)
+        // SADECE LocalStorage'dan oku
         let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
         console.log(`📦 ${allProducts.length} ürün LocalStorage'dan yüklendi`);
-        
-        // Firebase'den de oku (opsiyonel, birleştir)
-        try {
-            if (typeof db !== 'undefined' && db) {
-                console.log('🔥 Firebase\'den de ürünler yükleniyor...');
-                const snapshot = await db.collection('products')
-                    .where('status', '==', 'active')
-                    .get({ source: 'cache' })
-                    .catch(() => db.collection('products')
-                        .where('status', '==', 'active')
-                        .get({ source: 'server' })
-                    );
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if ((data.stock || 0) > 0) {
-                        // Duplicate kontrolü
-                        if (!allProducts.find(p => p.id === doc.id)) {
-                            allProducts.push({ id: doc.id, ...data });
-                        }
-                    }
-                });
-                console.log(`🔥 Firebase ile toplam ${allProducts.length} ürün`);
-            }
-        } catch (fbError) {
-            console.warn('⚠️ Firebase okuma hatası (LocalStorage çalışıyor):', fbError);
-        }
         
         const database = {};
         

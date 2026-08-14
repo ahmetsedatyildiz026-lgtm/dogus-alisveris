@@ -708,40 +708,9 @@
             if (!grid) return;
 
             try {
-                // LocalStorage'dan yükle (ÖNCE LocalStorage!)
+                // SADECE LocalStorage'dan yükle
                 let allProducts = JSON.parse(localStorage.getItem('dogusProducts') || '[]');
                 console.log(`📦 ${allProducts.length} ürün LocalStorage'dan yüklendi`);
-                
-                // Firebase'den de yükle (opsiyonel, birleştir)
-                try {
-                    if (typeof db !== 'undefined' && db) {
-                        console.log('🔥 Firebase\'den de ürünler yükleniyor...');
-                        
-                        const snapshot = await db.collection('products')
-                            .where('status', '==', 'active')
-                            .get({ source: 'cache' })
-                            .catch(() => {
-                                console.log('📡 Cache yok, server\'dan yükleniyor...');
-                                return db.collection('products')
-                                    .where('status', '==', 'active')
-                                    .get({ source: 'server' });
-                            });
-                        
-                        snapshot.forEach(doc => {
-                            const data = doc.data();
-                            if ((data.stock || 0) > 0) {
-                                // Duplicate kontrolü
-                                if (!allProducts.find(p => p.id === doc.id)) {
-                                    allProducts.push({ id: doc.id, ...data });
-                                }
-                            }
-                        });
-                        
-                        console.log(`✅ Toplam ${allProducts.length} ürün (LocalStorage + Firebase)`);
-                    }
-                } catch (fbError) {
-                    console.warn('⚠️ Firebase okuma hatası (LocalStorage çalışıyor):', fbError);
-                }
                 
                 // Sadece aktif ve stokta olanları filtrele
                 allProducts = allProducts.filter(p => 
