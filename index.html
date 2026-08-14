@@ -707,31 +707,42 @@
             try {
                 let allProducts = [];
                 
-                // Firebase varsa Firebase'den yükle
-                if (isFirebaseReady()) {
+                // Firebase'den yükle
+                if (typeof db !== 'undefined' && db) {
                     console.log('🔥 Ürünler Firebase\'den yükleniyor...');
-                    allProducts = await getProductsFromFirebase();
-                    console.log(`✅ ${allProducts.length} ürün Firebase'den yüklendi`);
-                } else {
-                    // Firebase yoksa LocalStorage'dan yükle
-                    console.log('📦 Ürünler LocalStorage\'dan yükleniyor...');
-                    allProducts = getAdminProducts();
-                    console.log(`✅ ${allProducts.length} ürün LocalStorage'dan yüklendi`);
+                    const snapshot = await db.collection('products')
+                        .where('status', '==', 'active')
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if ((data.stock || 0) > 0) {
+                            allProducts.push({ id: doc.id, ...data });
+                        }
+                    });
+                    
+                    console.log(`✅ ${allProducts.length} aktif ürün yüklendi`);
+                    console.log('📊 isFeatured durumları:', allProducts.map(p => ({ 
+                        title: p.title, 
+                        isFeatured: p.isFeatured,
+                        type: typeof p.isFeatured
+                    })));
                 }
                 
-                // İlk olarak isFeatured=true olanları al
-                let featuredProducts = allProducts.filter(p => 
-                    p.isFeatured === true && 
-                    p.status === 'active' && 
-                    (p.stock || 0) > 0
-                );
+                // isFeatured=true olanları al (boolean kontrolü)
+                let featuredProducts = allProducts.filter(p => {
+                    const featured = p.isFeatured === true || p.isFeatured === 'true';
+                    console.log(`${p.title}: isFeatured=${p.isFeatured} (${typeof p.isFeatured}), featured=${featured}`);
+                    return featured;
+                });
+
+                console.log(`✅ ${featuredProducts.length} öne çıkan ürün bulundu`);
 
                 // Eğer featured ürün yoksa veya 4'ten azsa, son eklenen aktif ürünleri ekle
                 if (featuredProducts.length < 4) {
+                    console.log('⚠️ Featured ürün 4\'ten az, diğer ürünler ekleniyor...');
                     const activeProducts = allProducts.filter(p => 
-                        p.status === 'active' && 
-                        (p.stock || 0) > 0 &&
-                        !p.isFeatured
+                        !(p.isFeatured === true || p.isFeatured === 'true')
                     ).sort((a, b) => {
                         const dateA = a.createdAt ? (a.createdAt.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime()) : 0;
                         const dateB = b.createdAt ? (b.createdAt.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime()) : 0;
@@ -753,6 +764,8 @@
                     `;
                     return;
                 }
+
+                console.log(`🎯 ${featuredProducts.length} ürün gösteriliyor`);
 
                 grid.innerHTML = featuredProducts.map(product => {
                     const mainImage = product.images && product.images[0] 
@@ -778,7 +791,7 @@
                             <div class="product-image">
                                 <img src="${mainImage}" alt="${product.title}" 
                                      onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas ${icon}\\' style=\\'font-size: 3rem; color: var(--secondary);\\'></i>';">
-                                ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
+                                ${(product.isFeatured === true || product.isFeatured === 'true') ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
                                 ${product.originalPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
                             </div>
                             <div class="product-info">
