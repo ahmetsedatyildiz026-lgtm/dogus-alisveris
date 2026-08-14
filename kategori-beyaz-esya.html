@@ -155,10 +155,12 @@
                         <div class="modal-original-price" id="modalOriginalPrice" style="display: none;"></div>
                         <div class="modal-product-price" id="modalProductPrice">₺0</div>
                     </div>
-                    <div class="modal-actions">
-                        <button class="btn-add-cart" onclick="addToCart(currentProduct.title)">Sepete Ekle</button>
-                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)">Teklif Al</button>
-                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1rem; border-top: 1px solid #e5e7eb;">
+                <div class="modal-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button class="btn-add-cart" onclick="addToCart(currentProduct.title)" style="flex: 1; min-width: 150px;">Sepete Ekle</button>
+                    <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 150px;">Teklif Al</button>
                 </div>
             </div>
         </div>
