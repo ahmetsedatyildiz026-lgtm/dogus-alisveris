@@ -159,79 +159,64 @@ class AuthSystem {
     }
 
     // Google Sign In (Firebase Authentication)
-    async googleSignIn(googleData) {
+    async googleSignIn() {
         try {
-            // Firebase Auth kullan
-            if (typeof auth !== 'undefined' && auth) {
-                console.log('🔐 Google ile Firebase Authentication başlatılıyor...');
-                
-                const provider = new firebase.auth.GoogleAuthProvider();
-                const result = await auth.signInWithPopup(provider);
-                
-                const user = result.user;
-                console.log('✅ Google ile giriş başarılı:', user.email);
-                
-                // Kullanıcıyı Firestore'a kaydet
-                const userDoc = await db.collection('customers').doc(user.uid).get();
-                
-                let userData;
-                if (!userDoc.exists) {
-                    // Yeni kullanıcı
-                    userData = {
-                        id: user.uid,
-                        name: user.displayName,
-                        email: user.email,
-                        phone: user.phoneNumber || '',
-                        address: '',
-                        provider: 'google',
-                        photoURL: user.photoURL,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    await db.collection('customers').doc(user.uid).set(userData);
-                    console.log('✅ Yeni Google kullanıcı Firestore\'a kaydedildi');
-                } else {
-                    // Mevcut kullanıcı
-                    userData = { id: user.uid, ...userDoc.data() };
-                    console.log('✅ Mevcut Google kullanıcı bulundu');
-                }
-                
-                this.currentUser = userData;
-                localStorage.setItem(this.sessionKey, JSON.stringify(userData));
-                
-                return { success: true, message: 'Google ile giriş başarılı!', user: userData };
+            // Firebase Auth kontrolü
+            if (typeof auth === 'undefined' || !auth) {
+                console.error('❌ Firebase Auth hazır değil!');
+                throw new Error('Firebase Auth yüklenmedi');
             }
+            
+            if (typeof firebase === 'undefined' || !firebase.auth) {
+                console.error('❌ Firebase SDK yüklenmedi!');
+                throw new Error('Firebase SDK eksik');
+            }
+            
+            console.log('🔐 Google ile Firebase Authentication başlatılıyor...');
+            
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const result = await auth.signInWithPopup(provider);
+            
+            const user = result.user;
+            console.log('✅ Google ile giriş başarılı:', user.email);
+            
+            // Kullanıcıyı Firestore'a kaydet
+            const userDoc = await db.collection('customers').doc(user.uid).get();
+            
+            let userData;
+            if (!userDoc.exists) {
+                // Yeni kullanıcı
+                userData = {
+                    id: user.uid,
+                    name: user.displayName,
+                    email: user.email,
+                    phone: user.phoneNumber || '',
+                    address: '',
+                    provider: 'google',
+                    photoURL: user.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('customers').doc(user.uid).set(userData);
+                console.log('✅ Yeni Google kullanıcı Firestore\'a kaydedildi');
+            } else {
+                // Mevcut kullanıcı
+                userData = { id: user.uid, ...userDoc.data() };
+                console.log('✅ Mevcut Google kullanıcı bulundu');
+            }
+            
+            this.currentUser = userData;
+            localStorage.setItem(this.sessionKey, JSON.stringify(userData));
+            
+            return { success: true, message: 'Google ile giriş başarılı!', user: userData };
+            
         } catch (error) {
             console.error('❌ Google giriş hatası:', error);
             if (error.code === 'auth/popup-closed-by-user') {
                 return { success: false, message: 'Google girişi iptal edildi.' };
             }
-            return { success: false, message: 'Google ile giriş yapılamadı: ' + error.message };
+            return { success: false, message: 'Firebase Auth kullanılamıyor. Lütfen sayfayı yenileyin.' };
         }
-        
-        // Fallback: LocalStorage demo
-        const users = this.getAllUsers();
-        let user = users.find(u => u.email === googleData.email);
-
-        if (!user) {
-            // Create new user from Google data
-            user = {
-                id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                name: googleData.name,
-                email: googleData.email,
-                phone: googleData.phone || '',
-                address: '',
-                provider: 'google',
-                createdAt: new Date().toISOString()
-            };
-            users.push(user);
-            this.saveUsers(users);
-        }
-
-        this.currentUser = user;
-        localStorage.setItem(this.sessionKey, JSON.stringify(user));
-
-        return { success: true, message: 'Google ile giriş başarılı!', user: user };
     }
 
     // Logout
