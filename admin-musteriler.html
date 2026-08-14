@@ -79,19 +79,19 @@
 
             <!-- Table -->
             <div class="admin-card">
-                <div class="admin-table-wrap">
-                    <table class="admin-table">
+                <div class="admin-table-wrap" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table class="admin-table" style="width: 100%; min-width: 1200px; border-collapse: collapse;">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Ad Soyad</th>
-                                <th>E-posta</th>
-                                <th>Telefon</th>
-                                <th>Adres</th>
-                                <th>Kayıt Yöntemi</th>
-                                <th>Kayıt Tarihi</th>
-                                <th>Siparişler</th>
-                                <th>İşlem</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">#</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">Ad Soyad</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">E-posta</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">Telefon</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">Adres</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">Kayıt Yöntemi</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">Kayıt Tarihi</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap;">Siparişler</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; font-size: 0.875rem; color: var(--admin-text-light); border-bottom: 2px solid var(--admin-border); white-space: nowrap; min-width: 80px;">İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="customersTableBody"></tbody>
@@ -216,9 +216,9 @@ async function renderCustomers() {
         const providerBadge = c.provider === 'google'
             ? '<span class="badge badge-blue"><i class="fab fa-google"></i> Google</span>'
             : '<span class="badge badge-gray"><i class="fas fa-envelope"></i> E-posta</span>';
-        return `<tr>
-            <td style="color:var(--admin-text-light);font-size:.8rem">${i + 1}</td>
-            <td>
+        return `<tr style="border-bottom: 1px solid var(--admin-border); transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+            <td style="padding: 0.75rem; color:var(--admin-text-light);font-size:.8rem">${i + 1}</td>
+            <td style="padding: 0.75rem;">
                 <div style="display:flex;align-items:center;gap:.75rem">
                     <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--admin-accent),#b8960c);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem;color:#1a1a1a;flex-shrink:0">
                         ${(c.name||'?')[0].toUpperCase()}
@@ -226,18 +226,18 @@ async function renderCustomers() {
                     <strong style="font-size:.875rem">${c.name}</strong>
                 </div>
             </td>
-            <td style="font-size:.85rem">${c.email}</td>
-            <td style="font-size:.875rem">${c.phone || '<span style="color:var(--admin-text-light)">-</span>'}</td>
-            <td style="font-size:.8rem;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.address||''}">${c.address || '<span style="color:var(--admin-text-light)">-</span>'}</td>
-            <td>${providerBadge}</td>
-            <td style="font-size:.8rem;color:var(--admin-text-light)">${formatDate(c.createdAt)}</td>
-            <td>
+            <td style="padding: 0.75rem; font-size:.85rem">${c.email}</td>
+            <td style="padding: 0.75rem; font-size:.875rem">${c.phone || '<span style="color:var(--admin-text-light)">-</span>'}</td>
+            <td style="padding: 0.75rem; font-size:.8rem;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.address||''}">${c.address || '<span style="color:var(--admin-text-light)">-</span>'}</td>
+            <td style="padding: 0.75rem;">${providerBadge}</td>
+            <td style="padding: 0.75rem; font-size:.8rem;color:var(--admin-text-light)">${formatDate(c.createdAt)}</td>
+            <td style="padding: 0.75rem;">
                 <span class="${custOrders.length ? 'badge badge-green' : 'badge badge-gray'}">
                     ${custOrders.length} sipariş
                 </span>
             </td>
-            <td>
-                <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="showCustomerDetail('${c.id}')" title="Detay">
+            <td style="padding: 0.75rem; text-align: center;">
+                <button class="btn-admin btn-admin-info btn-admin-icon btn-admin-sm" onclick="showCustomerDetail('${c.id}')" title="Detay" style="background: #3b82f6; color: white; border: none; padding: 0.5rem; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>

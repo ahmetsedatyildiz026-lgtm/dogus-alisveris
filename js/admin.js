@@ -93,10 +93,18 @@ async function getProductsAsync() {
 
 // Tek ürün ekle
 async function addProduct(product) {
+    console.log('🔥 addProduct fonksiyonu çağrıldı');
+    console.log('📦 Gelen ürün verisi:', product);
+    console.log('🔍 db durumu:', typeof db, db);
+    console.log('🔍 firebase durumu:', typeof firebase);
+    
     try {
         if (!db) {
-            throw new Error('Firebase bağlantısı yok!');
+            console.error('❌ Firebase db tanımsız!');
+            throw new Error('Firebase bağlantısı yok! Sayfayı yenileyin.');
         }
+        
+        console.log('✅ Firebase db mevcut, ürün ekleniyor...');
         
         const productData = {
             ...product,
@@ -104,15 +112,19 @@ async function addProduct(product) {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         
+        console.log('📝 Firebase\'e yazılacak veri:', productData);
+        
         const docRef = await db.collection('products').add(productData);
-        console.log('✅ Ürün Firebase\'e eklendi:', docRef.id);
+        console.log('✅ Ürün Firebase\'e eklendi! Belge ID:', docRef.id);
         
         // Cache'i temizle ki yeni ürün görünsün
         clearProductsCache();
         
         return docRef.id;
     } catch (error) {
-        console.error('❌ Ürün eklenemedi:', error);
+        console.error('❌ addProduct hatası:', error);
+        console.error('❌ Hata kodu:', error.code);
+        console.error('❌ Hata mesajı:', error.message);
         throw error;
     }
 }
