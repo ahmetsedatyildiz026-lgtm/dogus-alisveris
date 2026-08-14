@@ -943,7 +943,7 @@ function renderProducts() {
             : (product.image || 'https://via.placeholder.com/400x300?text=Ürün');
         
         return `
-            <div class="product-card" onclick='showProductDetail(${JSON.stringify(product).replace(/'/g, "&#39;")})'>
+            <div class="product-card" onclick='showProductModal("${product.id}")'>
                 <div class="product-image">
                     <img src="${mainImage}" alt="${product.title}" loading="lazy" 
                          onerror="this.src='https://via.placeholder.com/400x300?text=Ürün'">
@@ -1063,3 +1063,6 @@ window.renderProducts = renderProducts;
 window.changePage = changePage;
 window.searchProducts = searchProducts;
 window.sortProducts = sortProducts;
+window.showProductModal = showProductModal;
+window.closeModal = closeModal;
+window.updateCartCount = function() { cartManager.updateCartCount(); };
