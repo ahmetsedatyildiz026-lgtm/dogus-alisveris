@@ -917,12 +917,26 @@ function renderProducts() {
     const endIndex = startIndex + productsPerPage;
     const pageProducts = filteredProducts.slice(startIndex, endIndex);
     
+    console.log(`📄 Sayfa: ${currentPage}/${totalPages}, Gösterilecek: ${pageProducts.length} ürün`);
+    console.log(`📦 İlk ürün:`, pageProducts[0]);
+    
     // Ürün sayısını güncelle
     if (productsCount) {
-        productsCount.textContent = filteredProducts.length;
+        productsCount.textContent = filteredProducts.length + ' ürün bulundu';
     }
     
     // Ürünleri render et
+    if (pageProducts.length === 0) {
+        console.warn('⚠️ pageProducts boş!');
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                <i class="fas fa-box-open" style="font-size: 3rem; color: #999; margin-bottom: 1rem;"></i>
+                <p style="color: #666;">Bu sayfada ürün yok</p>
+            </div>
+        `;
+        return;
+    }
+    
     grid.innerHTML = pageProducts.map(product => {
         const mainImage = product.images && product.images[0] 
             ? product.images[0] 
