@@ -254,12 +254,24 @@ async function getDashboardStats() {
     const brandCategories = Object.keys(brands).length;
 
     const stockValue = stock.reduce((sum, item) => {
-        const price = parseFloat((item.price || '0').toString().replace(/[₺.,]/g, '')) || 0;
+        // Türk para formatını parse et: "₺15.500,50" -> 15500.50
+        let priceStr = (item.price || '0').toString()
+            .replace(/₺/g, '')          // ₺ işaretini kaldır
+            .replace(/\s/g, '')         // Boşlukları kaldır
+            .replace(/\./g, '')         // Binlik ayırıcıyı kaldır (15.000 -> 15000)
+            .replace(/,/g, '.');        // Ondalık virgülü noktaya çevir (500,50 -> 500.50)
+        const price = parseFloat(priceStr) || 0;
         return sum + (price * (item.quantity || 0));
     }, 0);
 
     const storeValue = products.reduce((sum, p) => {
-        const price = parseFloat((p.price || '0').toString().replace(/[₺.,]/g, '')) || 0;
+        // Türk para formatını parse et: "₺15.500,50" -> 15500.50
+        let priceStr = (p.price || '0').toString()
+            .replace(/₺/g, '')          // ₺ işaretini kaldır
+            .replace(/\s/g, '')         // Boşlukları kaldır
+            .replace(/\./g, '')         // Binlik ayırıcıyı kaldır (15.000 -> 15000)
+            .replace(/,/g, '.');        // Ondalık virgülü noktaya çevir (500,50 -> 500.50)
+        const price = parseFloat(priceStr) || 0;
         const qty = p.stock || 0;
         return sum + price * qty;
     }, 0);
