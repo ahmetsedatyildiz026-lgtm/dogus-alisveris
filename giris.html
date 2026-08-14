@@ -148,6 +148,22 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bağlanıyor...';
 
+            // Firebase yüklenene kadar bekle
+            let attempts = 0;
+            while ((typeof auth === 'undefined' || !auth) && attempts < 20) {
+                console.log(`⏳ Firebase Auth bekleniyor... (${attempts}/20)`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
+            }
+
+            if (typeof auth === 'undefined' || !auth) {
+                console.error('❌ Firebase Auth 10 saniye içinde yüklenmedi!');
+                showNotification('Firebase yüklenemedi. Sayfayı yenileyin.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fab fa-google"></i> Google ile Giriş Yap';
+                return;
+            }
+
             console.log('🔐 Google giriş butonu tıklandı');
             const result = await authSystem.googleSignIn();
             console.log('📊 Google giriş sonucu:', result);
