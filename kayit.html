@@ -218,7 +218,12 @@
             // Yeni kullanıcı ekle
             const newUser = {
                 id: 'user_' + Date.now(),
-                ...userData,
+                name: userData.name,
+                email: userData.email,
+                phone: userData.phone,
+                address: userData.address,
+                password: userData.password,
+                provider: 'email', // Admin paneli için gerekli
                 createdAt: new Date().toISOString()
             };
             
