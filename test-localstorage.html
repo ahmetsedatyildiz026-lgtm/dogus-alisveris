@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>LocalStorage Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        pre { background: #2a2a2a; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        button { background: #d4a056; color: #1a1a1a; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        button:hover { background: #e0b068; }
+    </style>
+</head>
+<body>
+    <h1>🔍 LocalStorage Test</h1>
+    
+    <button onclick="showUsers()">Müşterileri Göster</button>
+    <button onclick="addTestUser()">Test Müşteri Ekle</button>
+    <button onclick="clearUsers()">Temizle</button>
+    
+    <h2>Sonuç:</h2>
+    <pre id="output">Test butonlarına tıklayın...</pre>
+
+    <script>
+        function showUsers() {
+            const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+            document.getElementById('output').textContent = 
+                `Toplam Müşteri: ${users.length}\n\n` +
+                JSON.stringify(users, null, 2);
+        }
+
+        function addTestUser() {
+            const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+            const testUser = {
+                id: 'test_' + Date.now(),
+                name: 'Test Kullanıcı',
+                email: 'test@test.com',
+                phone: '0555 555 55 55',
+                address: 'Test Adres',
+                password: '123456',
+                provider: 'email',
+                createdAt: new Date().toISOString()
+            };
+            users.push(testUser);
+            localStorage.setItem('dogusUsers', JSON.stringify(users));
+            showUsers();
+            alert('Test kullanıcı eklendi!');
+        }
+
+        function clearUsers() {
+            if (confirm('Tüm müşterileri silmek istediğinize emin misiniz?')) {
+                localStorage.removeItem('dogusUsers');
+                showUsers();
+            }
+        }
+
+        // Sayfa yüklendiğinde göster
+        showUsers();
+    </script>
+</body>
+</html>
