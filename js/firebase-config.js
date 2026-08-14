@@ -32,7 +32,7 @@ const firebaseConfig = {
 };
 
 // Firebase'i başlat
-let app, db, storage;
+let app, db, storage, auth;
 
 try {
   // Firebase SDK'ları yüklendiyse başlat
@@ -40,6 +40,7 @@ try {
     app = firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     storage = firebase.storage();
+    auth = firebase.auth();
     
     // OFFLINE PERSISTENCE - Hızlı yüklenme için
     db.enablePersistence({ synchronizeTabs: true })
@@ -430,6 +431,7 @@ function isFirebaseReady() {
 window.firebase = firebase;
 window.db = db;
 window.storage = storage;
+window.auth = auth;
 
 // Helper fonksiyonları export et
 window.getProductsFromFirebase = getProductsFromFirebase;
