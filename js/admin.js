@@ -217,8 +217,8 @@ function saveBrands(brands) {
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
 
-function getDashboardStats() {
-    const products = getProducts();
+async function getDashboardStats() {
+    const products = await getProducts();
     const customers = getCustomers();
     const orders = getOrders();
     const stock = getStock();

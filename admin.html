@@ -150,8 +150,8 @@
         new Date().toLocaleDateString('tr-TR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     // Stats
-    function renderStats() {
-        const s = getDashboardStats();
+    async function renderStats() {
+        const s = await getDashboardStats();
         const grid = document.getElementById('statsGrid');
         grid.innerHTML = `
             <div class="stat-card blue">

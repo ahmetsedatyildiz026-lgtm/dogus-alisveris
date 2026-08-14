@@ -15,16 +15,25 @@ let currentProductImages = [];
 // Boş kategori veritabanı - Admin'den doldurulacak
 const categoryDatabase = {};
 
-// ===== ADMİN PANELDEKİ ÜRÜNLERİ YÜKLE =====
-function loadProductsFromAdmin() {
+// ===== ADMİN PANELDEKİ ÜRÜNLERİ YÜKLE (Firebase'den) =====
+async function loadProductsFromAdmin() {
     try {
-        const adminProducts = localStorage.getItem('dogusAdminProducts');
-        if (!adminProducts) {
-            console.log('⚠️ Admin panelde henüz ürün yok');
+        console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+        
+        // Firebase kontrolü
+        if (!db) {
+            console.error('❌ Firebase bağlantısı yok!');
             return {};
         }
         
-        const products = JSON.parse(adminProducts);
+        const snapshot = await db.collection('products').get();
+        const products = [];
+        snapshot.forEach(doc => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+        
+        console.log(`✅ Firebase'den ${products.length} ürün yüklendi`);
+        
         const database = {};
         
         // Kategorilere göre grupla
@@ -41,7 +50,6 @@ function loadProductsFromAdmin() {
             }
         });
         
-        console.log(`✅ Admin'den ${products.length} ürün yüklendi`);
         Object.keys(database).forEach(cat => {
             console.log(`  - ${cat}: ${database[cat].length} ürün`);
         });
@@ -470,11 +478,11 @@ function closeInstallmentModal() {
 
 // ===== CATEGORY PAGE INITIALIZATION =====
 
-function initializeCategoryPage(categoryName, categoryTitle) {
+async function initializeCategoryPage(categoryName, categoryTitle) {
     console.log(`Kategori sayfası başlatılıyor: ${categoryName}`);
     
     // Admin'den ürünleri yükle ve categoryDatabase'e ekle
-    const adminDatabase = loadProductsFromAdmin();
+    const adminDatabase = await loadProductsFromAdmin();
     Object.assign(categoryDatabase, adminDatabase);
     
     loadCategoryProducts(categoryName);
