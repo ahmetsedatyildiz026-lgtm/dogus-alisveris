@@ -161,8 +161,10 @@ class AuthSystem {
     // Google Sign In (Firebase Authentication)
     async googleSignIn() {
         try {
-            // Firebase Auth kontrolü
-            if (typeof auth === 'undefined' || !auth) {
+            // Firebase hazır olana kadar bekle
+            const { auth } = await window.waitForFirebase();
+            
+            if (!auth) {
                 console.error('❌ Firebase Auth hazır değil!');
                 throw new Error('Firebase Auth yüklenmedi');
             }
@@ -215,7 +217,10 @@ class AuthSystem {
             if (error.code === 'auth/popup-closed-by-user') {
                 return { success: false, message: 'Google girişi iptal edildi.' };
             }
-            return { success: false, message: 'Firebase Auth kullanılamıyor. Lütfen sayfayı yenileyin.' };
+            if (error.code === 'auth/unauthorized-domain') {
+                return { success: false, message: 'Bu domain Firebase\'de yetkili değil. Firebase Console\'da authorized domains listesine ekleyin.' };
+            }
+            return { success: false, message: error.message || 'Firebase Auth kullanılamıyor. Lütfen sayfayı yenileyin.' };
         }
     }
 

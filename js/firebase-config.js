@@ -33,40 +33,55 @@ const firebaseConfig = {
 
 // Firebase'i başlat
 let app, db, storage, auth;
+let firebaseReady = false;
 
-try {
-  // Firebase SDK'ları yüklendiyse başlat
-  if (typeof firebase !== 'undefined') {
-    app = firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    storage = firebase.storage();
-    auth = firebase.auth();
-    
-    console.log('✅ Firebase App başlatıldı');
-    console.log('✅ Firestore başlatıldı:', typeof db);
-    console.log('✅ Storage başlatıldı:', typeof storage);
-    console.log('✅ Auth başlatıldı:', typeof auth);
-    
-    // OFFLINE PERSISTENCE - Hızlı yüklenme için
-    db.enablePersistence({ synchronizeTabs: true })
-      .then(() => {
-        console.log('✅ Firebase offline persistence aktif - Hızlı yüklenme!');
-      })
-      .catch((err) => {
-        if (err.code == 'failed-precondition') {
-          console.warn('⚠️ Persistence sadece bir tab\'ta aktif olabilir');
-        } else if (err.code == 'unimplemented') {
-          console.warn('⚠️ Tarayıcı offline persistence desteklemiyor');
-        }
-      });
-    
-    console.log('✅ Firebase başarıyla başlatıldı');
-  } else {
-    console.error('❌ Firebase SDK yüklenmedi! HTML dosyalarında Firebase script taglerini kontrol et.');
+// Firebase hazır promise
+const firebaseReadyPromise = new Promise((resolve, reject) => {
+  try {
+    // Firebase SDK'ları yüklendiyse başlat
+    if (typeof firebase !== 'undefined') {
+      app = firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      storage = firebase.storage();
+      auth = firebase.auth();
+      
+      console.log('✅ Firebase App başlatıldı');
+      console.log('✅ Firestore başlatıldı:', typeof db);
+      console.log('✅ Storage başlatıldı:', typeof storage);
+      console.log('✅ Auth başlatıldı:', typeof auth);
+      
+      // OFFLINE PERSISTENCE - Hızlı yüklenme için
+      db.enablePersistence({ synchronizeTabs: true })
+        .then(() => {
+          console.log('✅ Firebase offline persistence aktif - Hızlı yüklenme!');
+        })
+        .catch((err) => {
+          if (err.code == 'failed-precondition') {
+            console.warn('⚠️ Persistence sadece bir tab\'ta aktif olabilir');
+          } else if (err.code == 'unimplemented') {
+            console.warn('⚠️ Tarayıcı offline persistence desteklemiyor');
+          }
+        });
+      
+      console.log('✅ Firebase başarıyla başlatıldı');
+      firebaseReady = true;
+      
+      // Global scope'a ekle
+      window.firebase = firebase;
+      window.db = db;
+      window.storage = storage;
+      window.auth = auth;
+      
+      resolve({ app, db, storage, auth });
+    } else {
+      console.error('❌ Firebase SDK yüklenmedi! HTML dosyalarında Firebase script taglerini kontrol et.');
+      reject(new Error('Firebase SDK yüklenmedi'));
+    }
+  } catch (error) {
+    console.error('❌ Firebase başlatma hatası:', error);
+    reject(error);
   }
-} catch (error) {
-  console.error('❌ Firebase başlatma hatası:', error);
-}
+});
 
 // ===== FİREBASE HELPER FUNCTIONS =====
 
@@ -429,14 +444,20 @@ function checkFirebaseConnection() {
  * Firebase hazır mı?
  */
 function isFirebaseReady() {
-  return typeof firebase !== 'undefined' && db !== undefined;
+  return firebaseReady && typeof firebase !== 'undefined' && db !== undefined && auth !== undefined;
 }
 
-// Global scope'a ekle
-window.firebase = firebase;
-window.db = db;
-window.storage = storage;
-window.auth = auth;
+/**
+ * Firebase hazır olana kadar bekle
+ */
+async function waitForFirebase() {
+  if (firebaseReady) return { app, db, storage, auth };
+  return await firebaseReadyPromise;
+}
+
+// Firebase hazır promise'i global scope'a ekle
+window.firebaseReadyPromise = firebaseReadyPromise;
+window.waitForFirebase = waitForFirebase;
 
 // Helper fonksiyonları export et
 window.getProductsFromFirebase = getProductsFromFirebase;

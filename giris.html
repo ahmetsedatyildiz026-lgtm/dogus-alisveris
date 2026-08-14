@@ -98,11 +98,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-config.js?v=20241214"></script>
     
     <!-- SCRIPTS -->
-    <script src="js/auth.js?v=202412251225"></script>
-    <script src="js/auth-firebase.js?v=202412251225"></script>
+    <script src="js/auth.js?v=20241214"></script>
     <script>
         // Check if already logged in
         if (authSystem.isLoggedIn()) {
@@ -148,31 +147,27 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bağlanıyor...';
 
-            // Firebase yüklenene kadar bekle
-            let attempts = 0;
-            while ((typeof auth === 'undefined' || !auth) && attempts < 20) {
-                console.log(`⏳ Firebase Auth bekleniyor... (${attempts}/20)`);
-                await new Promise(resolve => setTimeout(resolve, 500));
-                attempts++;
-            }
+            try {
+                // Firebase hazır olana kadar bekle
+                console.log('⏳ Firebase Auth bekleniyor...');
+                await window.waitForFirebase();
+                console.log('✅ Firebase Auth hazır!');
 
-            if (typeof auth === 'undefined' || !auth) {
-                console.error('❌ Firebase Auth 10 saniye içinde yüklenmedi!');
+                console.log('🔐 Google giriş butonu tıklandı');
+                const result = await authSystem.googleSignIn();
+                console.log('📊 Google giriş sonucu:', result);
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                } else {
+                    showNotification(result.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fab fa-google"></i> Google ile Giriş Yap';
+                }
+            } catch (error) {
+                console.error('❌ Firebase yükleme hatası:', error);
                 showNotification('Firebase yüklenemedi. Sayfayı yenileyin.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fab fa-google"></i> Google ile Giriş Yap';
-                return;
-            }
-
-            console.log('🔐 Google giriş butonu tıklandı');
-            const result = await authSystem.googleSignIn();
-            console.log('📊 Google giriş sonucu:', result);
-
-            if (result.success) {
-                showNotification(result.message, 'success');
-                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
-            } else {
-                showNotification(result.message, 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fab fa-google"></i> Google ile Giriş Yap';
             }
