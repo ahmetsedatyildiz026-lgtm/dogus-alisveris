@@ -68,7 +68,7 @@
                             <i class="fas fa-shopping-bag"></i>
                             <span>Siparişlerim</span>
                         </a>
-                        <a href="#" class="profile-nav-item" onclick="event.preventDefault(); authSystem.logout(); window.location.href='index.html';">
+                        <a href="#" class="profile-nav-item" onclick="event.preventDefault(); logoutUser();">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Çıkış Yap</span>
                         </a>
@@ -197,13 +197,18 @@
     <script src="js/auth.js?v=202412251225"></script>
     <script src="js/auth-firebase.js?v=202412251225"></script>
     <script>
-        // Check if user is logged in
-        if (!authSystem.isLoggedIn()) {
+        // BASIT GİRİŞ KONTROLÜ - LocalStorage
+        console.log('🔍 Profil sayfası yüklendi');
+        
+        const currentUser = JSON.parse(localStorage.getItem('dogusCurrentUser') || 'null');
+        console.log('👤 Mevcut kullanıcı:', currentUser);
+        
+        if (!currentUser) {
+            console.log('❌ Kullanıcı giriş yapmamış, giriş sayfasına yönlendiriliyor...');
             window.location.href = 'giris.html';
-        }
-
-        const currentUser = authSystem.getCurrentUser();
-        if (currentUser) {
+        } else {
+            console.log('✅ Kullanıcı giriş yapmış:', currentUser.name);
+            
             // Update sidebar
             document.getElementById('sidebarUserName').textContent = currentUser.name;
             document.getElementById('sidebarUserEmail').textContent = currentUser.email;
@@ -211,7 +216,7 @@
             // Update form
             document.getElementById('profileName').value = currentUser.name;
             document.getElementById('profileEmail').value = currentUser.email;
-            document.getElementById('profilePhone').value = currentUser.phone;
+            document.getElementById('profilePhone').value = currentUser.phone || '';
             document.getElementById('profileAddress').value = currentUser.address || '';
             document.getElementById('profileProvider').value = currentUser.provider === 'google' ? 'Google' : 'E-posta';
 
@@ -224,7 +229,7 @@
             }
         }
 
-        // Profile form handler
+        // Profile form handler - LocalStorage
         document.getElementById('profileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
@@ -237,19 +242,37 @@
                 address: document.getElementById('profileAddress').value
             };
 
-            const result = await authUpdateProfile(currentUser.uid || currentUser.id, userData);
-
-            if (result.success) {
-                showNotification(result.message, 'success');
-                document.getElementById('sidebarUserName').textContent = userData.name;
-            } else {
-                showNotification(result.message, 'error');
+            try {
+                // LocalStorage'dan tüm kullanıcıları al
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                
+                if (userIndex !== -1) {
+                    // Kullanıcıyı güncelle
+                    users[userIndex] = { ...users[userIndex], ...userData };
+                    localStorage.setItem('dogusUsers', JSON.stringify(users));
+                    
+                    // CurrentUser'ı güncelle
+                    const updatedUser = users[userIndex];
+                    localStorage.setItem('dogusCurrentUser', JSON.stringify(updatedUser));
+                    
+                    showNotification('Profil bilgileriniz güncellendi!', 'success');
+                    document.getElementById('sidebarUserName').textContent = userData.name;
+                    
+                    console.log('✅ Profil güncellendi:', updatedUser);
+                } else {
+                    showNotification('Kullanıcı bulunamadı!', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Profil güncelleme hatası:', error);
+                showNotification('Güncelleme başarısız oldu!', 'error');
             }
+            
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-save"></i> Değişiklikleri Kaydet';
         });
 
-        // Password form handler
+        // Password form handler - LocalStorage
         document.getElementById('passwordForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -262,13 +285,36 @@
                 return;
             }
 
-            const result = authSystem.changePassword(currentPassword, newPassword);
-
-            if (result.success) {
-                showNotification(result.message, 'success');
-                document.getElementById('passwordForm').reset();
-            } else {
-                showNotification(result.message, 'error');
+            try {
+                // Mevcut şifreyi kontrol et
+                if (currentUser.password !== currentPassword) {
+                    showNotification('Mevcut şifre hatalı!', 'error');
+                    return;
+                }
+                
+                // LocalStorage'dan tüm kullanıcıları al
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                
+                if (userIndex !== -1) {
+                    // Şifreyi güncelle (DÜZ ŞİFRE)
+                    users[userIndex].password = newPassword;
+                    localStorage.setItem('dogusUsers', JSON.stringify(users));
+                    
+                    // CurrentUser'ı güncelle
+                    const updatedUser = users[userIndex];
+                    localStorage.setItem('dogusCurrentUser', JSON.stringify(updatedUser));
+                    
+                    showNotification('Şifreniz başarıyla değiştirildi!', 'success');
+                    document.getElementById('passwordForm').reset();
+                    
+                    console.log('✅ Şifre değiştirildi');
+                } else {
+                    showNotification('Kullanıcı bulunamadı!', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Şifre değiştirme hatası:', error);
+                showNotification('Şifre değiştirme başarısız!', 'error');
             }
         });
 
@@ -327,6 +373,16 @@
                     notification.remove();
                 }, 300);
             }, 3000);
+        }
+        
+        // Logout function
+        function logoutUser() {
+            localStorage.removeItem('dogusCurrentUser');
+            console.log('✅ Çıkış yapıldı');
+            showNotification('Çıkış yapılıyor...', 'success');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
         }
     </script>
 </body>

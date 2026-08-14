@@ -76,23 +76,60 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kontrol ediliyor...';
 
-            // LocalStorage'dan kullanıcıları al
-            const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
-            console.log('Kayıtlı kullanıcılar:', users);
-            
-            // Kullanıcıyı bul
-            const user = users.find(u => u.email === email && u.password === password);
-            
-            if (user) {
-                // Başarılı giriş
-                localStorage.setItem('dogusCurrentUser', JSON.stringify(user));
-                showNotification('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 500);
-            } else {
-                // Hatalı giriş
-                showNotification('E-posta veya şifre hatalı!', 'error');
+            try {
+                // LocalStorage'dan kullanıcıları al
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                console.log('📦 Kayıtlı kullanıcılar:', users.length);
+                console.log('🔍 Aranan email:', email);
+                
+                // DEBUGGING: Tüm kullanıcıları listele
+                users.forEach((u, i) => {
+                    console.log(`  [${i}] ${u.email} | Şifre uzunluğu: ${u.password?.length || 0}`);
+                });
+                
+                // Kullanıcıyı bul (DÜZ ŞİFRE KARŞILAŞTIRMA)
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    console.log('✅ GİRİŞ BAŞARILI:', user.name);
+                    
+                    // Başarılı giriş
+                    localStorage.setItem('dogusCurrentUser', JSON.stringify(user));
+                    
+                    // DOĞRULAMA: Gerçekten kaydedildi mi?
+                    const check = localStorage.getItem('dogusCurrentUser');
+                    if (check) {
+                        console.log('✅✅ CurrentUser kaydedildi ve doğrulandı!');
+                        showNotification('Giriş başarılı! Profil sayfasına yönlendiriliyorsunuz...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'profil.html';
+                        }, 1000);
+                    } else {
+                        throw new Error('CurrentUser kayıt doğrulaması başarısız');
+                    }
+                } else {
+                    // Hatalı giriş - DETAYLI BİLGİ
+                    console.error('❌ GİRİŞ BAŞARISIZ');
+                    console.error('   Email bulunamadı veya şifre yanlış');
+                    console.error('   Girilen email:', email);
+                    console.error('   Girilen şifre uzunluğu:', password.length);
+                    
+                    // Email var mı kontrol et
+                    const emailExists = users.find(u => u.email === email);
+                    if (emailExists) {
+                        showNotification('Şifre hatalı! Lütfen tekrar deneyin.', 'error');
+                        console.error('   ⚠️ Email bulundu ama şifre eşleşmedi');
+                    } else {
+                        showNotification('Bu e-posta ile kayıtlı kullanıcı bulunamadı!', 'error');
+                        console.error('   ⚠️ Email kayıtlı değil');
+                    }
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = 'Giriş Yap';
+                }
+            } catch (error) {
+                console.error('❌ GİRİŞ HATASI:', error);
+                showNotification('Giriş yapılamadı! Tarayıcı ayarlarınızı kontrol edin.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = 'Giriş Yap';
             }

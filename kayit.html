@@ -204,8 +204,23 @@
 
             console.log('🚀 Kayıt başlatılıyor...');
 
+            try {
+                // LocalStorage kullanılabilir mi test et
+                const testKey = '__storage_test__';
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                console.log('✅ LocalStorage kullanılabilir');
+            } catch (error) {
+                console.error('❌ LocalStorage KULLANILAMIYOR:', error);
+                showNotification('HATA: Tarayıcınız gizli modda veya çerezler devre dışı! Lütfen normal modda açın.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Üye Ol';
+                return;
+            }
+
             // LocalStorage'a kaydet (DÜZ ŞİFRE)
             const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+            console.log('📦 Mevcut kullanıcılar:', users.length);
             
             // Email kontrolü
             if (users.find(u => u.email === email)) {
@@ -217,7 +232,7 @@
 
             // Yeni kullanıcı ekle
             const newUser = {
-                id: 'user_' + Date.now(),
+                id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                 name: userData.name,
                 email: userData.email,
                 phone: userData.phone,
@@ -228,11 +243,35 @@
             };
             
             users.push(newUser);
-            localStorage.setItem('dogusUsers', JSON.stringify(users));
             
-            console.log('✅ Kullanıcı kaydedildi:', newUser);
-            showNotification('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...', 'success');
-            setTimeout(() => { window.location.href = 'giris.html'; }, 1000);
+            // KAYDET ve DOĞRULA
+            try {
+                localStorage.setItem('dogusUsers', JSON.stringify(users));
+                console.log('💾 LocalStorage\'a yazıldı');
+                
+                // HEMEN OKU VE DOĞRULA
+                const verification = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                console.log('✅ Doğrulama: ' + verification.length + ' kullanıcı okundu');
+                
+                if (verification.find(u => u.id === newUser.id)) {
+                    console.log('✅✅ BAŞARILI: Kullanıcı kaydedildi VE doğrulandı!');
+                    
+                    // Kullanıcıyı otomatik giriş yap
+                    localStorage.setItem('dogusCurrentUser', JSON.stringify(newUser));
+                    
+                    showNotification('Kayıt başarılı! Profil sayfasına yönlendiriliyorsunuz...', 'success');
+                    setTimeout(() => { 
+                        window.location.href = 'profil.html'; 
+                    }, 1000);
+                } else {
+                    throw new Error('Doğrulama başarısız - kullanıcı bulunamadı');
+                }
+            } catch (saveError) {
+                console.error('❌ KAYDETME HATASI:', saveError);
+                showNotification('HATA: Kayıt yapılamadı! Tarayıcı ayarlarınızı kontrol edin.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Üye Ol';
+            }
         });
 
         function togglePassword(inputId) {
