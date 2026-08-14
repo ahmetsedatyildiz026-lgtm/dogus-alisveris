@@ -858,27 +858,41 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         window.currentCategoryName = categoryName;
         
         // Ürünleri yükle
+        console.log('📦 loadProductsFromAdmin çağrılıyor...');
         const database = await loadProductsFromAdmin();
+        console.log('✅ Database yüklendi:', database);
         
         // Kategori ürünlerini al
         allProducts = database[categorySlug] || [];
         filteredProducts = [...allProducts];
         
-        console.log(`✅ ${allProducts.length} ürün yüklendi`);
+        console.log(`✅ ${allProducts.length} ürün "${categorySlug}" kategorisinde`);
+        console.log('📦 allProducts:', allProducts);
         
         // Render
         renderProducts();
         setupEventListeners();
-        updateCartCount();
+        
+        // Cart count güncelle
+        if (typeof cartManager !== 'undefined') {
+            cartManager.updateCartCount();
+        }
+        
+        console.log('✅ Kategori sayfası başlatıldı!');
         
     } catch (error) {
-        console.error('❌ Hata:', error);
+        console.error('❌ initializeCategoryPage hatası:', error);
+        console.error('❌ Hata mesajı:', error.message);
+        console.error('❌ Stack trace:', error.stack);
+        
         const grid = document.getElementById('productsGrid');
         if (grid) {
             grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                    <i class="fas fa-box-open" style="font-size: 3rem; color: #999; margin-bottom: 1rem;"></i>
-                    <p style="color: #666;">Bu kategoride henüz ürün yok</p>
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: #fff3cd; border-radius: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #856404; margin-bottom: 1rem;"></i>
+                    <p style="color: #856404; font-size: 1.2rem;">Sayfa yüklenirken hata oluştu</p>
+                    <small style="color: #856404;">Hata: ${error.message}</small><br>
+                    <small style="color: #856404;">Lütfen sayfayı yenileyin (F5)</small>
                 </div>
             `;
         }
