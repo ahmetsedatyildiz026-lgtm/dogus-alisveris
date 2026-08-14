@@ -710,12 +710,21 @@
             try {
                 let allProducts = [];
                 
-                // Firebase'den yükle
+                // Firebase'den HIZLI yükle (cache-first)
                 if (typeof db !== 'undefined' && db) {
-                    console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+                    console.log('🔥 Ürünler yükleniyor (cache-first)...');
+                    
+                    // ÖNCE CACHE'DEN OKU (anında yüklenme!)
                     const snapshot = await db.collection('products')
                         .where('status', '==', 'active')
-                        .get();
+                        .get({ source: 'cache' })
+                        .catch(() => {
+                            // Cache yoksa server'dan oku
+                            console.log('📡 Cache yok, server\'dan yükleniyor...');
+                            return db.collection('products')
+                                .where('status', '==', 'active')
+                                .get({ source: 'server' });
+                        });
                     
                     snapshot.forEach(doc => {
                         const data = doc.data();
@@ -724,12 +733,7 @@
                         }
                     });
                     
-                    console.log(`✅ ${allProducts.length} aktif ürün yüklendi`);
-                    console.log('📊 isFeatured durumları:', allProducts.map(p => ({ 
-                        title: p.title, 
-                        isFeatured: p.isFeatured,
-                        type: typeof p.isFeatured
-                    })));
+                    console.log(`✅ ${allProducts.length} aktif ürün yüklendi (HIZLI!)`);
                 }
                 
                 // SADECE isFeatured=true olanları al (boolean kontrolü)

@@ -20,12 +20,13 @@ const categoryDatabase = {};
 // Cache
 let categoryProductsCache = null;
 let categoryCacheTimestamp = 0;
-const CATEGORY_CACHE_DURATION = 30000; // 30 saniye - daha hızlı güncelleme
+const CATEGORY_CACHE_DURATION = 5000; // 5 saniye - HIZLI GÜNCELLEME!
 
 async function loadProductsFromAdmin(forceRefresh = false) {
     try {
-        // Cache kontrolü - hız için
+        // Cache kontrolü - hız için (5 saniye)
         if (!forceRefresh && categoryProductsCache && (Date.now() - categoryCacheTimestamp < CATEGORY_CACHE_DURATION)) {
+            console.log('📦 Ürünler cache\'den yüklendi (hızlı)');
             return categoryProductsCache;
         }
         
@@ -35,9 +36,16 @@ async function loadProductsFromAdmin(forceRefresh = false) {
             return categoryProductsCache || {};
         }
         
+        console.log('🔥 Ürünler Firebase\'den yükleniyor...');
+        
+        // Firebase offline-first: önce cache'den oku, sonra network'ten güncelle
         const snapshot = await db.collection('products')
             .where('status', '==', 'active')
-            .get({ source: 'default' });
+            .get({ source: 'cache' }) // ÖNCE CACHE'DEN!
+            .catch(() => db.collection('products')
+                .where('status', '==', 'active')
+                .get({ source: 'server' }) // Sonra server'dan
+            );
         
         const products = [];
         snapshot.forEach(doc => {

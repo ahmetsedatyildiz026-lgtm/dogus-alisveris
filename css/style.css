@@ -3445,6 +3445,32 @@ select:focus {
         padding: 1rem !important;
         border-bottom: 1px solid #e5e7eb;
         flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* X Kapatma Butonu - Mobilde büyük ve belirgin */
+    .modal-header .close {
+        font-size: 2rem !important;
+        width: 40px;
+        height: 40px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: #ef4444;
+        color: white !important;
+        border-radius: 50%;
+        cursor: pointer;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0;
+        border: none;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    
+    .modal-header .close:active {
+        transform: scale(0.95);
     }
     
     .modal-body {
@@ -3500,7 +3526,8 @@ select:focus {
     }
     
     /* Sepete Ekle Butonu - Mobilde büyük ve belirgin */
-    .modal-footer .btn-primary {
+    .modal-footer .btn-primary,
+    .modal-footer .btn-add-cart {
         width: 100% !important;
         padding: 1rem !important;
         font-size: 1.1rem !important;
