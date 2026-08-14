@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASİT TEST - Firebase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        #log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>🧪 BASİT TEST - Firebase Bağlantısı</h1>
+    
+    <div class="box">
+        <h2>1. Firebase Durumu</h2>
+        <div id="status">Kontrol ediliyor...</div>
+    </div>
+    
+    <div class="box">
+        <h2>2. İşlemler</h2>
+        <button onclick="testUrunEkle()">➕ TEST ÜRÜNÜ EKLE</button>
+        <button onclick="testUrunleriListele()">📋 ÜRÜNLERİ LİSTELE</button>
+        <button onclick="testTemizle()">🗑️ TEMİZLE</button>
+    </div>
+    
+    <div class="box">
+        <h2>3. Console Log</h2>
+        <div id="log"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        const logDiv = document.getElementById('log');
+        const statusDiv = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            const line = `[${timestamp}] ${message}\n`;
+            logDiv.textContent += line;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Sayfa yüklenince kontrol
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof firebase === 'undefined') {
+                    statusDiv.innerHTML = '<span class="error">❌ Firebase SDK yüklenmedi!</span>';
+                    log('HATA: Firebase SDK bulunamadı', 'error');
+                } else if (typeof db === 'undefined' || !db) {
+                    statusDiv.innerHTML = '<span class="error">❌ Firestore bağlantısı yok!</span>';
+                    log('HATA: db undefined', 'error');
+                } else {
+                    statusDiv.innerHTML = '<span class="success">✅ Firebase hazır ve bağlı!</span>';
+                    log('✅ Firebase bağlantısı başarılı');
+                    log(`Project ID: ${firebase.app().options.projectId}`);
+                }
+            }, 1000);
+        });
+        
+        // Test ürünü ekle
+        async function testUrunEkle() {
+            log('➕ Test ürünü ekleniyor...');
+            
+            if (!db) {
+                log('HATA: Firebase bağlantısı yok!', 'error');
+                alert('Firebase bağlantısı yok!');
+                return;
+            }
+            
+            const testUrun = {
+                title: `TEST ${Date.now()}`,
+                brand: 'TEST MARKA',
+                category: 'beyaz-esya',
+                price: '₺5000',
+                status: 'active',
+                isFeatured: true,
+                stock: 10,
+                description: 'Basit test için eklenen ürün',
+                images: [],
+                image: '',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            try {
+                const docRef = await db.collection('products').add(testUrun);
+                log(`✅ BAŞARILI! Ürün ID: ${docRef.id}`);
+                alert(`✅ Ürün eklendi!\nID: ${docRef.id}`);
+            } catch (error) {
+                log(`❌ HATA: ${error.message}`, 'error');
+                alert(`❌ Hata: ${error.message}`);
+            }
+        }
+        
+        // Ürünleri listele
+        async function testUrunleriListele() {
+            log('📋 Ürünler listeleniyor...');
+            
+            if (!db) {
+                log('HATA: Firebase bağlantısı yok!', 'error');
+                return;
+            }
+            
+            try {
+                const snapshot = await db.collection('products').get();
+                log(`✅ ${snapshot.size} ürün bulundu`);
+                
+                snapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    log(`  ${index + 1}. ${data.title} - ${data.price || 'Fiyat yok'} (ID: ${doc.id})`);
+                });
+                
+                if (snapshot.size === 0) {
+                    log('⚠️ Firebase\'de hiç ürün yok!', 'warning');
+                }
+            } catch (error) {
+                log(`❌ HATA: ${error.message}`, 'error');
+            }
+        }
+        
+        // Temizle
+        function testTemizle() {
+            logDiv.textContent = '';
+            log('🗑️ Log temizlendi');
+        }
+    </script>
+</body>
+</html>
