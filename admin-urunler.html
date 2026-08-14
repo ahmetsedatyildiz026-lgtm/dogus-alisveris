@@ -445,6 +445,8 @@ function closeProductModal() {
 // ─── SAVE ─────────────────────────────────────────────────────
 async function saveProduct() {
     console.log('💾 saveProduct çağrıldı');
+    console.log('🔍 Firebase durumu:', typeof db !== 'undefined' && db ? 'Bağlı' : 'Bağlı değil');
+    console.log('🔍 addProduct fonksiyonu:', typeof addProduct);
     
     const name = document.getElementById('prodName').value.trim();
     const brand = document.getElementById('prodBrand').value.trim();
@@ -452,7 +454,10 @@ async function saveProduct() {
     const price = document.getElementById('prodPrice').value;
     const description = document.getElementById('prodDescription').value.trim();
 
+    console.log('📝 Form değerleri:', { name, brand, category, price, description });
+
     if (!name || !brand || !category || !price || !description) {
+        console.error('❌ Zorunlu alanlar eksik!');
         showAdminNotification('Zorunlu alanları doldurun!', 'error');
         return;
     }
@@ -477,24 +482,39 @@ async function saveProduct() {
         specifications: specs
     };
 
+    console.log('📦 Ürün verisi:', productData);
+
     try {
+        console.log('🚀 Firebase işlemi başlatılıyor...');
+        
         if (editingProductId) {
             // Güncelleme
+            console.log('✏️ Güncelleme modu, ID:', editingProductId);
             await updateProduct(editingProductId, productData);
+            console.log('✅ updateProduct tamamlandı');
             showAdminNotification('✅ Ürün güncellendi!', 'success');
         } else {
             // Yeni ekleme
+            console.log('➕ Yeni ekleme modu');
             const newId = await addProduct(productData);
-            console.log('✅ Yeni ürün ID:', newId);
-            showAdminNotification('✅ Ürün Firebase\'e eklendi!', 'success');
+            console.log('✅ addProduct tamamlandı, ID:', newId);
+            showAdminNotification('✅ Ürün Firebase\'e eklendi! ID: ' + newId, 'success');
         }
         
+        console.log('🔄 Modal kapatılıyor...');
         closeProductModal();
+        
+        console.log('🔄 Ürünler yeniden yükleniyor...');
         await renderProducts();
+        
+        console.log('✅ İşlem tamamen tamamlandı!');
         
     } catch (error) {
         console.error('❌ Kaydetme hatası:', error);
+        console.error('❌ Hata detayı:', error.message);
+        console.error('❌ Hata stack:', error.stack);
         showAdminNotification('❌ Hata: ' + error.message, 'error');
+        alert('HATA: ' + error.message + '\n\nKonsolu kontrol edin!');
     }
 }
 
