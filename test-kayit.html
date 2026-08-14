@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Sistemi Test - Doğuş</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        #output {
+            background: #1e1e1e;
+            color: #4facfe;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        .warning { color: #fbbf24; }
+        .users-list {
+            margin-top: 1rem;
+        }
+        .user-card {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .user-card strong {
+            color: #667eea;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Müşteri Sistemi Test Paneli</h1>
+        <p class="subtitle">LocalStorage müşteri kayıt sistemini test edin</p>
+
+        <!-- İSTATİSTİKLER -->
+        <div class="section">
+            <h2>📊 İstatistikler</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Toplam Müşteri</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="currentStatus">❌</div>
+                    <div class="stat-label">Giriş Durumu</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="storageStatus">-</div>
+                    <div class="stat-label">LocalStorage</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST KULLANICISI OLUŞTUR -->
+        <div class="section">
+            <h2>➕ Test Kullanıcısı Oluştur</h2>
+            <button onclick="createTestUser()">Test Kullanıcısı Ekle</button>
+            <button onclick="create5Users()" class="btn-success">5 Test Kullanıcısı Ekle</button>
+        </div>
+
+        <!-- KULLANICI LİSTESİ -->
+        <div class="section">
+            <h2>👥 Kayıtlı Kullanıcılar</h2>
+            <button onclick="loadUsers()">Kullanıcıları Yükle</button>
+            <button onclick="clearAllUsers()" class="btn-danger">Tüm Kullanıcıları Sil</button>
+            <div id="usersList" class="users-list"></div>
+        </div>
+
+        <!-- GİRİŞ TESTİ -->
+        <div class="section">
+            <h2>🔐 Giriş Testi</h2>
+            <button onclick="testLogin()">Test Kullanıcısı ile Giriş Yap</button>
+            <button onclick="logout()">Çıkış Yap</button>
+        </div>
+
+        <!-- LOCALSTORAGE KONTROLÜ -->
+        <div class="section">
+            <h2>💾 LocalStorage Kontrolü</h2>
+            <button onclick="checkLocalStorage()">LocalStorage Test Et</button>
+            <button onclick="viewRawData()">Ham Veriyi Göster</button>
+        </div>
+
+        <!-- KONSOL ÇIKTISI -->
+        <div class="section">
+            <h2>📝 Test Çıktısı</h2>
+            <div id="output">Hazır. Bir test butonuna basın...</div>
+        </div>
+    </div>
+
+    <script>
+        let output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            const icon = {
+                success: '✅',
+                error: '❌',
+                info: '📘',
+                warning: '⚠️'
+            }[type] || '📘';
+            
+            output.innerHTML += `<span class="${type}">[${timestamp}] ${icon} ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+
+        // LocalStorage test
+        function checkLocalStorage() {
+            clearOutput();
+            log('LocalStorage testi başlatılıyor...', 'info');
+            
+            try {
+                const testKey = '__test_storage__';
+                localStorage.setItem(testKey, 'test_value');
+                const value = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (value === 'test_value') {
+                    log('LocalStorage ÇALIŞIYOR! ✅', 'success');
+                    document.getElementById('storageStatus').textContent = '✅';
+                } else {
+                    log('LocalStorage okunamıyor! ❌', 'error');
+                    document.getElementById('storageStatus').textContent = '❌';
+                }
+            } catch (error) {
+                log('LocalStorage KULLANILAMIYOR! ' + error.message, 'error');
+                log('Gizli mod (Private Browsing) kapalı mı kontrol edin!', 'warning');
+                document.getElementById('storageStatus').textContent = '❌';
+            }
+            
+            updateStats();
+        }
+
+        // Test kullanıcısı oluştur
+        function createTestUser() {
+            clearOutput();
+            log('Test kullanıcısı oluşturuluyor...', 'info');
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                
+                const randomId = Math.random().toString(36).substr(2, 9);
+                const newUser = {
+                    id: 'user_' + Date.now() + '_' + randomId,
+                    name: 'Test Kullanıcı ' + (users.length + 1),
+                    email: `test${users.length + 1}@dogus.com`,
+                    phone: '05' + Math.floor(Math.random() * 1000000000),
+                    address: 'Test Adresi ' + (users.length + 1),
+                    password: 'test123',
+                    provider: 'email',
+                    createdAt: new Date().toISOString()
+                };
+                
+                users.push(newUser);
+                localStorage.setItem('dogusUsers', JSON.stringify(users));
+                
+                // Doğrulama
+                const verification = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                if (verification.find(u => u.id === newUser.id)) {
+                    log(`Kullanıcı oluşturuldu: ${newUser.name} (${newUser.email})`, 'success');
+                    log(`Şifre: test123`, 'info');
+                    loadUsers();
+                } else {
+                    log('HATA: Kullanıcı kaydedildi ama doğrulanamadı!', 'error');
+                }
+            } catch (error) {
+                log('HATA: ' + error.message, 'error');
+            }
+            
+            updateStats();
+        }
+
+        // 5 test kullanıcısı oluştur
+        function create5Users() {
+            clearOutput();
+            log('5 test kullanıcısı oluşturuluyor...', 'info');
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    createTestUser();
+                }, i * 100);
+            }
+        }
+
+        // Kullanıcıları yükle
+        function loadUsers() {
+            try {
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                const usersList = document.getElementById('usersList');
+                
+                if (users.length === 0) {
+                    usersList.innerHTML = '<p style="color: #666; padding: 1rem;">Henüz kayıtlı kullanıcı yok.</p>';
+                    log('Kayıtlı kullanıcı bulunamadı.', 'warning');
+                } else {
+                    usersList.innerHTML = users.map((u, i) => `
+                        <div class="user-card">
+                            <strong>${i + 1}. ${u.name}</strong><br>
+                            📧 ${u.email}<br>
+                            📱 ${u.phone}<br>
+                            🔑 Şifre: ${u.password}<br>
+                            📅 ${new Date(u.createdAt).toLocaleString('tr-TR')}
+                        </div>
+                    `).join('');
+                    log(`${users.length} kullanıcı yüklendi.`, 'success');
+                }
+                
+                updateStats();
+            } catch (error) {
+                log('Kullanıcılar yüklenirken hata: ' + error.message, 'error');
+            }
+        }
+
+        // Tüm kullanıcıları sil
+        function clearAllUsers() {
+            if (!confirm('TÜM MÜŞTERİLERİ SİLMEK İSTEDİĞİNİZE EMİN MİSİNİZ?')) {
+                return;
+            }
+            
+            clearOutput();
+            localStorage.removeItem('dogusUsers');
+            localStorage.removeItem('dogusCurrentUser');
+            log('Tüm kullanıcılar silindi!', 'warning');
+            loadUsers();
+            updateStats();
+        }
+
+        // Test giriş
+        function testLogin() {
+            clearOutput();
+            log('Giriş testi başlatılıyor...', 'info');
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                
+                if (users.length === 0) {
+                    log('Kayıtlı kullanıcı yok! Önce test kullanıcısı oluşturun.', 'error');
+                    return;
+                }
+                
+                const testUser = users[0];
+                localStorage.setItem('dogusCurrentUser', JSON.stringify(testUser));
+                
+                const verification = JSON.parse(localStorage.getItem('dogusCurrentUser'));
+                if (verification && verification.id === testUser.id) {
+                    log(`Giriş başarılı: ${testUser.name}`, 'success');
+                    log(`Email: ${testUser.email}`, 'info');
+                    log('Şimdi profil.html sayfasına gidin!', 'info');
+                } else {
+                    log('HATA: Giriş kaydedildi ama doğrulanamadı!', 'error');
+                }
+            } catch (error) {
+                log('Giriş hatası: ' + error.message, 'error');
+            }
+            
+            updateStats();
+        }
+
+        // Çıkış
+        function logout() {
+            clearOutput();
+            localStorage.removeItem('dogusCurrentUser');
+            log('Çıkış yapıldı!', 'success');
+            updateStats();
+        }
+
+        // Ham veriyi göster
+        function viewRawData() {
+            clearOutput();
+            log('=== DOGUSUSERS HAM VERİSİ ===', 'info');
+            const raw = localStorage.getItem('dogusUsers');
+            if (raw) {
+                log(raw, 'info');
+            } else {
+                log('dogusUsers anahtarı bulunamadı!', 'warning');
+            }
+            
+            log('\n=== DOGUSCURRENTUSER HAM VERİSİ ===', 'info');
+            const current = localStorage.getItem('dogusCurrentUser');
+            if (current) {
+                log(current, 'info');
+            } else {
+                log('dogusCurrentUser anahtarı bulunamadı!', 'warning');
+            }
+        }
+
+        // İstatistikleri güncelle
+        function updateStats() {
+            try {
+                const users = JSON.parse(localStorage.getItem('dogusUsers') || '[]');
+                const currentUser = JSON.parse(localStorage.getItem('dogusCurrentUser') || 'null');
+                
+                document.getElementById('totalUsers').textContent = users.length;
+                document.getElementById('currentStatus').textContent = currentUser ? '✅' : '❌';
+                
+                // LocalStorage test
+                try {
+                    const testKey = '__test__';
+                    localStorage.setItem(testKey, 'test');
+                    localStorage.removeItem(testKey);
+                    document.getElementById('storageStatus').textContent = '✅';
+                } catch {
+                    document.getElementById('storageStatus').textContent = '❌';
+                }
+            } catch (error) {
+                console.error('İstatistik güncelleme hatası:', error);
+            }
+        }
+
+        // Sayfa yüklendiğinde
+        window.addEventListener('DOMContentLoaded', function() {
+            log('Test paneli hazır!', 'success');
+            updateStats();
+            loadUsers();
+        });
+    </script>
+</body>
+</html>
