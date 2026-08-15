@@ -139,10 +139,16 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer" style="padding: 1rem; border-top: 1px solid #e5e7eb;">
-                <div class="modal-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button class="btn-add-cart" onclick="addToCart(currentProduct.title)" style="flex: 1; min-width: 150px;">Sepete Ekle</button>
-                    <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 150px;">Teklif Al</button>
+            <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid #e5e7eb; background: #f9fafb;">
+                <div class="modal-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn-add-cart" onclick="addToCart(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 200px; padding: 1rem 1.5rem; font-size: 1.1rem; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s;">
+                        <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+                        Sepete Ekle
+                    </button>
+                    <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 200px; padding: 1rem 1.5rem; font-size: 1.1rem; font-weight: 700; background: var(--success); color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s;">
+                        <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
+                        WhatsApp ile Teklif Al
+                    </button>
                 </div>
             </div>
         </div>
@@ -267,8 +273,8 @@
     <script src="js/firebase-config.js?v=202608150003"></script>
     
     <!-- CATEGORY PAGE JAVASCRIPT -->
-    <script src="js/category-products.js?v=202608150003"></script>
-    <script src="js/auth.js?v=202608150003"></script>
+    <script src="js/category-products.js?v=20260815115323"></script>
+    <script src="js/auth.js?v=20260815115323"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎯 Kategori sayfası yüklendi: klima-ventilator');
