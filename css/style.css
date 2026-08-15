@@ -2148,26 +2148,103 @@ body {
     
     .modal-body {
         flex-direction: column;
-        padding: var(--space-4);
-        height: calc(100vh - 80px);
+        padding: 1rem;
+        height: auto;
+        max-height: calc(100vh - 180px);
         overflow-y: auto;
     }
     
+    /* Mobil için kompakt resim galerisi */
     .modal-product-image {
         max-width: 100%;
         width: 100%;
     }
     
     .gallery-main-image {
-        height: 300px;
+        height: 250px;
     }
     
+    .gallery-thumbnails {
+        display: none; /* Mobilde küçük resimleri gizle */
+    }
+    
+    /* Mobil için kompakt ürün bilgisi */
     .modal-product-info {
         max-width: 100%;
     }
     
+    .modal-product-info h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-product-info p {
+        font-size: 0.875rem;
+        line-height: 1.4;
+        max-height: 100px;
+        overflow-y: auto;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Mobil için özellikler kısmını küçült */
+    .modal-product-specs {
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .modal-product-specs .spec-item {
+        padding: 0.4rem 0;
+    }
+    
+    /* Mobil için fiyat daha büyük */
+    .modal-product-price {
+        font-size: 1.75rem !important;
+    }
+    
+    /* Mobil için sticky footer */
+    .modal-footer {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem !important;
+        background: #ffffff;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        z-index: 20;
+    }
+    
     .modal-actions {
-        flex-direction: column;
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        max-width: 100% !important;
+    }
+    
+    .modal-actions button {
+        flex: 1;
+        min-width: auto !important;
+        padding: 1rem 0.75rem !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .modal-actions button i {
+        font-size: 1.1rem !important;
+    }
+    
+    .modal-actions button span {
+        display: inline; /* Desktop'ta göster */
+    }
+    
+    /* Mobil özel - buton metinlerini kısalt */
+    @media (max-width: 768px) {
+        .modal-actions button .btn-text {
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .modal-actions button .btn-text {
+            display: none; /* Çok küçük ekranlarda sadece ikon */
+        }
     }
     
     .close {
