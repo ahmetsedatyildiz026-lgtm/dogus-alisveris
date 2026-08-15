@@ -974,6 +974,16 @@ function renderProducts() {
                         ${product.originalPrice ? `<span class="product-price-old">${product.originalPrice}</span>` : ''}
                         <span class="product-price">${product.price}</span>
                     </div>
+                    <div class="product-actions" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', '${product.price}')" style="flex: 1; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="fas fa-shopping-cart"></i>
+                            Sepete Ekle
+                        </button>
+                        <button onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${product.price}')" style="flex: 1; padding: 0.75rem; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="fas fa-comment-dollar"></i>
+                            Teklif Al
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1080,3 +1090,27 @@ window.sortProducts = sortProducts;
 window.showProductModal = showProductModal;
 window.closeModal = closeModal;
 window.updateCartCount = function() { cartManager.updateCartCount(); };
+
+// Sepete ekle fonksiyonu (inline button için)
+window.addToCart = function(productName, price) {
+    try {
+        const success = cartManager.addItem(productName, price, 1);
+        
+        if (success) {
+            showNotification(`${productName} sepete eklendi!`, 'success');
+            cartManager.updateCartCount();
+        } else {
+            showNotification('Sepete ekleme başarısız!', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Sepete ekleme hatası:', error);
+        showNotification('Sepete ekleme sırasında hata oluştu!', 'error');
+    }
+};
+
+// Teklif al fonksiyonu
+window.requestOffer = function(productName, price) {
+    const message = `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`;
+    const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+};
