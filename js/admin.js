@@ -449,14 +449,15 @@ async function getDashboardStats() {
 
     const storeValue = products.reduce((sum, p) => {
         // Türk para formatını parse et: "₺15.500,50" -> 15500.50
+        // Mağazada her üründen 1 tane var, stok ile çarpmıyoruz
         let priceStr = (p.price || '0').toString()
             .replace(/₺/g, '')          // ₺ işaretini kaldır
             .replace(/\s/g, '')         // Boşlukları kaldır
             .replace(/\./g, '')         // Binlik ayırıcıyı kaldır (15.000 -> 15000)
             .replace(/,/g, '.');        // Ondalık virgülü noktaya çevir (500,50 -> 500.50)
         const price = parseFloat(priceStr) || 0;
-        const qty = p.stock || 0;
-        return sum + price * qty;
+        // Stok > 0 olan ürünlerin fiyatlarını topla (her üründen 1 adet)
+        return (p.stock && p.stock > 0) ? sum + price : sum;
     }, 0);
 
     const pendingOrders = orders.filter(o => o.status === 'pending').length;

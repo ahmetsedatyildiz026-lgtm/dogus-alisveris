@@ -117,13 +117,14 @@
     </main>
 
     <!-- PRODUCT DETAIL MODAL -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Ürün Detayı</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
+    <div id="productModal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 2% auto; border-radius: 16px; width: 90%; max-width: 1200px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="modal-header" style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="modalTitle" style="margin: 0; font-size: 1.5rem;">Ürün Detayı</h2>
+                <span class="close" onclick="closeModal()" style="font-size: 2rem; font-weight: bold; color: #999; cursor: pointer; line-height: 1;">&times;</span>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="modal-product-image">
                     <div class="image-gallery">
                         <div class="gallery-main-image">
@@ -154,16 +155,17 @@
                         <div class="modal-product-price" id="modalProductPrice">₺0</div>
                     </div>
                 </div>
+                </div>
             </div>
-            <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid #e5e7eb; background: #f9fafb;">
-                <div class="modal-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="btn-add-cart" onclick="addToCart(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 200px; padding: 1rem 1.5rem; font-size: 1.1rem; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s;">
-                        <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
-                        Sepete Ekle
+            <div class="modal-footer" style="padding: 1.5rem; border-top: 2px solid #e5e7eb; background: #ffffff; position: sticky; bottom: 0; z-index: 10;">
+                <div class="modal-actions" style="display: flex; gap: 1rem; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
+                    <button class="btn-add-cart" onclick="addToCart(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 250px; padding: 1.25rem 2rem; font-size: 1.2rem; font-weight: 700; background: #2563eb; color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3); transition: all 0.3s;">
+                        <i class="fas fa-shopping-cart" style="font-size: 1.3rem;"></i>
+                        <span>Sepete Ekle</span>
                     </button>
-                    <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 200px; padding: 1rem 1.5rem; font-size: 1.1rem; font-weight: 700; background: var(--success); color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s;">
-                        <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
-                        WhatsApp ile Teklif Al
+                    <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)" style="flex: 1; min-width: 250px; padding: 1.25rem 2rem; font-size: 1.2rem; font-weight: 700; background: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); transition: all 0.3s;">
+                        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i>
+                        <span>WhatsApp Teklif Al</span>
                     </button>
                 </div>
             </div>
@@ -292,8 +294,8 @@
     <script src="js/firebase-config.js?v=202608150003"></script>
 
     <!-- CATEGORY PAGE JAVASCRIPT -->
-    <script src="js/category-products.js?v=20260815115323"></script>
-    <script src="js/auth.js?v=20260815115323"></script>
+    <script src="js/category-products.js?v=20260725180000"></script>
+    <script src="js/auth.js?v=20260725180000"></script>
     <script>
         // Initialize category page - FIREBASE YOK, SADECE LOCALSTORAGE!
         window.addEventListener('load', function() {
