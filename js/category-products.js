@@ -968,7 +968,7 @@ function renderProducts() {
                     <h3 class="product-title">${product.title}</h3>
                     <div class="product-meta">
                         <span class="product-brand">${product.brand || 'Marka'}</span>
-                        ${product.stock > 0 ? `<span class="product-stock">Stokta ${product.stock} adet</span>` : '<span class="product-stock out-of-stock">Stokta Yok</span>'}
+                        ${product.stock > 0 ? `<span class="product-stock">Stokta</span>` : '<span class="product-stock out-of-stock">Stokta Yok</span>'}
                     </div>
                     <div class="product-price-section">
                         ${product.originalPrice ? `<span class="product-price-old">${product.originalPrice}</span>` : ''}
