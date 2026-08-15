@@ -2154,6 +2154,13 @@ body {
         overflow-y: auto;
     }
     
+    /* Mobilde grid'i tek sütun yap */
+    .modal-body > div {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
     /* Mobil için kompakt resim galerisi */
     .modal-product-image {
         max-width: 100%;
