@@ -148,25 +148,27 @@ async function getProductsFromFirebase() {
       }
     }
     
-    // Firebase'den yükle - sadece aktif ve stokta olan ürünler
-    const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
-      .where('status', '==', 'active')
-      .where('stock', '>', 0)
-      .get();
+    // Firebase'den yükle - TÜM ürünler (client-side filtering)
+    console.log('🔄 Firebase\'den ürünler yükleniyor...');
+    const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
       
     const products = [];
     snapshot.forEach(doc => {
-      products.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      const data = doc.data();
+      // Client-side filtering - sadece aktif ve stokta olanlar
+      if (data.status === 'active' && (data.stock || 0) > 0) {
+        products.push({
+          id: doc.id,
+          ...data
+        });
+      }
     });
     
     // Cache'e kaydet
     sessionStorage.setItem(cacheKey, JSON.stringify(products));
     sessionStorage.setItem(cacheKey + '_time', Date.now().toString());
     
-    console.log(`✅ ${products.length} ürün Firebase'den yüklendi ve cache'lendi`);
+    console.log(`✅ ${products.length} aktif ürün Firebase'den yüklendi ve cache'lendi`);
     return products;
   } catch (error) {
     console.error('❌ Ürünler yüklenemedi:', error);
