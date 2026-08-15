@@ -132,7 +132,28 @@ const COLLECTIONS = {
  */
 async function getProductsFromFirebase() {
   try {
-    const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
+    // Safari için cache kullan
+    const cacheKey = 'dogus_products_cache';
+    const cacheTime = 5 * 60 * 1000; // 5 dakika cache
+    
+    // Cache kontrol et
+    const cached = sessionStorage.getItem(cacheKey);
+    const cacheTimestamp = sessionStorage.getItem(cacheKey + '_time');
+    
+    if (cached && cacheTimestamp) {
+      const age = Date.now() - parseInt(cacheTimestamp);
+      if (age < cacheTime) {
+        console.log('✅ Ürünler cache\'den yüklendi (Safari optimization)');
+        return JSON.parse(cached);
+      }
+    }
+    
+    // Firebase'den yükle - sadece aktif ve stokta olan ürünler
+    const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
+      .where('status', '==', 'active')
+      .where('stock', '>', 0)
+      .get();
+      
     const products = [];
     snapshot.forEach(doc => {
       products.push({
@@ -140,10 +161,23 @@ async function getProductsFromFirebase() {
         ...doc.data()
       });
     });
-    console.log(`✅ ${products.length} ürün Firebase'den yüklendi`);
+    
+    // Cache'e kaydet
+    sessionStorage.setItem(cacheKey, JSON.stringify(products));
+    sessionStorage.setItem(cacheKey + '_time', Date.now().toString());
+    
+    console.log(`✅ ${products.length} ürün Firebase'den yüklendi ve cache'lendi`);
     return products;
   } catch (error) {
     console.error('❌ Ürünler yüklenemedi:', error);
+    
+    // Hata durumunda cache'den dön
+    const cached = sessionStorage.getItem('dogus_products_cache');
+    if (cached) {
+      console.log('⚠️ Hata oluştu, cache kullanılıyor');
+      return JSON.parse(cached);
+    }
+    
     return [];
   }
 }

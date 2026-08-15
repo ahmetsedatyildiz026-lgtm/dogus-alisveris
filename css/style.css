@@ -3630,3 +3630,34 @@ select:focus {
         min-width: 1200px;
     }
 }
+
+
+/* ===== SAFARI PERFORMANCE OPTIMIZATION ===== */
+@supports (-webkit-appearance:none) {
+    /* Safari için GPU hızlandırma */
+    .product-card,
+    .category-card,
+    .brand-card,
+    .modal-content {
+        -webkit-transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        -webkit-perspective: 1000;
+    }
+    
+    /* Safari için smooth scroll */
+    html {
+        -webkit-font-smoothing: antialiased;
+        -webkit-text-size-adjust: 100%;
+    }
+    
+    /* Safari için resim optimizasyonu */
+    img {
+        -webkit-user-drag: none;
+        image-rendering: -webkit-optimize-contrast;
+    }
+    
+    /* Safari için modal scroll fix */
+    .modal-body {
+        -webkit-overflow-scrolling: touch;
+    }
+}
