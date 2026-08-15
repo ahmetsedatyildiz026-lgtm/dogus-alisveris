@@ -278,10 +278,26 @@
     <script src="js/category-products.js?v=20260725181500"></script>
     <script src="js/auth.js?v=20260725181500"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎯 Kategori sayfası yüklendi: klima-ventilator');
-            initializeCategoryPage('klima-ventilator', 'Klima & Vantilatör');
-        });
+        // Initialize category page - Firebase hazır olana kadar bekle!
+        async function waitForFirebaseAndStart() {
+            console.log('🚀 Sayfa yüklendi, Firebase bekleniyor...');
+            
+            // Firebase ve getProductsFromFirebase fonksiyonunu bekle
+            let attempts = 0;
+            while (attempts < 50) {
+                if (typeof db !== 'undefined' && typeof getProductsFromFirebase === 'function') {
+                    console.log('✅ Firebase hazır! Kategori başlatılıyor...');
+                    await initializeCategoryPage('klima-ventilator', 'Klima & Vantilatör');
+                    return;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            console.error('❌ Firebase yüklenemedi!');
+        }
+        
+        window.addEventListener('load', waitForFirebaseAndStart);
     </script>
 </body>
 </html>
