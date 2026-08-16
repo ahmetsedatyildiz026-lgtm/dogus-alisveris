@@ -287,8 +287,7 @@ function updateCartDisplay() {
             <div class="cart-item">
                 <div class="item-info" onclick="goToProduct('${item.name}')" style="cursor: pointer;">
                     <h4>${item.name}</h4>
-                    <span class="item-price">${item.price}</span>
-                    <small class="product-link">Ürün detayını gör</small>
+                    <small class="product-link" style="color: var(--success);"><i class="fas fa-whatsapp"></i> Fiyat WhatsApp'tan verilecek</small>
                 </div>
                 <div class="item-controls">
                     <button onclick="updateQuantity('${item.id}', ${item.quantity - 1})">-</button>
@@ -298,16 +297,17 @@ function updateCartDisplay() {
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-                <div class="item-total">₺${itemTotal.toLocaleString('tr-TR')}</div>
             </div>
         `;
     });
 
     cartItems.innerHTML = cartHTML;
     
+    // TOPLAM FİYAT GÖSTERME - WhatsApp'tan verilecek
     const totalPriceEl = document.getElementById('totalPrice');
     if (totalPriceEl) {
-        totalPriceEl.textContent = `₺${cartManager.getTotalPrice().toLocaleString('tr-TR')}`;
+        totalPriceEl.innerHTML = '<i class="fas fa-whatsapp"></i> Fiyat WhatsApp\'tan öğrenin';
+        totalPriceEl.style.color = 'var(--success)';
     }
 }
 
@@ -344,62 +344,35 @@ function sendWhatsAppOrder() {
         return;
     }
 
-    let message = 'Merhaba! Aşağıdaki ürünler için sipariş vermek istiyorum:\n\n';
+    let message = 'Merhaba! Aşağıdaki ürünler için fiyat öğrenmek ve sipariş vermek istiyorum:\n\n';
     
     cart.forEach((item, index) => {
-        const priceNum = parseFloat(item.price.replace('₺', '').replace(/\./g, ''));
-        const itemTotal = priceNum * item.quantity;
-
         message += `${index + 1}. ${item.name}\n`;
-        message += `   Adet: ${item.quantity}\n`;
-        message += `   Birim Fiyat: ${item.price}\n`;
-        message += `   Toplam: ₺${itemTotal.toLocaleString('tr-TR')}\n\n`;
+        message += `   Adet: ${item.quantity}\n\n`;
     });
 
-    message += `GENEL TOPLAM: ₺${cartManager.getTotalPrice().toLocaleString('tr-TR')}\n\n`;
-    message += 'Vade farksız taksit seçenekleri ve ödeme detayları için bilgi verebilir misiniz?';
+    message += 'Bu ürünler için toplam fiyat nedir?\n';
+    message += 'Vade farksız taksit seçenekleri var mı?';
 
     const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }
 
 function showInstallmentTable() {
-    const totalPrice = cartManager.getTotalPrice();
-
-    if (totalPrice === 0) {
-        showNotification('Sepetinizde ürün bulunmuyor!', 'error');
-        return;
-    }
-
-    const tableBody = document.getElementById('installmentTableBody');
-    if (!tableBody) return;
+    showNotification('Taksit seçenekleri için WhatsApp\'tan fiyat öğrenin', 'info');
     
-    let tableHTML = '';
-    let maxMonths = totalPrice <= 5000 ? 6 : 9;
-
-    console.log(`Sepet toplamı: ${totalPrice} TL, Max taksit: ${maxMonths} ay`);
-
-    for (let month = 1; month <= maxMonths; month++) {
-        const monthlyPayment = totalPrice / month;
+    // WhatsApp'a yönlendir
+    const cart = cartManager.getCart();
+    if (cart.length > 0) {
+        let message = 'Merhaba! Aşağıdaki ürünler için fiyat ve taksit seçeneklerini öğrenmek istiyorum:\n\n';
+        cart.forEach((item, index) => {
+            message += `${index + 1}. ${item.name} (${item.quantity} adet)\n`;
+        });
+        message += '\nVade farksız taksit seçenekleri nelerdir?';
         
-        tableHTML += `
-            <tr ${month <= 3 ? 'class="recommended"' : ''}>
-                <td>${month} Ay ${month <= 3 ? '<span class="badge">Önerilen</span>' : ''}</td>
-                <td>₺${monthlyPayment.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
-                <td>₺${totalPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
-                <td class="no-interest">%0 Faiz</td>
-            </tr>
-        `;
+        const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
     }
-
-    tableBody.innerHTML = tableHTML;
-    
-    const modalTitle = document.querySelector('#installmentModal .modal-header h2');
-    if (modalTitle) {
-        modalTitle.textContent = `Taksit Seçenekleri (₺${totalPrice.toLocaleString('tr-TR')} - ${maxMonths} Aya Kadar)`;
-    }
-    
-    document.getElementById('installmentModal').style.display = 'block';
 }
 
 function closeInstallmentModal() {
@@ -582,15 +555,17 @@ function showProductModal(productId) {
     document.getElementById('modalTitle').textContent = product.title;
     document.getElementById('modalProductTitle').textContent = product.title;
     document.getElementById('modalProductDescription').textContent = product.description;
-    document.getElementById('modalProductPrice').textContent = product.price;
+    
+    // FİYAT GÖSTERME - WhatsApp'tan verilecek
+    const priceEl = document.getElementById('modalProductPrice');
+    if (priceEl) {
+        priceEl.innerHTML = '<i class="fas fa-whatsapp"></i> Fiyat için WhatsApp\'tan sorun';
+        priceEl.style.color = 'var(--success)';
+        priceEl.style.fontSize = '1.1rem';
+    }
     
     const originalPriceEl = document.getElementById('modalOriginalPrice');
-    if (product.originalPrice) {
-        originalPriceEl.textContent = product.originalPrice;
-        originalPriceEl.style.display = 'block';
-    } else {
-        originalPriceEl.style.display = 'none';
-    }
+    originalPriceEl.style.display = 'none';
     
     if (product.specifications) {
         const specsEl = document.getElementById('modalProductSpecs');
@@ -970,18 +945,17 @@ function renderProducts() {
                         <span class="product-brand">${product.brand || 'Marka'}</span>
                         ${product.stock > 0 ? `<span class="product-stock">Stokta</span>` : '<span class="product-stock out-of-stock">Stokta Yok</span>'}
                     </div>
-                    <div class="product-price-section">
-                        ${product.originalPrice ? `<span class="product-price-old">${product.originalPrice}</span>` : ''}
-                        <span class="product-price">${product.price}</span>
+                    <div class="product-price-section" style="text-align: center; padding: 1rem 0; color: var(--primary); font-weight: 600; font-size: 1.1rem;">
+                        💬 Fiyat için WhatsApp'tan sorun
                     </div>
                     <div class="product-actions" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                        <button onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', '${product.price}')" style="flex: 1; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <button onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', 'Fiyat WhatsApp\\'tan verilecek')" style="flex: 1; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                             <i class="fas fa-shopping-cart"></i>
                             Sepete Ekle
                         </button>
-                        <button onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${product.price}')" style="flex: 1; padding: 0.75rem; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <button onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '')" style="flex: 1; padding: 0.75rem; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                             <i class="fas fa-comment-dollar"></i>
-                            Teklif Al
+                            Fiyat Sor
                         </button>
                     </div>
                 </div>
@@ -1110,7 +1084,7 @@ window.addToCart = function(productName, price) {
 
 // Teklif al fonksiyonu
 window.requestOffer = function(productName, price) {
-    const message = `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`;
+    const message = `Merhaba, ${productName} ürünü için fiyat öğrenmek istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
     const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 };

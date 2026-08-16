@@ -336,10 +336,12 @@
                 <div class="modal-product-info">
                     <h3 id="modalProductTitle">Ürün Adı</h3>
                     <p id="modalProductDescription">Ürün açıklaması...</p>
-                    <div class="modal-product-price" id="modalProductPrice">₺0</div>
+                    <div class="modal-product-price" id="modalProductPrice" style="color: var(--success); font-weight: 600;">
+                        <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan sorun
+                    </div>
                     <div class="modal-actions">
                         <button class="btn-add-cart" onclick="addToCart(currentProduct.title)">Sepete Ekle</button>
-                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)">Teklif Al</button>
+                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, '')">Fiyat Sor</button>
                     </div>
                 </div>
             </div>
@@ -368,16 +370,18 @@
                 <div class="cart-summary" id="cartSummary" style="display: none;">
                     <div class="cart-total">
                         <div class="total-row">
-                            <span>Toplam:</span>
-                            <span class="total-price" id="totalPrice">₺0</span>
+                            <span>Toplam Ürün Sayısı:</span>
+                            <span class="total-price" id="totalPrice" style="color: var(--success);">
+                                <i class="fas fa-whatsapp"></i> Fiyat WhatsApp'tan öğrenin
+                            </span>
                         </div>
                         <div class="installment-info">
-                            <small>Vade farksız taksit imkanı</small>
+                            <small>Fiyat ve taksit seçenekleri için WhatsApp'tan iletişime geçin</small>
                         </div>
                     </div>
                     <div class="cart-actions">
                         <button class="btn-installments" onclick="showInstallmentTable()">
-                            <i class="fas fa-credit-card"></i> Taksit Seçenekleri
+                            <i class="fas fa-whatsapp"></i> Fiyat & Taksit Sor
                         </button>
                         <button class="btn-order" onclick="sendWhatsAppOrder()">
                             <i class="fab fa-whatsapp"></i> Sipariş Ver
@@ -523,7 +527,7 @@
 
         // Teklif al - WhatsApp'a yönlendir
         function requestOffer(productName, price) {
-            const message = `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`;
+            const message = `Merhaba, ${productName} ürünü için fiyat öğrenmek istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
             const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         }
@@ -766,13 +770,12 @@
                             <div class="product-info">
                                 <h3 class="product-title">${product.title}</h3>
                                 <p class="product-description">${(product.description || '').substring(0, 80)}${product.description && product.description.length > 80 ? '...' : ''}</p>
-                                <div class="product-pricing">
-                                    ${product.originalPrice ? `<span class="original-price">${product.originalPrice}</span>` : ''}
-                                    <div class="product-price">${product.price}</div>
+                                <div class="product-pricing" style="text-align: center; padding: 0.5rem 0; color: var(--primary); font-weight: 600;">
+                                    <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan sorun
                                 </div>
                                 <div class="product-actions">
-                                    <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', '${product.price}', '${product.id}')">Sepete Ekle</button>
-                                    <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${product.price}')">Teklif Al</button>
+                                    <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', 'Fiyat WhatsApp\\'tan verilecek', '${product.id}')">Sepete Ekle</button>
+                                    <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '')">Fiyat Sor</button>
                                 </div>
                             </div>
                         </div>
@@ -832,20 +835,19 @@
             
             document.getElementById('modalProductDescription').innerHTML = detailHtml;
             
-            // Fiyat
-            let priceHtml = '';
-            if (product.originalPrice) {
-                priceHtml = `
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <span style="text-decoration: line-through; color: var(--text-light); font-size: 1rem;">${product.originalPrice}</span>
-                        <span style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${product.price}</span>
-                        <span style="color: var(--success); font-size: 0.875rem;">
-                            <i class="fas fa-tag"></i> İndirimli Fiyat
-                        </span>
+            // Fiyat - GÖSTERME
+            let priceHtml = `
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: center; padding: 1rem; background: var(--surface); border-radius: 8px;">
+                    <span style="font-size: 1.2rem; font-weight: 700; color: var(--success);">
+                        <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan sorun
+                    </span>
+                    <span style="color: var(--text-light); font-size: 0.875rem;">
+                        Vade farksız taksit seçenekleri mevcut
+                    </span>
+                </div>
+            `;
                     </div>
                 `;
-            } else {
-                priceHtml = product.price;
             }
             document.getElementById('modalProductPrice').innerHTML = priceHtml;
             
