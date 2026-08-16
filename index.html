@@ -195,6 +195,29 @@
                 </div>
                 
                 <div class="accordion-container" id="contractedBrandsAccordion">
+                    <script>
+                    function toggleAccordion(header) {
+                        const item = header.parentElement;
+                        const content = item.querySelector('.accordion-content');
+                        const isActive = header.classList.contains('active');
+                        
+                        // Close all accordions
+                        document.querySelectorAll('.accordion-item').forEach(otherItem => {
+                            const otherHeader = otherItem.querySelector('.accordion-header');
+                            const otherContent = otherItem.querySelector('.accordion-content');
+                            
+                            if (otherHeader) otherHeader.classList.remove('active');
+                            if (otherContent) otherContent.classList.remove('active');
+                        });
+                        
+                        // Toggle current accordion if it wasn't active
+                        if (!isActive) {
+                            header.classList.add('active');
+                            content.classList.add('active');
+                        }
+                    }
+                    </script>
+                    
                     <div class="accordion-item">
                         <div class="accordion-header" onclick="toggleAccordion(this)">
                             <h3 class="accordion-title">Beyaz Eşya</h3>
