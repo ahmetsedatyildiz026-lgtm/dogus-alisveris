@@ -187,6 +187,18 @@
                 </div>
 
                 <div class="admin-form-group">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: var(--admin-bg); border-radius: 8px; border: 1.5px solid #10b981;">
+                        <input type="checkbox" id="prodShowPrice" style="width: 20px; height: 20px; cursor: pointer;">
+                        <div style="flex: 1;">
+                            <strong style="display: block; margin-bottom: 0.25rem; color: #10b981;">
+                                <i class="fas fa-dollar-sign"></i> Fiyatı Müşteriye Göster
+                            </strong>
+                            <small style="color: var(--admin-text-light);">İşaretlenirse müşteri bu ürünün fiyatını görebilir (yoksa WhatsApp'tan sorar)</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="admin-form-group">
                     <label>Ürün Açıklaması *</label>
                     <textarea id="prodDescription" required placeholder="Ürünü detaylı açıklayın..." rows="4"></textarea>
                 </div>
@@ -419,6 +431,7 @@ async function openProductModal(productId = null) {
         document.getElementById('prodStatus').value = p.status || 'active';
         document.getElementById('prodDescription').value = p.description || '';
         document.getElementById('prodFeatured').checked = p.isFeatured || false;
+        document.getElementById('prodShowPrice').checked = p.showPriceToCustomer || false;
 
         // Photos
         const imgs = p.images || (p.image ? [p.image] : []);
@@ -432,6 +445,7 @@ async function openProductModal(productId = null) {
         document.getElementById('modalTitle').textContent = 'Yeni Ürün Ekle';
         document.getElementById('productForm').reset();
         document.getElementById('prodFeatured').checked = false;
+        document.getElementById('prodShowPrice').checked = false;
         // Default spec rows
         addSpecRow('Marka', '');
         addSpecRow('Garanti', '2 Yıl');
@@ -541,6 +555,7 @@ async function saveProduct() {
         stock: parseInt(document.getElementById('prodStock').value) || 0,
         status: document.getElementById('prodStatus').value,
         isFeatured: document.getElementById('prodFeatured').checked,
+        showPriceToCustomer: document.getElementById('prodShowPrice').checked || false,
         description: description,
         images: validImages,
         image: validImages[0] || '',
