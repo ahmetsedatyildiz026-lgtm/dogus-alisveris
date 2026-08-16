@@ -975,12 +975,15 @@ function renderProducts() {
     }
     
     grid.innerHTML = pageProducts.map(product => {
+        console.log(`Kategori - Ürün: ${product.title}, showPriceToCustomer: ${product.showPriceToCustomer} (${typeof product.showPriceToCustomer})`);
+        
         const mainImage = product.images && product.images[0] 
             ? product.images[0] 
             : (product.image || 'https://via.placeholder.com/400x300?text=Ürün');
         
         // Fiyat gösterimi kontrolü
         const showPrice = product.showPriceToCustomer === true;
+        console.log(`  → showPrice: ${showPrice}`);
         
         let priceHtml = '';
         if (showPrice) {

@@ -168,17 +168,7 @@
                 </div>
                 
                 <div class="brands-grid" id="catalogBrandsGrid">
-                    <!-- SABİT İÇERİK - Dinamik yükleme yok -->
-                    <div class="brand-card">
-                        <div class="brand-logo">
-                            <i class="fas fa-book" style="font-size: 3rem; color: var(--primary);"></i>
-                        </div>
-                        <h3>Tüm Markalar</h3>
-                        <p>İstediğiniz markadan ürün siparişi verebilirsiniz</p>
-                        <button onclick="window.open('https://wa.me/905379429437?text=' + encodeURIComponent('Merhaba, kataloglardan ürün sipariş vermek istiyorum.'), '_blank')" class="btn-contact">
-                            <i class="fas fa-whatsapp"></i> İletişime Geç
-                        </button>
-                    </div>
+                    <!-- Dinamik olarak yüklenecek -->
                 </div>
             </div>
         </section>
@@ -192,19 +182,7 @@
                 </div>
                 
                 <div class="accordion-container" id="contractedBrandsAccordion">
-                    <!-- SABİT İÇERİK -->
-                    <div style="text-align: center; padding: 2rem; background: var(--surface); border-radius: 12px;">
-                        <i class="fas fa-handshake" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem; display: block;"></i>
-                        <h3 style="margin-bottom: 1rem; color: var(--text);">Birçok Markayla Anlaşmalıyız</h3>
-                        <p style="margin-bottom: 1.5rem; color: var(--text-light);">
-                            Beyaz eşya, elektronik, mobilya ve daha fazla kategoride<br>
-                            güvenilir markaların yetkili satış noktasıyız.
-                        </p>
-                        <button onclick="window.open('https://wa.me/905379429437?text=' + encodeURIComponent('Merhaba, anlaşmalı markalarınız hakkında bilgi almak istiyorum.'), '_blank')" 
-                                style="background: var(--primary); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-whatsapp"></i> Bilgi Alın
-                        </button>
-                    </div>
+                    <!-- Admin'den dinamik yüklenecek -->
                 </div>
             </div>
         </section>
@@ -664,15 +642,27 @@
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Kullanıcı giriş kontrolü - Header'ı güncelle
             updateUserHeader();
             
             // Sepeti kontrol et ve temizle
             checkAndClearCart();
             
+            // Firebase hazır olana kadar bekle
+            console.log('⏳ Firebase bekleniyor...');
+            let attempts = 0;
+            while (attempts < 50) {
+                if (typeof db !== 'undefined' && typeof getProductsFromFirebase === 'function') {
+                    console.log('✅ Firebase hazır!');
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
             // Admin'den eklenen ürünleri yükle
-            loadFeaturedProducts();
+            await loadFeaturedProducts();
             
             // Kategori sayfalarından gelen cart güncellemelerini dinle
             window.addEventListener('cartUpdated', function(event) {
@@ -755,6 +745,8 @@
                 console.log(`🎯 ${featuredProducts.length} ürün gösteriliyor`);
 
                 grid.innerHTML = featuredProducts.map(product => {
+                    console.log(`Ürün: ${product.title}, showPriceToCustomer: ${product.showPriceToCustomer} (${typeof product.showPriceToCustomer})`);
+                    
                     const mainImage = product.images && product.images[0] 
                         ? product.images[0] 
                         : (product.image || 'https://via.placeholder.com/400x300?text=Ürün+Görseli');
@@ -775,6 +767,7 @@
                     
                     // Fiyat gösterimi kontrolü
                     const showPrice = product.showPriceToCustomer === true;
+                    console.log(`  → showPrice: ${showPrice}`);
                     
                     let priceHtml = '';
                     if (showPrice) {
