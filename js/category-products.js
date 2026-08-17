@@ -992,11 +992,9 @@ function renderProducts() {
                 </div>
             `;
         } else {
-            // Fiyat gizle
+            // Fiyat yok - boş bırak (detayda gösterilecek)
             priceHtml = `
-                <div class="product-price-section" style="text-align: center; padding: 1rem 0; color: var(--primary); font-weight: 600; font-size: 1.1rem;">
-                    💬 Fiyat için WhatsApp'tan bilgi alın
-                </div>
+                <div class="product-price-section" style="height: 2rem;"></div>
             `;
         }
         

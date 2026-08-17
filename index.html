@@ -770,11 +770,9 @@
                             </div>
                         `;
                     } else {
-                        // Fiyat gizle - WhatsApp'tan bilgi alın
+                        // Fiyat yok - boş bırak (detayda gösterilecek)
                         priceHtml = `
-                            <div class="product-pricing" style="text-align: center; padding: 0.5rem 0; color: var(--primary); font-weight: 600;">
-                                <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan bilgi alın
-                            </div>
+                            <div class="product-pricing" style="height: 2rem;"></div>
                         `;
                     }
 
