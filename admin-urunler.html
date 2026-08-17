@@ -629,6 +629,9 @@ async function confirmDelete() {
 }
 
 // ─── RENDER ───────────────────────────────────────────────────
+const PRODUCTS_PER_PAGE = 20; // Sayfa başına ürün sayısı
+let currentPage = 1;
+
 async function renderProducts() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
@@ -659,7 +662,13 @@ async function renderProducts() {
     }
     empty.style.display = 'none';
 
-    tbody.innerHTML = products.map(p => {
+    // Pagination
+    const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const endIndex = startIndex + PRODUCTS_PER_PAGE;
+    const paginatedProducts = products.slice(startIndex, endIndex);
+
+    tbody.innerHTML = paginatedProducts.map(p => {
         const statusMap = {
             active: '<span class="badge badge-green">Aktif</span>',
             draft: '<span class="badge badge-gray">Taslak</span>',
