@@ -587,7 +587,7 @@ function showProductModal(productId) {
     document.getElementById('modalProductTitle').textContent = product.title;
     document.getElementById('modalProductDescription').textContent = product.description;
     
-    // FİYAT KONTROLÜ - showPriceToCustomer
+    // FİYAT KONTROLÜ
     const showPrice = product.showPriceToCustomer === true;
     const priceEl = document.getElementById('modalProductPrice');
     
@@ -599,8 +599,8 @@ function showProductModal(productId) {
             priceEl.style.fontSize = '2rem';
             priceEl.style.fontWeight = '700';
         } else {
-            // Fiyat gösterme
-            priceEl.innerHTML = '<i class="fas fa-whatsapp"></i> Fiyat için WhatsApp\'tan sorun';
+            // Fiyat gizle
+            priceEl.innerHTML = '<i class="fas fa-whatsapp"></i> Fiyat için WhatsApp\'tan bilgi alın';
             priceEl.style.color = 'var(--success)';
             priceEl.style.fontSize = '1.1rem';
             priceEl.style.fontWeight = '600';
@@ -975,19 +975,16 @@ function renderProducts() {
     }
     
     grid.innerHTML = pageProducts.map(product => {
-        console.log(`Kategori - Ürün: ${product.title}, showPriceToCustomer: ${product.showPriceToCustomer} (${typeof product.showPriceToCustomer})`);
-        
         const mainImage = product.images && product.images[0] 
             ? product.images[0] 
             : (product.image || 'https://via.placeholder.com/400x300?text=Ürün');
         
-        // Fiyat gösterimi kontrolü
+        // FİYAT KONTROLÜ
         const showPrice = product.showPriceToCustomer === true;
-        console.log(`  → showPrice: ${showPrice}`);
         
         let priceHtml = '';
         if (showPrice) {
-            // Fiyat gösterilecek
+            // Fiyat göster
             priceHtml = `
                 <div class="product-price-section">
                     ${product.originalPrice ? `<span class="product-price-old">${product.originalPrice}</span>` : ''}
@@ -995,10 +992,10 @@ function renderProducts() {
                 </div>
             `;
         } else {
-            // Fiyat gösterilmeyecek - WhatsApp'a yönlendir
+            // Fiyat gizle
             priceHtml = `
                 <div class="product-price-section" style="text-align: center; padding: 1rem 0; color: var(--primary); font-weight: 600; font-size: 1.1rem;">
-                    💬 Fiyat için WhatsApp'tan sorun
+                    💬 Fiyat için WhatsApp'tan bilgi alın
                 </div>
             `;
         }
@@ -1025,7 +1022,7 @@ function renderProducts() {
                         </button>
                         <button onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${showPrice ? product.price : ""}')" style="flex: 1; padding: 0.75rem; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                             <i class="fas fa-comment-dollar"></i>
-                            ${showPrice ? 'Teklif Al' : 'Fiyat Sor'}
+                            ${showPrice ? 'Teklif Al' : 'Fiyat Bilgisi Al'}
                         </button>
                     </div>
                 </div>
@@ -1154,7 +1151,9 @@ window.addToCart = function(productName, price) {
 
 // Teklif al fonksiyonu
 window.requestOffer = function(productName, price) {
-    const message = `Merhaba, ${productName} ürünü için fiyat öğrenmek istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
+    const message = price 
+        ? `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`
+        : `Merhaba, ${productName} ürünü için fiyat bilgisi almak istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
     const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 };
