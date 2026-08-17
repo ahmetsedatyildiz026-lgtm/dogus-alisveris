@@ -168,20 +168,11 @@
                 </div>
                 
                 <div class="brands-grid" id="catalogBrandsGrid">
-                    <a href="https://sunasandalye.com.tr" target="_blank" class="brand-card">SUNA<br>SANDALYE</a>
-                    <a href="https://www.altus.com.tr" target="_blank" class="brand-card">ALTUS</a>
-                    <a href="https://www.hoover-home.com/tr_TR/" target="_blank" class="brand-card">HOOVER</a>
-                    <a href="https://massamobilya.com/" target="_blank" class="brand-card">MASSA</a>
-                    <a href="https://www.ravizzayatak.com" target="_blank" class="brand-card">RAVIZZA</a>
-                    <a href="https://www.akyolmobilya.com" target="_blank" class="brand-card">AKYOL<br>MOBİLYA</a>
-                    <a href="https://www.facebook.com/asrasan.panel.mobilya/" target="_blank" class="brand-card">ASRASAN</a>
-                    <a href="https://cinarcamobilya.com" target="_blank" class="brand-card">ÇINARCA</a>
-                    <a href="https://siesuykusistemleri.com" target="_blank" class="brand-card">SIES</a>
-                    <a href="https://www.tutkuyatak.com.tr" target="_blank" class="brand-card">TUTKU</a>
-                    <a href="https://www.bode.com.tr" target="_blank" class="brand-card">BODE</a>
-                    <a href="https://homeset.com.tr" target="_blank" class="brand-card">HOMESET</a>
-                    <a href="https://evonamobilya.com/" target="_blank" class="brand-card">EVONA</a>
-                    <a href="#" class="brand-card">DİĞER<br>MARKALAR</a>
+                    <!-- Dinamik olarak yüklenecek -->
+                    <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <p>Markalar yükleniyor...</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -195,7 +186,11 @@
                 </div>
                 
                 <div class="accordion-container" id="contractedBrandsAccordion">
-                    <!-- JS ile yüklenecek -->
+                    <!-- Admin'den dinamik yüklenecek -->
+                    <div class="loading-state" style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <p>Markalar yükleniyor...</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -341,12 +336,10 @@
                 <div class="modal-product-info">
                     <h3 id="modalProductTitle">Ürün Adı</h3>
                     <p id="modalProductDescription">Ürün açıklaması...</p>
-                    <div class="modal-product-price" id="modalProductPrice" style="color: var(--success); font-weight: 600;">
-                        <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan sorun
-                    </div>
+                    <div class="modal-product-price" id="modalProductPrice">₺0</div>
                     <div class="modal-actions">
                         <button class="btn-add-cart" onclick="addToCart(currentProduct.title)">Sepete Ekle</button>
-                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, '')">Fiyat Sor</button>
+                        <button class="btn-offer" onclick="requestOffer(currentProduct.title, currentProduct.price)">Teklif Al</button>
                     </div>
                 </div>
             </div>
@@ -375,18 +368,16 @@
                 <div class="cart-summary" id="cartSummary" style="display: none;">
                     <div class="cart-total">
                         <div class="total-row">
-                            <span>Toplam Ürün Sayısı:</span>
-                            <span class="total-price" id="totalPrice" style="color: var(--success);">
-                                <i class="fas fa-whatsapp"></i> Fiyat WhatsApp'tan öğrenin
-                            </span>
+                            <span>Toplam:</span>
+                            <span class="total-price" id="totalPrice">₺0</span>
                         </div>
                         <div class="installment-info">
-                            <small>Fiyat ve taksit seçenekleri için WhatsApp'tan iletişime geçin</small>
+                            <small>Vade farksız taksit imkanı</small>
                         </div>
                     </div>
                     <div class="cart-actions">
                         <button class="btn-installments" onclick="showInstallmentTable()">
-                            <i class="fas fa-whatsapp"></i> Fiyat & Taksit Sor
+                            <i class="fas fa-credit-card"></i> Taksit Seçenekleri
                         </button>
                         <button class="btn-order" onclick="sendWhatsAppOrder()">
                             <i class="fab fa-whatsapp"></i> Sipariş Ver
@@ -532,7 +523,7 @@
 
         // Teklif al - WhatsApp'a yönlendir
         function requestOffer(productName, price) {
-            const message = `Merhaba, ${productName} ürünü için fiyat öğrenmek istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
+            const message = `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`;
             const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         }
@@ -655,27 +646,15 @@
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Kullanıcı giriş kontrolü - Header'ı güncelle
             updateUserHeader();
             
             // Sepeti kontrol et ve temizle
             checkAndClearCart();
             
-            // Firebase hazır olana kadar bekle
-            console.log('⏳ Firebase bekleniyor...');
-            let attempts = 0;
-            while (attempts < 50) {
-                if (typeof db !== 'undefined' && typeof getProductsFromFirebase === 'function') {
-                    console.log('✅ Firebase hazır!');
-                    break;
-                }
-                await new Promise(resolve => setTimeout(resolve, 100));
-                attempts++;
-            }
-            
             // Admin'den eklenen ürünleri yükle
-            await loadFeaturedProducts();
+            loadFeaturedProducts();
             
             // Kategori sayfalarından gelen cart güncellemelerini dinle
             window.addEventListener('cartUpdated', function(event) {
@@ -717,30 +696,13 @@
 
         // En çok satanları (featured) yükle
         async function loadFeaturedProducts() {
-            console.log('🚀 loadFeaturedProducts çağrıldı');
             const grid = document.getElementById('bestsellersGrid');
-            if (!grid) {
-                console.error('❌ bestsellersGrid bulunamadı!');
-                return;
-            }
+            if (!grid) return;
 
             try {
-                console.log('📞 getProductsFromFirebase() çağrılıyor...');
-                
                 // Firebase'den yükle
                 let allProducts = await getProductsFromFirebase();
                 console.log(`📦 ${allProducts.length} ürün Firebase'dan yüklendi`);
-                
-                if (allProducts.length === 0) {
-                    grid.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: #fff3cd; border-radius: 8px;">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #856404; margin-bottom: 1rem;"></i>
-                            <p style="color: #856404; font-size: 1.2rem;">Firebase'de hiç ürün yok!</p>
-                            <small style="color: #856404;">Admin panelinden ürün ekleyin</small>
-                        </div>
-                    `;
-                    return;
-                }
                 
                 // Sadece aktif ve stokta olanları filtrele
                 allProducts = allProducts.filter(p => 
@@ -775,8 +737,6 @@
                 console.log(`🎯 ${featuredProducts.length} ürün gösteriliyor`);
 
                 grid.innerHTML = featuredProducts.map(product => {
-                    console.log(`Ürün: ${product.title}, showPriceToCustomer: ${product.showPriceToCustomer} (${typeof product.showPriceToCustomer})`);
-                    
                     const mainImage = product.images && product.images[0] 
                         ? product.images[0] 
                         : (product.image || 'https://via.placeholder.com/400x300?text=Ürün+Görseli');
@@ -794,26 +754,6 @@
                     const allImages = product.images && product.images.length > 0 
                         ? product.images 
                         : [mainImage];
-                    
-                    // Fiyat gösterimi kontrolü
-                    const showPrice = product.showPriceToCustomer === true;
-                    console.log(`  → showPrice: ${showPrice}`);
-                    
-                    let priceHtml = '';
-                    if (showPrice) {
-                        priceHtml = `
-                            <div class="product-pricing">
-                                ${product.originalPrice ? `<span class="original-price">${product.originalPrice}</span>` : ''}
-                                <div class="product-price">${product.price}</div>
-                            </div>
-                        `;
-                    } else {
-                        priceHtml = `
-                            <div class="product-pricing" style="text-align: center; padding: 0.5rem 0; color: var(--primary); font-weight: 600;">
-                                <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan sorun
-                            </div>
-                        `;
-                    }
 
                     return `
                         <div class="product-card" onclick='showProductDetailFromAdmin(${JSON.stringify(product).replace(/'/g, "&#39;")})'>
@@ -821,15 +761,18 @@
                                 <img src="${mainImage}" alt="${product.title}" 
                                      onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas ${icon}\\' style=\\'font-size: 3rem; color: var(--secondary);\\'></i>';">
                                 ${(product.isFeatured === true || product.isFeatured === 'true') ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
-                                ${product.originalPrice && showPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
+                                ${product.originalPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
                             </div>
                             <div class="product-info">
                                 <h3 class="product-title">${product.title}</h3>
                                 <p class="product-description">${(product.description || '').substring(0, 80)}${product.description && product.description.length > 80 ? '...' : ''}</p>
-                                ${priceHtml}
+                                <div class="product-pricing">
+                                    ${product.originalPrice ? `<span class="original-price">${product.originalPrice}</span>` : ''}
+                                    <div class="product-price">${product.price}</div>
+                                </div>
                                 <div class="product-actions">
-                                    <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', '${showPrice ? product.price : "Fiyat WhatsApp\\'tan verilecek"}', '${product.id}')">Sepete Ekle</button>
-                                    <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${showPrice ? product.price : ""}')">${showPrice ? 'Teklif Al' : 'Fiyat Sor'}</button>
+                                    <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart('${product.title.replace(/'/g, "\\'")}', '${product.price}', '${product.id}')">Sepete Ekle</button>
+                                    <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title.replace(/'/g, "\\'")}', '${product.price}')">Teklif Al</button>
                                 </div>
                             </div>
                         </div>
@@ -889,19 +832,20 @@
             
             document.getElementById('modalProductDescription').innerHTML = detailHtml;
             
-            // Fiyat - GÖSTERME
-            let priceHtml = `
-                <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: center; padding: 1rem; background: var(--surface); border-radius: 8px;">
-                    <span style="font-size: 1.2rem; font-weight: 700; color: var(--success);">
-                        <i class="fas fa-whatsapp"></i> Fiyat için WhatsApp'tan sorun
-                    </span>
-                    <span style="color: var(--text-light); font-size: 0.875rem;">
-                        Vade farksız taksit seçenekleri mevcut
-                    </span>
-                </div>
-            `;
+            // Fiyat
+            let priceHtml = '';
+            if (product.originalPrice) {
+                priceHtml = `
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span style="text-decoration: line-through; color: var(--text-light); font-size: 1rem;">${product.originalPrice}</span>
+                        <span style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${product.price}</span>
+                        <span style="color: var(--success); font-size: 0.875rem;">
+                            <i class="fas fa-tag"></i> İndirimli Fiyat
+                        </span>
                     </div>
                 `;
+            } else {
+                priceHtml = product.price;
             }
             document.getElementById('modalProductPrice').innerHTML = priceHtml;
             
