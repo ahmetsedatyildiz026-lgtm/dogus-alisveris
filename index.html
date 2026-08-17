@@ -717,13 +717,30 @@
 
         // En çok satanları (featured) yükle
         async function loadFeaturedProducts() {
+            console.log('🚀 loadFeaturedProducts çağrıldı');
             const grid = document.getElementById('bestsellersGrid');
-            if (!grid) return;
+            if (!grid) {
+                console.error('❌ bestsellersGrid bulunamadı!');
+                return;
+            }
 
             try {
+                console.log('📞 getProductsFromFirebase() çağrılıyor...');
+                
                 // Firebase'den yükle
                 let allProducts = await getProductsFromFirebase();
                 console.log(`📦 ${allProducts.length} ürün Firebase'dan yüklendi`);
+                
+                if (allProducts.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: #fff3cd; border-radius: 8px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #856404; margin-bottom: 1rem;"></i>
+                            <p style="color: #856404; font-size: 1.2rem;">Firebase'de hiç ürün yok!</p>
+                            <small style="color: #856404;">Admin panelinden ürün ekleyin</small>
+                        </div>
+                    `;
+                    return;
+                }
                 
                 // Sadece aktif ve stokta olanları filtrele
                 allProducts = allProducts.filter(p => 
