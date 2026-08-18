@@ -40,6 +40,9 @@
         <div class="admin-topbar">
             <h2><i class="fas fa-box" style="color:var(--admin-accent);margin-right:.5rem"></i>Ürün Yönetimi</h2>
             <div class="admin-topbar-right">
+                <button class="btn-admin btn-admin-success" onclick="clearCacheAndReload()" style="margin-right: 1rem;" title="Cache temizle ve yenile">
+                    <i class="fas fa-sync-alt"></i> Yenile
+                </button>
                 <button class="btn-admin btn-admin-secondary" onclick="exportProductsJSON()" style="margin-right: 1rem;">
                     <i class="fas fa-download"></i> JSON İndir
                 </button>
@@ -573,12 +576,26 @@ async function saveProduct() {
             // Güncelleme
             console.log('✏️ Güncelleme modu, ID:', editingProductId);
             await updateProductInFirebase(editingProductId, productData);
+            
+            // Cache temizle
+            if (typeof clearProductsCache === 'function') {
+                clearProductsCache();
+                console.log('🗑️ Cache temizlendi');
+            }
+            
             showAdminNotification('✅ Ürün güncellendi!', 'success');
         } else {
             // Yeni ekleme
             console.log('➕ Yeni ürün Firebase\'e ekleniyor');
             const newId = await addProductToFirebase(productData);
             console.log('✅ Ürün Firebase\'e eklendi, ID:', newId);
+            
+            // Cache temizle
+            if (typeof clearProductsCache === 'function') {
+                clearProductsCache();
+                console.log('🗑️ Cache temizlendi');
+            }
+            
             showAdminNotification('✅ Ürün eklendi!', 'success');
         }
         
@@ -620,6 +637,12 @@ async function confirmDelete() {
         await deleteProductFromFirebase(deletingProductId);
         console.log('✅ Ürün Firebase\'den silindi');
         
+        // Cache temizle
+        if (typeof clearProductsCache === 'function') {
+            clearProductsCache();
+            console.log('🗑️ Cache temizlendi');
+        }
+        
         showAdminNotification('✅ Ürün silindi!', 'success');
         closeDeleteModal();
         await renderProducts();
@@ -629,13 +652,35 @@ async function confirmDelete() {
 }
 
 // ─── RENDER ───────────────────────────────────────────────────
+
+// Cache temizle ve yenile
+async function clearCacheAndReload() {
+    console.log('🗑️ Cache temizleniyor...');
+    
+    // Firebase cache'i temizle
+    if (typeof clearProductsCache === 'function') {
+        clearProductsCache();
+    }
+    
+    // Sayfayı yenile
+    showAdminNotification('🔄 Ürünler yenileniyor...', 'info');
+    await renderProducts();
+    showAdminNotification('✅ Ürünler güncellendi!', 'success');
+}
+
 async function renderProducts() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
     
-    // Firebase'dan yükle
+    // Firebase'dan yükle - ADMİN SAYFASINDA CACHE YOK!
     let products = await getProductsFromFirebase();
-    console.log(`📦 ${products.length} ürün Firebase'dan yüklendi`);
+    
+    // Cache'i zorla temizle (admin her zaman taze veri görmeli)
+    if (typeof clearProductsCache === 'function') {
+        clearProductsCache();
+    }
+    
+    console.log(`📦 ${products.length} ürün Firebase'dan yüklendi (cache bypass)`);
 
     if (search) {
         products = products.filter(p =>
