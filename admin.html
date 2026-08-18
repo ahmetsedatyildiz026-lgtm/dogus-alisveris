@@ -139,10 +139,31 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
 <!-- Firebase Config -->
-<script src="js/firebase-config.js"></script>
+<script src="js/firebase-config.js?v=20260726010000"></script>
 
 <script src="js/admin.js?v=20260725181500"></script>
 <script>
+    // ===== AUTH KONTROLÜ =====
+    function checkAdminAuth() {
+        const currentUser = JSON.parse(localStorage.getItem('dogusCurrentUser') || 'null');
+        
+        if (!currentUser || currentUser.role !== 'admin') {
+            console.log('❌ Admin yetkisi yok, giriş sayfasına yönlendiriliyorsunuz...');
+            window.location.href = 'giris.html';
+            return false;
+        }
+        
+        console.log('✅ Admin yetkisi doğrulandı:', currentUser.name);
+        return true;
+    }
+
+    function adminLogout() {
+        localStorage.removeItem('dogusCurrentUser');
+        console.log('✅ Çıkış yapıldı');
+        window.location.href = 'giris.html';
+    }
+
+    // Sayfa yüklendiğinde kontrol et
     checkAdminAuth();
 
     // Tarih
