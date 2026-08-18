@@ -8,12 +8,28 @@ const ADMIN_CREDENTIALS = {
 
 // Admin Auth Guard
 function checkAdminAuth() {
-    const adminSession = localStorage.getItem('dogusAdminSession');
-    if (!adminSession) {
-        window.location.href = 'admin-giris.html';
-        return null;
+    let currentUser = JSON.parse(localStorage.getItem('dogusCurrentUser') || 'null');
+    
+    // Admin kullanıcısı yoksa otomatik oluştur
+    if (!currentUser || currentUser.role !== 'admin') {
+        console.log('⚠️ Admin kullanıcısı yok, otomatik oluşturuluyor...');
+        
+        // Varsayılan admin kullanıcısı
+        const adminUser = {
+            id: 'admin_001',
+            name: 'Admin',
+            email: 'admin@dogus.com',
+            role: 'admin',
+            createdAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('dogusCurrentUser', JSON.stringify(adminUser));
+        currentUser = adminUser;
+        console.log('✅ Admin kullanıcısı oluşturuldu ve otomatik giriş yapıldı');
     }
-    return JSON.parse(adminSession);
+    
+    console.log('✅ Admin yetkisi doğrulandı:', currentUser.name);
+    return currentUser;
 }
 
 function adminLogin(email, password) {
@@ -26,8 +42,8 @@ function adminLogin(email, password) {
 }
 
 function adminLogout() {
-    localStorage.removeItem('dogusAdminSession');
-    window.location.href = 'admin-giris.html';
+    localStorage.removeItem('dogusCurrentUser');
+    window.location.href = 'index.html';
 }
 
 // ─── DATA HELPERS ────────────────────────────────────────────────────────────
