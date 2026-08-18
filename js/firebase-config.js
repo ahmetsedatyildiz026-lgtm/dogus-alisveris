@@ -127,14 +127,25 @@ const COLLECTIONS = {
 
 // ===== ÜRÜN İŞLEMLERİ =====
 
+// ⚡ HIZLANDIRMA: Ürün cache sistemi
+let productsCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 15 * 60 * 1000; // 15 dakika (5dk'dan artırıldı)
+
 /**
- * Tüm ürünleri getir
- */
-/**
- * Tüm ürünleri getir
+ * Tüm ürünleri getir (CACHE ile hızlandırılmış)
  */
 async function getProductsFromFirebase() {
   try {
+    // Cache kontrolü - 15 dakika içindeyse cache'den dön
+    const now = Date.now();
+    if (productsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+      console.log(`⚡ ${productsCache.length} ürün cache'den yüklendi (${Math.floor((now - cacheTimestamp) / 1000)}s önce)`);
+      return productsCache;
+    }
+
+    // Cache yoksa veya eskiyse Firebase'den çek
+    console.log('🔄 Firebase\'den ürünler yükleniyor...');
     const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
     const products = [];
     snapshot.forEach(doc => {
@@ -143,12 +154,31 @@ async function getProductsFromFirebase() {
         ...doc.data()
       });
     });
-    console.log(`✅ ${products.length} ürün Firebase'den yüklendi`);
+    
+    // Cache'i güncelle
+    productsCache = products;
+    cacheTimestamp = Date.now();
+    
+    console.log(`✅ ${products.length} ürün Firebase'den yüklendi ve cache'lendi`);
     return products;
   } catch (error) {
     console.error('❌ Ürünler yüklenemedi:', error);
+    // Hata olsa bile cache'den dön (varsa)
+    if (productsCache) {
+      console.warn('⚠️ Firebase hatası, eski cache kullanılıyor');
+      return productsCache;
+    }
     return [];
   }
+}
+
+/**
+ * Cache'i temizle (manuel yenileme için)
+ */
+function clearProductsCache() {
+  productsCache = null;
+  cacheTimestamp = 0;
+  console.log('🗑️ Ürün cache temizlendi');
 }
 
 /**
@@ -494,6 +524,7 @@ window.waitForFirebase = waitForFirebase;
 
 // Helper fonksiyonları export et
 window.getProductsFromFirebase = getProductsFromFirebase;
+window.clearProductsCache = clearProductsCache;
 window.getProductByIdFromFirebase = getProductByIdFromFirebase;
 window.addProductToFirebase = addProductToFirebase;
 window.updateProductInFirebase = updateProductInFirebase;
