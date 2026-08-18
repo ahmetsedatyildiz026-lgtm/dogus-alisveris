@@ -1824,7 +1824,7 @@ body {
 .modal {
     display: none;
     position: fixed;
-    z-index: 2000;
+    z-index: 9999 !important;
     left: 0;
     top: 0;
     width: 100%;
@@ -3659,5 +3659,51 @@ select:focus {
     /* Safari için modal scroll fix */
     .modal-body {
         -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ===== FULL SCREEN FIX - CART MODAL ALWAYS VISIBLE ===== */
+#cartModal {
+    z-index: 99999 !important;
+}
+
+#cartModal .modal-content {
+    z-index: 99999 !important;
+    position: relative !important;
+}
+
+/* Ensure cart modal is above everything */
+.modal.show {
+    display: block !important;
+    z-index: 99999 !important;
+}
+
+/* Mobile full screen fix */
+@media (max-width: 768px) {
+    #cartModal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 99999 !important;
+    }
+    
+    #cartModal .modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    #cartModal .cart-items {
+        max-height: calc(100vh - 250px) !important;
+        overflow-y: auto !important;
     }
 }
