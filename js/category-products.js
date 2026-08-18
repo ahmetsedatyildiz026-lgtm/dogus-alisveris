@@ -880,6 +880,9 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         window.currentCategory = categorySlug;
         window.currentCategoryName = categoryName;
         
+        // LOADİNG GÖSTER
+        showLoadingState();
+        
         // Ürünleri yükle
         console.log('📦 loadProductsFromAdmin çağrılıyor...');
         const database = await loadProductsFromAdmin();
@@ -924,6 +927,20 @@ async function initializeCategoryPage(categorySlug, categoryName) {
 
 window.initializeCategoryPage = initializeCategoryPage;
 
+
+// ===== LOADİNG GÖSTER =====
+function showLoadingState() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 4rem;">
+            <div style="width: 60px; height: 60px; border: 4px solid var(--surface); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
+            <p style="color: var(--text); font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">Ürünler yükleniyor...</p>
+            <small style="color: var(--text-light);">Lütfen bekleyin</small>
+        </div>
+    `;
+}
 
 // ===== ÜRÜN RENDER FONKSİYONU =====
 function renderProducts() {
