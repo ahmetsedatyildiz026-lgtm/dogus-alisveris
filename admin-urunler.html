@@ -672,13 +672,13 @@ async function renderProducts() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const catFilter = document.getElementById('filterCategory').value;
     
-    // Firebase'dan yükle - ADMİN SAYFASINDA CACHE YOK!
-    let products = await getProductsFromFirebase();
-    
-    // Cache'i zorla temizle (admin her zaman taze veri görmeli)
+    // Cache'i ÖNCE temizle (admin her zaman taze veri görmeli)
     if (typeof clearProductsCache === 'function') {
         clearProductsCache();
     }
+    
+    // Firebase'dan yükle - ADMİN SAYFASINDA CACHE YOK!
+    let products = await getProductsFromFirebase();
     
     console.log(`📦 ${products.length} ürün Firebase'dan yüklendi (cache bypass)`);
 
