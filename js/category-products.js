@@ -910,8 +910,21 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         const database = await loadProductsFromAdmin();
         console.log('✅ Database yüklendi:', database);
         
+        // Kategori mapping - Firebase'de farklı key'ler var
+        const categoryMapping = {
+            'mobilya': 'Mobilya',
+            'beyaz-esya': 'Beyaz Eşya',
+            'kucuk-ev-aletleri': 'Küçük Ev Aletleri',
+            'klima-ventilator': 'Klima & Vantilatör',
+            'kisisel-bakim': 'Kişisel Bakım'
+        };
+        
+        const dbKey = categoryMapping[categorySlug] || categorySlug;
+        console.log(`🔍 Arama: categorySlug="${categorySlug}" → dbKey="${dbKey}"`);
+        console.log('📦 Database keys:', Object.keys(database));
+        
         // Kategori ürünlerini al
-        allProducts = database[categorySlug] || [];
+        allProducts = database[dbKey] || [];
         filteredProducts = [...allProducts];
         
         console.log(`✅ ${allProducts.length} ürün "${categorySlug}" kategorisinde`);
