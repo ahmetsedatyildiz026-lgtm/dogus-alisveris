@@ -910,18 +910,42 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         const database = await loadProductsFromAdmin();
         console.log('✅ Database yüklendi:', database);
         
-        // Kategori mapping - Firebase'de farklı key'ler var
-        const categoryMapping = {
-            'mobilya': 'Mobilya',
-            'beyaz-esya': 'Beyaz Eşya',
-            'kucuk-ev-aletleri': 'Küçük Ev Aletleri',
-            'klima-ventilator': 'Klima & Vantilatör',
-            'kisisel-bakim': 'Kişisel Bakım'
-        };
-        
-        const dbKey = categoryMapping[categorySlug] || categorySlug;
-        console.log(`🔍 Arama: categorySlug="${categorySlug}" → dbKey="${dbKey}"`);
+        // Kategori mapping - Firebase'deki tüm key'leri dene
         console.log('📦 Database keys:', Object.keys(database));
+        console.log(`🔍 İstenen categorySlug: "${categorySlug}"`);
+        
+        // Önce direkt key'i dene
+        let dbKey = null;
+        
+        // 1. Direkt slug'ı dene
+        if (database[categorySlug]) {
+            dbKey = categorySlug;
+        }
+        // 2. Türkçe karakterli varyasyonları dene
+        else {
+            const possibleKeys = [
+                'Mobilya', 'mobilya', 'MOBİLYA',
+                'Beyaz Eşya', 'beyaz-esya', 'Beyaz Esya',
+                'Küçük Ev Aletleri', 'kucuk-ev-aletleri', 'Ev Aletleri',
+                'Klima & Vantilatör', 'klima-ventilator', 'Klima',
+                'Kişisel Bakım', 'kisisel-bakim', 'Bakım'
+            ];
+            
+            // Slug ile eşleşen key'i bul
+            for (const key of Object.keys(database)) {
+                const keyLower = key.toLowerCase().replace(/\s+/g, '-').replace(/[ğüşıöç]/g, match => {
+                    const map = {'ğ':'g','ü':'u','ş':'s','ı':'i','ö':'o','ç':'c'};
+                    return map[match] || match;
+                });
+                
+                if (keyLower === categorySlug || key.toLowerCase().includes(categorySlug.replace(/-/g, ' '))) {
+                    dbKey = key;
+                    break;
+                }
+            }
+        }
+        
+        console.log(`🔍 Bulunan dbKey: "${dbKey}"`);
         
         // Kategori ürünlerini al
         allProducts = database[dbKey] || [];
