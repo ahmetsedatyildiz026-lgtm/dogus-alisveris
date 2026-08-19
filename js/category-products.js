@@ -13,64 +13,15 @@ let currentProductImages = [];
 // ===== GLOBAL ÜRÜN VERİTABANI - FIREBASE'DEN YÜKLENECEK =====
 window.categoryDatabase = {};
 
-// ===== MOBİLYA HAFIZA (SAYFA İÇİNDE) =====
-let mobilyaCachedData = null;
-let mobilyaCacheTime = 0;
-const CACHE_DURATION = 10 * 60 * 1000; // 10 dakika (5dk yerine)
+// ===== TÜM KATEGORİLER İÇİN HAFIZA =====
+let allCategoriesCache = null;
+let allCategoriesCacheTime = 0;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 dakika
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin() {
     try {
-        // Mobilya sayfası mı?
-        const isMobilyaPage = window.location.pathname.includes('mobilya');
-        
-        // Mobilya ise önce HAFIZA kontrol et
-        if (isMobilyaPage) {
-            const now = Date.now();
-            if (mobilyaCachedData && (now - mobilyaCacheTime) < CACHE_DURATION) {
-                const age = Math.floor((now - mobilyaCacheTime) / 1000);
-                console.log(`✅ HAFIZA (${age}sn önce) - ANINDA! ⚡⚡⚡`);
-                window.categoryDatabase = mobilyaCachedData;
-                return mobilyaCachedData;
-            }
-            
-            // Hafıza yok veya eski - Firebase'den yükle
-            console.log('📡 Mobilya Firebase\'den yükleniyor...');
-            const snapshot = await db.collection('products')
-                .where('status', '==', 'active')
-                .get();
-            
-            const allProducts = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if ((data.stock || 0) > 0) {
-                    allProducts.push({ id: doc.id, ...data });
-                }
-            });
-            
-            // TÜM KATEGORİLERE GÖRE GRUPLA
-            const database = {};
-            allProducts.forEach(product => {
-                if (!product.category) return;
-                
-                if (!database[product.category]) {
-                    database[product.category] = [];
-                }
-                database[product.category].push(product);
-            });
-            
-            console.log(`📦 ${database['mobilya']?.length || 0} Mobilya ürünü yüklendi`);
-            
-            // HAFIZAYA KAYDET
-            mobilyaCachedData = database;
-            mobilyaCacheTime = now;
-            console.log('💾 Mobilya hafızaya kaydedildi (5dk)');
-            
-            window.categoryDatabase = database;
-            return database;
-        }
-        
-        // Diğer kategoriler - normal yükleme (hafıza YOK)
+        // Firebase'den ürünleri al
         const products = await getProductsFromFirebase();
         console.log(`📦 ${products.length} ürün Firebase'dan yüklendi`);
         
@@ -90,6 +41,11 @@ async function loadProductsFromAdmin() {
         });
         
         console.log('📊 Kategori veritabanı:', database);
+        
+        // CACHE'E KAYDET (Tüm kategoriler için!)
+        allCategoriesCache = database;
+        allCategoriesCacheTime = Date.now();
+        console.log('💾 Tüm kategoriler hafızaya kaydedildi (10dk)');
         
         window.categoryDatabase = database;
         return database;
@@ -937,29 +893,26 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         productsPerPage = (categorySlug === 'mobilya') ? 6 : 12;
         console.log(`📄 Sayfa başına ${productsPerPage} ürün (${categorySlug})`);
         
-        // MOBİLYA ÖNCE CACHE KONTROL ET!
-        const isMobilyaPage = (categorySlug === 'mobilya');
-        if (isMobilyaPage) {
-            const now = Date.now();
-            if (mobilyaCachedData && (now - mobilyaCacheTime) < CACHE_DURATION) {
-                const age = Math.floor((now - mobilyaCacheTime) / 1000);
-                console.log(`✅✅✅ CACHE HİT! ${age}sn önce - SÜPER HIZLI! ⚡⚡⚡`);
-                
-                // Cache'ten direkt yükle
-                window.categoryDatabase = mobilyaCachedData;
-                allProducts = mobilyaCachedData[categorySlug] || [];
-                filteredProducts = [...allProducts];
-                
-                renderProducts();
-                setupEventListeners();
-                
-                if (typeof cartManager !== 'undefined') {
-                    cartManager.updateCartCount();
-                }
-                
-                console.log('✅ Kategori sayfası CACHE\'ten başlatıldı!');
-                return; // Firebase'e gitme!
+        // TÜM KATEGORİLER - ÖNCE CACHE KONTROL ET!
+        const now = Date.now();
+        if (allCategoriesCache && (now - allCategoriesCacheTime) < CACHE_DURATION) {
+            const age = Math.floor((now - allCategoriesCacheTime) / 1000);
+            console.log(`✅✅✅ CACHE HİT! ${age}sn önce - SÜPER HIZLI! ⚡⚡⚡`);
+            
+            // Cache'ten direkt yükle
+            window.categoryDatabase = allCategoriesCache;
+            allProducts = allCategoriesCache[categorySlug] || [];
+            filteredProducts = [...allProducts];
+            
+            renderProducts();
+            setupEventListeners();
+            
+            if (typeof cartManager !== 'undefined') {
+                cartManager.updateCartCount();
             }
+            
+            console.log('✅ Kategori sayfası CACHE\'ten başlatıldı!');
+            return; // Firebase'e gitme!
         }
         
         // LOADİNG GÖSTER (Cache yoksa)
