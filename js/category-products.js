@@ -1050,6 +1050,7 @@ function renderProducts() {
         return;
     }
     
+    // LAZY LOADING: Sadece bu sayfadaki ürünlerin HTML'ini oluştur
     grid.innerHTML = pageProducts.map(product => {
         const mainImage = product.images && product.images[0] 
             ? product.images[0] 
@@ -1060,7 +1061,6 @@ function renderProducts() {
         
         let priceHtml = '';
         if (showPrice) {
-            // Fiyat göster
             priceHtml = `
                 <div class="product-price-section">
                     ${product.originalPrice ? `<span class="product-price-old">${product.originalPrice}</span>` : ''}
@@ -1068,7 +1068,6 @@ function renderProducts() {
                 </div>
             `;
         } else {
-            // Fiyat yok - boş bırak (detayda gösterilecek)
             priceHtml = `
                 <div class="product-price-section" style="height: 2rem;"></div>
             `;
@@ -1077,7 +1076,8 @@ function renderProducts() {
         return `
             <div class="product-card" onclick='showProductModal("${product.id}")'>
                 <div class="product-image">
-                    <img src="${mainImage}" alt="${product.title}" loading="lazy" 
+                    <img data-src="${mainImage}" alt="${product.title}" class="lazy-img" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23d1d5db' font-family='sans-serif' font-size='18'%3EYükleniyor...%3C/text%3E%3C/svg%3E"
                          onerror="this.src='https://via.placeholder.com/400x300?text=Ürün'">
                     ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
                     ${product.originalPrice && showPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
@@ -1103,6 +1103,11 @@ function renderProducts() {
             </div>
         `;
     }).join('');
+    
+    console.log(`✅ ${pageProducts.length} ürün kartı oluşturuldu`);
+    
+    // INTERSECTION OBSERVER - Sadece görünen resimleri yükle
+    initLazyLoading();
     
     // Sayfalama render et
     if (pagination && totalPages > 1) {
@@ -1205,6 +1210,40 @@ window.sortProducts = sortProducts;
 window.showProductModal = showProductModal;
 window.closeModal = closeModal;
 window.updateCartCount = function() { cartManager.updateCartCount(); };
+
+// ===== LAZY LOADING OBSERVER =====
+function initLazyLoading() {
+    const lazyImages = document.querySelectorAll('img.lazy-img');
+    
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const src = img.getAttribute('data-src');
+                    
+                    if (src) {
+                        img.src = src;
+                        img.classList.remove('lazy-img');
+                        imageObserver.unobserve(img);
+                        console.log('🖼️ Resim yüklendi:', src.substring(0, 50) + '...');
+                    }
+                }
+            });
+        }, {
+            rootMargin: '50px' // 50px önceden yükle
+        });
+        
+        lazyImages.forEach(img => imageObserver.observe(img));
+        console.log(`🎨 ${lazyImages.length} resim için lazy loading aktif`);
+    } else {
+        // Fallback: IntersectionObserver yoksa hepsini yükle
+        lazyImages.forEach(img => {
+            const src = img.getAttribute('data-src');
+            if (src) img.src = src;
+        });
+    }
+}
 
 // Sepete ekle fonksiyonu (inline button için)
 window.addToCart = function(productName, price) {
