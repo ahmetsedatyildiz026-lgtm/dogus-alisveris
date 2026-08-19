@@ -517,10 +517,6 @@ function loadCategoryProducts(categoryName) {
     const productsGrid = document.getElementById('productsGrid');
     const productsCount = document.getElementById('productsCount');
     
-    // MOBİLYA için 6 ürün (HIZLI!), diğerleri 12 ürün
-    productsPerPage = (categoryName === 'mobilya') ? 6 : 12;
-    console.log(`📄 Sayfa başına ${productsPerPage} ürün (${categoryName})`);
-    
     // Kategori mapping
     const categoryMapping = {
         'beyaz-esya': ['Beyaz Eşya', 'beyaz-esya'],
@@ -936,6 +932,10 @@ async function initializeCategoryPage(categorySlug, categoryName) {
     try {
         window.currentCategory = categorySlug;
         window.currentCategoryName = categoryName;
+        
+        // MOBİLYA için 6 ürün, diğerleri 12 ürün (EN BAŞTA AYARLA!)
+        productsPerPage = (categorySlug === 'mobilya') ? 6 : 12;
+        console.log(`📄 Sayfa başına ${productsPerPage} ürün (${categorySlug})`);
         
         // LOADİNG GÖSTER
         showLoadingState();
