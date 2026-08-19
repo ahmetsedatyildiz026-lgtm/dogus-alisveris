@@ -4,7 +4,7 @@ let currentProduct = {};
 let allProducts = [];
 let filteredProducts = [];
 let currentPage = 1;
-const productsPerPage = 12;
+let productsPerPage = 12; // Dinamik - Mobilya için 8, diğerleri 12
 
 // Gallery variables
 let currentImageIndex = 0;
@@ -516,6 +516,10 @@ async function initializeCategoryPage(categoryName, categoryTitle) {
 function loadCategoryProducts(categoryName) {
     const productsGrid = document.getElementById('productsGrid');
     const productsCount = document.getElementById('productsCount');
+    
+    // MOBİLYA için 8 ürün, diğerleri 12 ürün
+    productsPerPage = (categoryName === 'mobilya') ? 8 : 12;
+    console.log(`📄 Sayfa başına ${productsPerPage} ürün (${categoryName})`);
     
     // Kategori mapping
     const categoryMapping = {
