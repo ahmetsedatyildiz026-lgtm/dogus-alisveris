@@ -16,7 +16,32 @@ window.categoryDatabase = {};
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin() {
     try {
-        // Firebase'den ürünleri al
+        // Mobilya sayfası mı?
+        const isMobilyaPage = window.location.pathname.includes('mobilya');
+        
+        // Mobilya ise sadece mobilya kategorisini yükle (HIZLI!)
+        if (isMobilyaPage) {
+            const snapshot = await db.collection('products')
+                .where('status', '==', 'active')
+                .where('category', '==', 'mobilya')
+                .get();
+            
+            const products = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if ((data.stock || 0) > 0) {
+                    products.push({ id: doc.id, ...data });
+                }
+            });
+            
+            console.log(`⚡ ${products.length} Mobilya ürünü yüklendi (HIZLI!)`);
+            
+            const database = { 'mobilya': products };
+            window.categoryDatabase = database;
+            return database;
+        }
+        
+        // Diğer kategoriler - tüm ürünleri yükle
         const products = await getProductsFromFirebase();
         console.log(`📦 ${products.length} ürün Firebase'dan yüklendi`);
         
