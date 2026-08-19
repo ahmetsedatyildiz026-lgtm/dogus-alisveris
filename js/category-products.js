@@ -24,7 +24,7 @@ async function loadProductsFromAdmin() {
         // Mobilya sayfası mı?
         const isMobilyaPage = window.location.pathname.includes('mobilya');
         
-        // Mobilya ise önce HAFIZA kontrol et (localStorage değil!)
+        // Mobilya ise önce HAFIZA kontrol et
         if (isMobilyaPage) {
             const now = Date.now();
             if (mobilyaCachedData && (now - mobilyaCacheTime) < CACHE_DURATION) {
@@ -35,7 +35,7 @@ async function loadProductsFromAdmin() {
             }
             
             // Hafıza yok veya eski - Firebase'den yükle
-            console.log('📡 Firebase\'den yükleniyor...');
+            console.log('📡 Mobilya Firebase\'den yükleniyor...');
             const snapshot = await db.collection('products')
                 .where('status', '==', 'active')
                 .get();
@@ -59,18 +59,18 @@ async function loadProductsFromAdmin() {
                 database[product.category].push(product);
             });
             
-            console.log(`📦 ${database['mobilya']?.length || 0} Mobilya ürünü Firebase'den yüklendi`);
+            console.log(`📦 ${database['mobilya']?.length || 0} Mobilya ürünü yüklendi`);
             
-            // HAFIZAYA KAYDET (localStorage değil!)
+            // HAFIZAYA KAYDET
             mobilyaCachedData = database;
             mobilyaCacheTime = now;
-            console.log('💾 Hafızaya kaydedildi (5dk geçerli) - İkinci yükleme SÜPER HIZLI!');
+            console.log('💾 Mobilya hafızaya kaydedildi (5dk)');
             
             window.categoryDatabase = database;
             return database;
         }
         
-        // Diğer kategoriler - tüm ürünleri yükle
+        // Diğer kategoriler - normal yükleme (hafıza YOK)
         const products = await getProductsFromFirebase();
         console.log(`📦 ${products.length} ürün Firebase'dan yüklendi`);
         
@@ -517,8 +517,8 @@ function loadCategoryProducts(categoryName) {
     const productsGrid = document.getElementById('productsGrid');
     const productsCount = document.getElementById('productsCount');
     
-    // MOBİLYA için 8 ürün, diğerleri 12 ürün
-    productsPerPage = (categoryName === 'mobilya') ? 8 : 12;
+    // MOBİLYA için 6 ürün (HIZLI!), diğerleri 12 ürün
+    productsPerPage = (categoryName === 'mobilya') ? 6 : 12;
     console.log(`📄 Sayfa başına ${productsPerPage} ürün (${categoryName})`);
     
     // Kategori mapping
