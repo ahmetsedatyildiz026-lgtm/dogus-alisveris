@@ -16,7 +16,7 @@ window.categoryDatabase = {};
 // ===== TÜM KATEGORİLER İÇİN HAFIZA =====
 let allCategoriesCache = null;
 let allCategoriesCacheTime = 0;
-const CACHE_DURATION = 10 * 60 * 1000; // 10 dakika
+const CACHE_DURATION = 60 * 60 * 1000; // 1 SAAT (3600 saniye) ⚡
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin(onlyFirstPage = false) {
@@ -56,7 +56,7 @@ async function loadProductsFromAdmin(onlyFirstPage = false) {
         // CACHE'E KAYDET (Tüm kategoriler için!)
         allCategoriesCache = database;
         allCategoriesCacheTime = Date.now();
-        console.log('💾 Tüm kategoriler hafızaya kaydedildi (10dk)');
+        console.log('💾 Tüm kategoriler hafızaya kaydedildi (1 SAAT) ⚡');
         
         window.categoryDatabase = database;
         return database;
