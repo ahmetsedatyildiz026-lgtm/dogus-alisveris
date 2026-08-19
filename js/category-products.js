@@ -14,7 +14,7 @@ let currentProductImages = [];
 window.categoryDatabase = {};
 
 // ===== MOBİLYA CACHE (5 DAKİKA) =====
-const MOBILYA_CACHE_KEY = 'mobilya_v2';
+const MOBILYA_CACHE_KEY = 'mobilya_v3';
 const CACHE_TIME = 5 * 60 * 1000; // 5 dakika
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
@@ -58,14 +58,19 @@ async function loadProductsFromAdmin() {
                 }
             });
             
-            // Mobilya kategorisini filtrele (büyük/küçük harf duyarsız)
-            const mobilyaProducts = allProducts.filter(p => 
-                p.category && p.category.toLowerCase().includes('mobilya')
-            );
+            // TÜM KATEGORİLERE GÖRE GRUPLA (loadCategoryProducts uyumlu)
+            const database = {};
+            allProducts.forEach(product => {
+                if (!product.category) return;
+                
+                if (!database[product.category]) {
+                    database[product.category] = [];
+                }
+                database[product.category].push(product);
+            });
             
-            console.log(`📦 ${mobilyaProducts.length} Mobilya ürünü Firebase'den yüklendi`);
-            
-            const database = { 'mobilya': mobilyaProducts };
+            console.log(`📦 ${database['mobilya']?.length || 0} Mobilya ürünü Firebase'den yüklendi`);
+            console.log('📊 Tüm kategoriler:', Object.keys(database));
             
             // Cache'e kaydet
             try {
