@@ -13,30 +13,71 @@ let currentProductImages = [];
 // ===== GLOBAL ÜRÜN VERİTABANI - FIREBASE'DEN YÜKLENECEK =====
 window.categoryDatabase = {};
 
+// ===== MOBİLYA CACHE (5 DAKİKA) =====
+const MOBILYA_CACHE_KEY = 'mobilya_v2';
+const CACHE_TIME = 5 * 60 * 1000; // 5 dakika
+
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin() {
     try {
         // Mobilya sayfası mı?
         const isMobilyaPage = window.location.pathname.includes('mobilya');
         
-        // Mobilya ise sadece mobilya kategorisini yükle (HIZLI!)
+        // Mobilya ise önce cache kontrol et
         if (isMobilyaPage) {
+            try {
+                const cached = localStorage.getItem(MOBILYA_CACHE_KEY);
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached);
+                    const age = Date.now() - timestamp;
+                    
+                    if (age < CACHE_TIME) {
+                        console.log(`✅ CACHE (${Math.floor(age/1000)}sn önce) - SÜPER HIZLI! ⚡`);
+                        window.categoryDatabase = data;
+                        return data;
+                    } else {
+                        console.log('⏰ Cache süresi doldu, yenileniyor...');
+                        localStorage.removeItem(MOBILYA_CACHE_KEY);
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Cache okuma hatası:', e);
+                localStorage.removeItem(MOBILYA_CACHE_KEY);
+            }
+            
+            // Cache yok veya eski - Firebase'den yükle
             const snapshot = await db.collection('products')
                 .where('status', '==', 'active')
-                .where('category', '==', 'mobilya')
                 .get();
             
-            const products = [];
+            const allProducts = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
                 if ((data.stock || 0) > 0) {
-                    products.push({ id: doc.id, ...data });
+                    allProducts.push({ id: doc.id, ...data });
                 }
             });
             
-            console.log(`⚡ ${products.length} Mobilya ürünü yüklendi (HIZLI!)`);
+            // Mobilya kategorisini filtrele (büyük/küçük harf duyarsız)
+            const mobilyaProducts = allProducts.filter(p => 
+                p.category && p.category.toLowerCase().includes('mobilya')
+            );
             
-            const database = { 'mobilya': products };
+            console.log(`📦 ${mobilyaProducts.length} Mobilya ürünü Firebase'den yüklendi`);
+            
+            const database = { 'mobilya': mobilyaProducts };
+            
+            // Cache'e kaydet
+            try {
+                localStorage.setItem(MOBILYA_CACHE_KEY, JSON.stringify({
+                    data: database,
+                    timestamp: Date.now()
+                }));
+                console.log('💾 Cache kaydedildi (5dk geçerli)');
+            } catch (e) {
+                console.warn('⚠️ Cache kaydetme hatası:', e);
+            }
+            
             window.categoryDatabase = database;
             return database;
         }
