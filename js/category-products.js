@@ -16,7 +16,7 @@ window.categoryDatabase = {};
 // ===== MOBİLYA HAFIZA (SAYFA İÇİNDE) =====
 let mobilyaCachedData = null;
 let mobilyaCacheTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 dakika
+const CACHE_DURATION = 10 * 60 * 1000; // 10 dakika (5dk yerine)
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin() {
