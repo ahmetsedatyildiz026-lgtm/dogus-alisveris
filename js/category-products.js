@@ -13,9 +13,10 @@ let currentProductImages = [];
 // ===== GLOBAL ÜRÜN VERİTABANI - FIREBASE'DEN YÜKLENECEK =====
 window.categoryDatabase = {};
 
-// ===== MOBİLYA CACHE (5 DAKİKA) =====
-const MOBILYA_CACHE_KEY = 'mobilya_v3';
-const CACHE_TIME = 5 * 60 * 1000; // 5 dakika
+// ===== MOBİLYA HAFIZA (SAYFA İÇİNDE) =====
+let mobilyaCachedData = null;
+let mobilyaCacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 dakika
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin() {
@@ -23,29 +24,18 @@ async function loadProductsFromAdmin() {
         // Mobilya sayfası mı?
         const isMobilyaPage = window.location.pathname.includes('mobilya');
         
-        // Mobilya ise önce cache kontrol et
+        // Mobilya ise önce HAFIZA kontrol et (localStorage değil!)
         if (isMobilyaPage) {
-            try {
-                const cached = localStorage.getItem(MOBILYA_CACHE_KEY);
-                if (cached) {
-                    const { data, timestamp } = JSON.parse(cached);
-                    const age = Date.now() - timestamp;
-                    
-                    if (age < CACHE_TIME) {
-                        console.log(`✅ CACHE (${Math.floor(age/1000)}sn önce) - SÜPER HIZLI! ⚡`);
-                        window.categoryDatabase = data;
-                        return data;
-                    } else {
-                        console.log('⏰ Cache süresi doldu, yenileniyor...');
-                        localStorage.removeItem(MOBILYA_CACHE_KEY);
-                    }
-                }
-            } catch (e) {
-                console.warn('⚠️ Cache okuma hatası:', e);
-                localStorage.removeItem(MOBILYA_CACHE_KEY);
+            const now = Date.now();
+            if (mobilyaCachedData && (now - mobilyaCacheTime) < CACHE_DURATION) {
+                const age = Math.floor((now - mobilyaCacheTime) / 1000);
+                console.log(`✅ HAFIZA (${age}sn önce) - ANINDA! ⚡⚡⚡`);
+                window.categoryDatabase = mobilyaCachedData;
+                return mobilyaCachedData;
             }
             
-            // Cache yok veya eski - Firebase'den yükle
+            // Hafıza yok veya eski - Firebase'den yükle
+            console.log('📡 Firebase\'den yükleniyor...');
             const snapshot = await db.collection('products')
                 .where('status', '==', 'active')
                 .get();
@@ -58,7 +48,7 @@ async function loadProductsFromAdmin() {
                 }
             });
             
-            // TÜM KATEGORİLERE GÖRE GRUPLA (loadCategoryProducts uyumlu)
+            // TÜM KATEGORİLERE GÖRE GRUPLA
             const database = {};
             allProducts.forEach(product => {
                 if (!product.category) return;
@@ -70,18 +60,11 @@ async function loadProductsFromAdmin() {
             });
             
             console.log(`📦 ${database['mobilya']?.length || 0} Mobilya ürünü Firebase'den yüklendi`);
-            console.log('📊 Tüm kategoriler:', Object.keys(database));
             
-            // Cache'e kaydet
-            try {
-                localStorage.setItem(MOBILYA_CACHE_KEY, JSON.stringify({
-                    data: database,
-                    timestamp: Date.now()
-                }));
-                console.log('💾 Cache kaydedildi (5dk geçerli)');
-            } catch (e) {
-                console.warn('⚠️ Cache kaydetme hatası:', e);
-            }
+            // HAFIZAYA KAYDET (localStorage değil!)
+            mobilyaCachedData = database;
+            mobilyaCacheTime = now;
+            console.log('💾 Hafızaya kaydedildi (5dk geçerli) - İkinci yükleme SÜPER HIZLI!');
             
             window.categoryDatabase = database;
             return database;
