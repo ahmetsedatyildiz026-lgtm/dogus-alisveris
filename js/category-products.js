@@ -937,7 +937,32 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         productsPerPage = (categorySlug === 'mobilya') ? 6 : 12;
         console.log(`📄 Sayfa başına ${productsPerPage} ürün (${categorySlug})`);
         
-        // LOADİNG GÖSTER
+        // MOBİLYA ÖNCE CACHE KONTROL ET!
+        const isMobilyaPage = (categorySlug === 'mobilya');
+        if (isMobilyaPage) {
+            const now = Date.now();
+            if (mobilyaCachedData && (now - mobilyaCacheTime) < CACHE_DURATION) {
+                const age = Math.floor((now - mobilyaCacheTime) / 1000);
+                console.log(`✅✅✅ CACHE HİT! ${age}sn önce - SÜPER HIZLI! ⚡⚡⚡`);
+                
+                // Cache'ten direkt yükle
+                window.categoryDatabase = mobilyaCachedData;
+                allProducts = mobilyaCachedData[categorySlug] || [];
+                filteredProducts = [...allProducts];
+                
+                renderProducts();
+                setupEventListeners();
+                
+                if (typeof cartManager !== 'undefined') {
+                    cartManager.updateCartCount();
+                }
+                
+                console.log('✅ Kategori sayfası CACHE\'ten başlatıldı!');
+                return; // Firebase'e gitme!
+            }
+        }
+        
+        // LOADİNG GÖSTER (Cache yoksa)
         showLoadingState();
         
         // Ürünleri yükle
