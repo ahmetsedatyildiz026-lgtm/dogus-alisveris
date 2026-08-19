@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mobilya Test - Database Keys</title>
+</head>
+<body>
+    <h1>Firebase Mobilya Test</h1>
+    <div id="output"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        async function testMobilya() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Yükleniyor...</p>';
+            
+            try {
+                // Firebase'den tüm ürünleri al
+                const snapshot = await db.collection('products').get();
+                const products = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    products.push({
+                        id: doc.id,
+                        title: data.title,
+                        category: data.category,
+                        status: data.status,
+                        stock: data.stock
+                    });
+                });
+                
+                // Kategorilere göre grupla
+                const byCategory = {};
+                products.forEach(p => {
+                    if (!byCategory[p.category]) {
+                        byCategory[p.category] = [];
+                    }
+                    byCategory[p.category].push(p);
+                });
+                
+                // Sonuçları göster
+                let html = `<h2>Toplam ${products.length} ürün</h2>`;
+                html += `<h3>Kategoriler:</h3><ul>`;
+                
+                Object.keys(byCategory).forEach(cat => {
+                    html += `<li><strong>${cat}</strong>: ${byCategory[cat].length} ürün</li>`;
+                });
+                
+                html += `</ul><hr><h3>Mobilya ile eşleşen kategoriler:</h3><ul>`;
+                
+                Object.keys(byCategory).forEach(cat => {
+                    if (cat && cat.toLowerCase().includes('mobilya')) {
+                        html += `<li style="background: yellow; padding: 5px;"><strong>"${cat}"</strong>: ${byCategory[cat].length} ürün</li>`;
+                        html += `<ul>`;
+                        byCategory[cat].forEach(p => {
+                            html += `<li>${p.title} (status: ${p.status}, stock: ${p.stock})</li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                });
+                
+                html += `</ul>`;
+                
+                output.innerHTML = html;
+                
+            } catch (error) {
+                output.innerHTML = `<p style="color: red;">Hata: ${error.message}</p>`;
+            }
+        }
+        
+        // Firebase hazır olunca başlat
+        setTimeout(testMobilya, 2000);
+    </script>
+</body>
+</html>
