@@ -16,7 +16,7 @@ window.categoryDatabase = {};
 // ===== TÜM KATEGORİLER İÇİN HAFIZA =====
 let allCategoriesCache = null;
 let allCategoriesCacheTime = 0;
-const CACHE_DURATION = 60 * 60 * 1000; // 1 SAAT (3600 saniye) ⚡
+const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 SAAT (7200 saniye) ⚡⚡
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin(onlyFirstPage = false) {
@@ -25,7 +25,7 @@ async function loadProductsFromAdmin(onlyFirstPage = false) {
         const now = Date.now();
         if (allCategoriesCache && (now - allCategoriesCacheTime) < CACHE_DURATION) {
             const age = Math.floor((now - allCategoriesCacheTime) / 1000);
-            console.log(`✅ CACHE (${age}sn önce) - HIZLI! ⚡`);
+            console.log(`✅ CACHE (${age}sn önce - 2 SAAT GEÇERLİ) - HIZLI! ⚡⚡`);
             window.categoryDatabase = allCategoriesCache;
             return allCategoriesCache;
         }
@@ -56,7 +56,7 @@ async function loadProductsFromAdmin(onlyFirstPage = false) {
         // CACHE'E KAYDET (Tüm kategoriler için!)
         allCategoriesCache = database;
         allCategoriesCacheTime = Date.now();
-        console.log('💾 Tüm kategoriler hafızaya kaydedildi (1 SAAT) ⚡');
+        console.log('💾 Tüm kategoriler hafızaya kaydedildi (2 SAAT) ⚡⚡');
         
         window.categoryDatabase = database;
         return database;
@@ -905,8 +905,9 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         // Kategori ürünlerini al
         const allCategoryProducts = database[dbKey] || [];
         
-        // ⚡ HIZLI BAŞLATMA: İlk 6 ürünü hemen göster
-        allProducts = allCategoryProducts.slice(0, productsPerPage);
+        // ⚡ HIZLI BAŞLATMA: İlk 4 ürünü hemen göster (MOBİLYA)
+        const firstLoadCount = (categorySlug === 'mobilya') ? 4 : 6;
+        allProducts = allCategoryProducts.slice(0, firstLoadCount);
         filteredProducts = [...allProducts];
         
         console.log(`✅ İlk ${allProducts.length} ürün gösteriliyor (toplam: ${allCategoryProducts.length})`);
@@ -922,7 +923,7 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         
         console.log('✅ İlk sayfa yüklendi! ⚡');
         
-        // ⚡ ARKA PLANDA: Diğer ürünleri hazırla (100ms sonra)
+        // ⚡ ARKA PLANDA: Diğer ürünleri hazırla (50ms sonra - DAHA HIZLI!)
         setTimeout(() => {
             console.log('📦 Arka plan: Tüm ürünler yükleniyor...');
             allProducts = allCategoryProducts;
@@ -931,7 +932,7 @@ async function initializeCategoryPage(categorySlug, categoryName) {
             
             // Sayfalama butonlarını güncelle
             updatePagination();
-        }, 100);
+        }, 50);
         
         console.log('✅ Kategori sayfası başlatıldı!');
         
@@ -1201,7 +1202,7 @@ function initLazyLoading() {
                 }
             });
         }, {
-            rootMargin: '50px' // 50px önceden yükle
+            rootMargin: '100px' // 100px önceden yükle - DAHA HIZLI!
         });
         
         lazyImages.forEach(img => imageObserver.observe(img));
