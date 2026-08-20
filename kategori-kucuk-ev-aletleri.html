@@ -14,6 +14,10 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- PRELOAD: Firebase SDK -->
+    <link rel="preload" href="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" as="script">
+    <link rel="preload" href="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" as="script">
+    
     <link rel="stylesheet" href="css/style.css?v=20260725190000">
     <link rel="stylesheet" href="css/auth.css?v=202412251225">
 </head>
@@ -274,6 +278,13 @@
     <script src="js/category-products.js?v=1787154030"></script>
     <script src="js/auth.js?v=20260725181500"></script>
     <script>
+        // SERVICE WORKER - Offline + Hızlı yükleme
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('✅ SW aktif'))
+                .catch(err => console.log('⚠️ SW hatası:', err));
+        }
+        
         // Initialize category page - Firebase hazır olana kadar bekle!
         async function waitForFirebaseAndStart() {
             console.log('🚀 Sayfa yüklendi, Firebase bekleniyor...');
