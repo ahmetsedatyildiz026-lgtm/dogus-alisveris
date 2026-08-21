@@ -1050,9 +1050,9 @@ function showLoadingState() {
         </style>
     `;
     
-    // 6 adet skeleton card göster
+    // 3 adet skeleton card göster (telefon için az yeterli)
     let cards = '';
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 3; i++) {
         cards += `
             <div class="skeleton-card">
                 <div class="skeleton-image"></div>
@@ -1145,8 +1145,9 @@ function renderProducts() {
             <div class="product-card" onclick='showProductModal("${product.id}")'>
                 <div class="product-image">
                     <img data-src="${mainImage}" alt="${product.title}" class="lazy-img" 
+                         loading="lazy"
                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect fill='%23f9fafb' width='300' height='200'/%3E%3C/svg%3E"
-                         onerror="this.src='https://via.placeholder.com/400x300?text=Ürün'">
+                         onerror="this.src='https://via.placeholder.com/300x200?text=Ürün'">
                     ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
                     ${product.originalPrice && showPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
                 </div>

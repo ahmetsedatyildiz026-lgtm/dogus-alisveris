@@ -138,14 +138,15 @@ const COLLECTIONS = {
  * Tüm ürünleri getir
  */
 /**
- * Tüm ürünleri getir - HIZLANDIRILMIŞ VERSİYON ⚡
+ * Tüm ürünleri getir - TELEFON OPTİMİZE ⚡📱
  */
 async function getProductsFromFirebase() {
   try {
-    // ⚡ HIZLANDIRMA: Sadece gerekli alanları çek!
+    // ⚡ TELEFON HIZLANDIRMA: İlk 20 ürünü hızlıca çek!
     const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
-      .where('status', '==', 'active')  // Sadece aktif ürünler
-      .where('stock', '>', 0)            // Stokta olanlar
+      .where('status', '==', 'active')
+      .where('stock', '>', 0)
+      .limit(20)  // İLK 20 ÜRÜN - ÇOK HIZLI!
       .get();
       
     const products = [];
@@ -155,13 +156,42 @@ async function getProductsFromFirebase() {
         ...doc.data()
       });
     });
-    console.log(`✅ ${products.length} aktif ürün yüklendi (stokta olanlar)`);
+    console.log(`⚡ ${products.length} ürün yüklendi (ilk 20 - HIZLI!)`);
+    
+    // ⚡ ARKA PLANDA: Kalan ürünleri yükle
+    setTimeout(async () => {
+      try {
+        const allSnapshot = await db.collection(COLLECTIONS.PRODUCTS)
+          .where('status', '==', 'active')
+          .where('stock', '>', 0)
+          .get();
+        
+        const allProducts = [];
+        allSnapshot.forEach(doc => {
+          allProducts.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        console.log(`✅ Tüm ${allProducts.length} ürün yüklendi (arka plan)`);
+        
+        // Global cache'i güncelle
+        if (allProducts.length > products.length) {
+          window.categoryDatabase = allProducts;
+        }
+      } catch (bgError) {
+        console.log('⚠️ Arka plan yükleme hatası (önemli değil):', bgError);
+      }
+    }, 3000); // 3 saniye sonra kalan ürünleri yükle
+    
     return products;
   } catch (error) {
     console.error('❌ Ürünler yüklenemedi:', error);
-    // Hata varsa tüm ürünleri çek (fallback)
+    // Hata varsa limit olmadan dene (fallback)
     try {
-      const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
+      const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
+        .where('status', '==', 'active')
+        .get();
       const products = [];
       snapshot.forEach(doc => {
         products.push({
