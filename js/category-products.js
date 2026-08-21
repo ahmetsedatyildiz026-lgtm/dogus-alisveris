@@ -21,11 +21,35 @@ const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 SAAT (7200 saniye) ⚡⚡
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin(onlyFirstPage = false) {
     try {
-        // ÖNCE CACHE KONTROL ET!
+        // 1. ÖNCE LOCALSTORAGE KONTROL ET! (EN HIZLI!)
+        const localStorageKey = 'dogus_products_cache';
+        const localStorageTimeKey = 'dogus_products_cache_time';
+        
+        try {
+            const cachedData = localStorage.getItem(localStorageKey);
+            const cachedTime = localStorage.getItem(localStorageTimeKey);
+            
+            if (cachedData && cachedTime) {
+                const age = Date.now() - parseInt(cachedTime);
+                if (age < CACHE_DURATION) {
+                    const ageInSeconds = Math.floor(age / 1000);
+                    console.log(`⚡⚡⚡ LOCALSTORAGE CACHE (${ageInSeconds}sn önce) - SÜPER HIZLI!`);
+                    const database = JSON.parse(cachedData);
+                    window.categoryDatabase = database;
+                    allCategoriesCache = database;
+                    allCategoriesCacheTime = parseInt(cachedTime);
+                    return database;
+                }
+            }
+        } catch (localStorageError) {
+            console.warn('⚠️ localStorage okuma hatası:', localStorageError);
+        }
+        
+        // 2. RAM CACHE KONTROL ET!
         const now = Date.now();
         if (allCategoriesCache && (now - allCategoriesCacheTime) < CACHE_DURATION) {
             const age = Math.floor((now - allCategoriesCacheTime) / 1000);
-            console.log(`✅ CACHE (${age}sn önce - 2 SAAT GEÇERLİ) - HIZLI! ⚡⚡`);
+            console.log(`✅ RAM CACHE (${age}sn önce - 2 SAAT GEÇERLİ) - HIZLI! ⚡⚡`);
             window.categoryDatabase = allCategoriesCache;
             return allCategoriesCache;
         }
@@ -53,10 +77,19 @@ async function loadProductsFromAdmin(onlyFirstPage = false) {
         
         console.log('📊 Kategori veritabanı:', database);
         
-        // CACHE'E KAYDET (Tüm kategoriler için!)
+        // RAM CACHE'E KAYDET
         allCategoriesCache = database;
         allCategoriesCacheTime = Date.now();
-        console.log('💾 Tüm kategoriler hafızaya kaydedildi (2 SAAT) ⚡⚡');
+        console.log('💾 RAM: Tüm kategoriler hafızaya kaydedildi (2 SAAT) ⚡⚡');
+        
+        // LOCALSTORAGE'A DA KAYDET! (Sayfa kapatılsa bile kalır)
+        try {
+            localStorage.setItem(localStorageKey, JSON.stringify(database));
+            localStorage.setItem(localStorageTimeKey, Date.now().toString());
+            console.log('💾 LOCALSTORAGE: Kalıcı cache kaydedildi! ⚡⚡⚡');
+        } catch (localStorageError) {
+            console.warn('⚠️ localStorage kaydetme hatası (QuotaExceededError olabilir):', localStorageError);
+        }
         
         window.categoryDatabase = database;
         return database;
@@ -905,12 +938,12 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         // Kategori ürünlerini al
         const allCategoryProducts = database[dbKey] || [];
         
-        // ⚡ HIZLI BAŞLATMA: İlk 4 ürünü hemen göster (MOBİLYA)
-        const firstLoadCount = (categorySlug === 'mobilya') ? 4 : 6;
+        // ⚡⚡⚡ SÜPER HIZLI BAŞLATMA: Mobilya 6 ürün, diğerleri sayfa başına!
+        const firstLoadCount = productsPerPage; // MOBİLYA: 6, DİĞERLERİ: 12
         allProducts = allCategoryProducts.slice(0, firstLoadCount);
         filteredProducts = [...allProducts];
         
-        console.log(`✅ İlk ${allProducts.length} ürün gösteriliyor (toplam: ${allCategoryProducts.length})`);
+        console.log(`⚡⚡⚡ İLK ${allProducts.length} ÜRÜN ANINDA! (toplam: ${allCategoryProducts.length})`);
         
         // Render - İLK SAYFA
         renderProducts();
@@ -921,9 +954,9 @@ async function initializeCategoryPage(categorySlug, categoryName) {
             cartManager.updateCartCount();
         }
         
-        console.log('✅ İlk sayfa yüklendi! ⚡');
+        console.log('✅ İlk sayfa yüklendi! ⚡⚡⚡');
         
-        // ⚡ ARKA PLANDA: Diğer ürünleri hazırla (50ms sonra - DAHA HIZLI!)
+        // ⚡ ARKA PLANDA: Diğer ürünleri hazırla (5ms - ÇOK HIZLI!)
         setTimeout(() => {
             console.log('📦 Arka plan: Tüm ürünler yükleniyor...');
             allProducts = allCategoryProducts;
@@ -932,7 +965,10 @@ async function initializeCategoryPage(categorySlug, categoryName) {
             
             // Sayfalama butonlarını güncelle
             updatePagination();
-        }, 50);
+            
+            // Render'ı tekrar çağır (tüm ürünlerle)
+            renderProducts();
+        }, 5); // 5ms - SÜPER HIZLI!
         
         console.log('✅ Kategori sayfası başlatıldı!');
         
@@ -1048,7 +1084,7 @@ function renderProducts() {
             <div class="product-card" onclick='showProductModal("${product.id}")'>
                 <div class="product-image">
                     <img data-src="${mainImage}" alt="${product.title}" class="lazy-img" 
-                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23d1d5db' font-family='sans-serif' font-size='18'%3EYükleniyor...%3C/text%3E%3C/svg%3E"
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect fill='%23f9fafb' width='300' height='200'/%3E%3C/svg%3E"
                          onerror="this.src='https://via.placeholder.com/400x300?text=Ürün'">
                     ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
                     ${product.originalPrice && showPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
@@ -1202,7 +1238,7 @@ function initLazyLoading() {
                 }
             });
         }, {
-            rootMargin: '100px' // 100px önceden yükle - DAHA HIZLI!
+            rootMargin: '200px' // 200px önceden yükle - ÇOK HIZLI!
         });
         
         lazyImages.forEach(img => imageObserver.observe(img));
