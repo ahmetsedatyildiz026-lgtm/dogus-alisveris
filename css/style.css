@@ -2833,8 +2833,8 @@ body {
 }
 
 .product-image img {
-    width: 75% !important; /* 90% → 75%: Daha küçük, uzun ürünler sığar */
-    height: 75% !important; /* 90% → 75%: Daha küçük */
+    width: 65% !important; /* 75% → 65%: Daha küçük, tüm ürünler sığar */
+    height: 65% !important; /* 75% → 65%: Daha küçük */
     object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
@@ -2926,8 +2926,8 @@ body {
 }
 
 .product-image img {
-    width: 75% !important; /* 90% → 75%: Daha küçük, uzun ürünler sığar */
-    height: 75% !important; /* 90% → 75%: Daha küçük */
+    width: 65% !important; /* 75% → 65%: Daha küçük, tüm ürünler sığar */
+    height: 65% !important; /* 75% → 65%: Daha küçük */
     object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
