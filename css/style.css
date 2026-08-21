@@ -2833,12 +2833,12 @@ body {
 }
 
 .product-image img {
-    width: 100% !important;
-    height: 100% !important;
+    width: 90% !important; /* 100% → 90%: Biraz küçültüldü, kenar boşluğu */
+    height: 90% !important; /* 100% → 90%: Biraz küçültüldü */
     object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
-    padding: 0.5rem !important; /* SABİT: 8px padding */
+    padding: 0 !important; /* Padding kaldırıldı, width/height ile kontrol */
 }
 
 .product-card:hover .product-image img {
@@ -2926,12 +2926,12 @@ body {
 }
 
 .product-image img {
-    width: 100% !important;
-    height: 100% !important;
+    width: 90% !important; /* 100% → 90%: Biraz küçültüldü, kenar boşluğu */
+    height: 90% !important; /* 100% → 90%: Biraz küçültüldü */
     object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
-    padding: 0.5rem !important; /* SABİT: 8px padding */
+    padding: 0 !important; /* Padding kaldırıldı, width/height ile kontrol */
 }
 
 .product-card:hover .product-image img {
