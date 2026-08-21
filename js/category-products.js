@@ -738,7 +738,13 @@ function changePage(page) {
 function updateProductsCount() {
     const productsCount = document.getElementById('productsCount');
     if (productsCount) {
-        productsCount.textContent = filteredProducts.length;
+        // Ürün sayısını gösterme - gizli tut
+        productsCount.textContent = '';
+        // Parent elementi de gizle
+        const parentDiv = productsCount.closest('.products-count');
+        if (parentDiv) {
+            parentDiv.style.display = 'none';
+        }
     }
 }
 
@@ -1040,9 +1046,13 @@ function renderProducts() {
     console.log(`📄 Sayfa: ${currentPage}/${totalPages}, Gösterilecek: ${pageProducts.length} ürün`);
     console.log(`📦 İlk ürün:`, pageProducts[0]);
     
-    // Ürün sayısını güncelle
+    // Ürün sayısını güncelle (GİZLİ - gösterme)
     if (productsCount) {
-        productsCount.textContent = filteredProducts.length + ' ürün bulundu';
+        productsCount.textContent = '';
+        const parentDiv = productsCount.closest('.products-count');
+        if (parentDiv) {
+            parentDiv.style.display = 'none';
+        }
     }
     
     // Ürünleri render et
