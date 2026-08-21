@@ -1010,13 +1010,59 @@ function showLoadingState() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
     
-    grid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 4rem;">
-            <div style="width: 60px; height: 60px; border: 4px solid var(--surface); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
-            <p style="color: var(--text); font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">Ürünler yükleniyor...</p>
-            <small style="color: var(--text-light);">Lütfen bekleyin</small>
-        </div>
+    // ⚡ SKELETON CARDS - Kullanıcı hemen içerik görür!
+    const skeletonHTML = `
+        <style>
+            .skeleton-card {
+                background: white;
+                border-radius: 12px;
+                padding: 1rem;
+                animation: skeleton-pulse 1.5s ease-in-out infinite;
+            }
+            @keyframes skeleton-pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            .skeleton-image {
+                width: 100%;
+                height: 200px;
+                background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                background-size: 200% 100%;
+                animation: skeleton-loading 1.5s ease-in-out infinite;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+            @keyframes skeleton-loading {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+            .skeleton-text {
+                height: 20px;
+                background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                background-size: 200% 100%;
+                animation: skeleton-loading 1.5s ease-in-out infinite;
+                border-radius: 4px;
+                margin-bottom: 0.5rem;
+            }
+            .skeleton-text-short {
+                width: 60%;
+            }
+        </style>
     `;
+    
+    // 6 adet skeleton card göster
+    let cards = '';
+    for (let i = 0; i < 6; i++) {
+        cards += `
+            <div class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text skeleton-text-short"></div>
+            </div>
+        `;
+    }
+    
+    grid.innerHTML = skeletonHTML + cards;
 }
 
 // ===== ÜRÜN RENDER FONKSİYONU =====
