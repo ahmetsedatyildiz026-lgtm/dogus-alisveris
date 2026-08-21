@@ -138,15 +138,13 @@ const COLLECTIONS = {
  * Tüm ürünleri getir
  */
 /**
- * Tüm ürünleri getir - TELEFON OPTİMİZE ⚡📱
+ * Tüm ürünleri getir
  */
 async function getProductsFromFirebase() {
   try {
-    // ⚡ TELEFON HIZLANDIRMA: İlk 20 ürünü hızlıca çek!
     const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
       .where('status', '==', 'active')
       .where('stock', '>', 0)
-      .limit(20)  // İLK 20 ÜRÜN - ÇOK HIZLI!
       .get();
       
     const products = [];
@@ -156,42 +154,13 @@ async function getProductsFromFirebase() {
         ...doc.data()
       });
     });
-    console.log(`⚡ ${products.length} ürün yüklendi (ilk 20 - HIZLI!)`);
-    
-    // ⚡ ARKA PLANDA: Kalan ürünleri yükle
-    setTimeout(async () => {
-      try {
-        const allSnapshot = await db.collection(COLLECTIONS.PRODUCTS)
-          .where('status', '==', 'active')
-          .where('stock', '>', 0)
-          .get();
-        
-        const allProducts = [];
-        allSnapshot.forEach(doc => {
-          allProducts.push({
-            id: doc.id,
-            ...doc.data()
-          });
-        });
-        console.log(`✅ Tüm ${allProducts.length} ürün yüklendi (arka plan)`);
-        
-        // Global cache'i güncelle
-        if (allProducts.length > products.length) {
-          window.categoryDatabase = allProducts;
-        }
-      } catch (bgError) {
-        console.log('⚠️ Arka plan yükleme hatası (önemli değil):', bgError);
-      }
-    }, 3000); // 3 saniye sonra kalan ürünleri yükle
-    
+    console.log(`✅ ${products.length} aktif ürün yüklendi`);
     return products;
   } catch (error) {
     console.error('❌ Ürünler yüklenemedi:', error);
-    // Hata varsa limit olmadan dene (fallback)
+    // Fallback: Tüm ürünleri çek
     try {
-      const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
-        .where('status', '==', 'active')
-        .get();
+      const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
       const products = [];
       snapshot.forEach(doc => {
         products.push({
@@ -202,7 +171,7 @@ async function getProductsFromFirebase() {
       console.log(`✅ ${products.length} ürün yüklendi (fallback)`);
       return products;
     } catch (fallbackError) {
-      console.error('❌ Fallback de başarısız:', fallbackError);
+      console.error('❌ Fallback başarısız:', fallbackError);
       return [];
     }
   }
