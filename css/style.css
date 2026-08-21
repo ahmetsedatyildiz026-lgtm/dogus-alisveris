@@ -2833,12 +2833,12 @@ body {
 }
 
 .product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
-    padding: var(--space-2);
+    padding: 0.5rem !important; /* SABİT: 8px padding */
 }
 
 .product-card:hover .product-image img {
@@ -2926,12 +2926,12 @@ body {
 }
 
 .product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
-    padding: var(--space-2);
+    padding: 0.5rem !important; /* SABİT: 8px padding */
 }
 
 .product-card:hover .product-image img {
@@ -3112,14 +3112,14 @@ body {
 /* Bestsellers grid özel ayarları */
 .bestsellers-grid .product-card .product-image {
     height: 300px;
-    padding: var(--space-4);
+    padding: 0 !important; /* Container padding 0 */
 }
 
 /* Category products grid özel ayarları */
 .category-products-grid .product-card .product-image,
 .products-grid .product-card .product-image {
     height: 260px;
-    padding: var(--space-3);
+    padding: 0 !important; /* Container padding 0 */
 }
 
 /* Admin panel product thumb */
