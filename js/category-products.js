@@ -1146,8 +1146,8 @@ function renderProducts() {
                 <div class="product-image">
                     <img data-src="${mainImage}" alt="${product.title}" class="lazy-img" 
                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect fill='%23f9fafb' width='300' height='200'/%3E%3C/svg%3E"
-                         onerror="this.src='https://via.placeholder.com/300x200?text=Ürün'"
-                         style="width: 100%; height: auto;">
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e5e7eb/999999?text=Ürün+Resmi'; console.warn('Görsel yüklenemedi:', '${mainImage}');"
+                         style="width: 100%; height: auto; display: block;">
                     ${product.isFeatured ? '<span class="badge badge-featured">ÖNE ÇIKAN</span>' : ''}
                     ${product.originalPrice && showPrice ? '<span class="badge badge-discount">İNDİRİM</span>' : ''}
                 </div>
@@ -1292,15 +1292,27 @@ function initLazyLoading() {
                     const src = img.getAttribute('data-src');
                     
                     if (src) {
-                        img.src = src;
-                        img.classList.remove('lazy-img');
+                        // Yeni image objesi oluştur (pre-load)
+                        const tempImg = new Image();
+                        tempImg.onload = () => {
+                            img.src = src;
+                            img.classList.remove('lazy-img');
+                            img.classList.add('loaded');
+                            console.log('✅ Görsel yüklendi:', src.substring(0, 50));
+                        };
+                        tempImg.onerror = () => {
+                            console.warn('❌ Görsel yüklenemedi:', src);
+                            img.src = 'https://via.placeholder.com/300x200/e5e7eb/999999?text=Ürün+Resmi';
+                            img.classList.remove('lazy-img');
+                        };
+                        tempImg.src = src;
+                        
                         imageObserver.unobserve(img);
-                        console.log('🖼️ Resim yüklendi:', src.substring(0, 50) + '...');
                     }
                 }
             });
         }, {
-            rootMargin: '200px' // 200px önceden yükle - ÇOK HIZLI!
+            rootMargin: '150px' // 150px önceden yükle
         });
         
         lazyImages.forEach(img => imageObserver.observe(img));
@@ -1309,8 +1321,12 @@ function initLazyLoading() {
         // Fallback: IntersectionObserver yoksa hepsini yükle
         lazyImages.forEach(img => {
             const src = img.getAttribute('data-src');
-            if (src) img.src = src;
+            if (src) {
+                img.src = src;
+                img.classList.remove('lazy-img');
+            }
         });
+        console.log(`📷 ${lazyImages.length} resim yüklendi (fallback)`);
     }
 }
 

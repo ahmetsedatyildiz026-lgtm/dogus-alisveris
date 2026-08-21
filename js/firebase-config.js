@@ -65,16 +65,16 @@ function initializeFirebase() {
       console.log('✅ Firestore başlatıldı:', typeof db);
       console.log('✅ Auth başlatıldı:', typeof auth);
       
-      // OFFLINE PERSISTENCE + CACHE - Hızlı yüklenme için
+      // OFFLINE PERSISTENCE + CACHE - HIZLANDIRMA ⚡
       db.enablePersistence({ 
         synchronizeTabs: true
       })
         .then(() => {
           console.log('✅ Firebase offline persistence aktif');
           
-          // ⚡ CACHE SETTINGS - İlk yüklemeyi hızlandır
+          // ⚡ HIZLANDIRMA: Küçük cache, hızlı erişim
           db.settings({
-            cacheSizeBytes: 50000000  // 50MB cache
+            cacheSizeBytes: 10000000  // 10MB cache (daha küçük = daha hızlı)
           });
         })
         .catch((err) => {
