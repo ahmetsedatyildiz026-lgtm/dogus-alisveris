@@ -16,7 +16,7 @@ window.categoryDatabase = {};
 // ===== TÜM KATEGORİLER İÇİN HAFIZA =====
 let allCategoriesCache = null;
 let allCategoriesCacheTime = 0;
-const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 SAAT (7200 saniye) ⚡⚡
+const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 SAAT! ⚡⚡⚡
 
 // ===== FIREBASE'DEN ÜRÜNLERİ YÜKLE =====
 async function loadProductsFromAdmin(onlyFirstPage = false) {
@@ -944,14 +944,14 @@ async function initializeCategoryPage(categorySlug, categoryName) {
         // Kategori ürünlerini al
         const allCategoryProducts = database[dbKey] || [];
         
-        // ⚡⚡⚡ SÜPER HIZLI BAŞLATMA: Mobilya 6 ürün, diğerleri sayfa başına!
-        const firstLoadCount = productsPerPage; // MOBİLYA: 6, DİĞERLERİ: 12
-        allProducts = allCategoryProducts.slice(0, firstLoadCount);
+        // ⚡⚡⚡ ANINDA GÖSTER: İlk 3 ürünü hemen render et!
+        const instantLoadCount = 3; // İLK 3 ÜRÜN ANINDA!
+        allProducts = allCategoryProducts.slice(0, instantLoadCount);
         filteredProducts = [...allProducts];
         
-        console.log(`⚡⚡⚡ İLK ${allProducts.length} ÜRÜN ANINDA! (toplam: ${allCategoryProducts.length})`);
+        console.log(`⚡⚡⚡ İLK ${allProducts.length} ÜRÜN ANINDA RENDER! (toplam: ${allCategoryProducts.length})`);
         
-        // Render - İLK SAYFA
+        // HEMEN RENDER ET!
         renderProducts();
         setupEventListeners();
         
@@ -960,9 +960,17 @@ async function initializeCategoryPage(categorySlug, categoryName) {
             cartManager.updateCartCount();
         }
         
-        console.log('✅ İlk sayfa yüklendi! ⚡⚡⚡');
+        console.log('✅ İlk ürünler ekranda! ⚡⚡⚡');
         
-        // ⚡ ARKA PLANDA: Diğer ürünleri hazırla (5ms - ÇOK HIZLI!)
+        // ⚡ 1MS SONRA: Sayfa başına kadar olan ürünleri yükle
+        setTimeout(() => {
+            allProducts = allCategoryProducts.slice(0, productsPerPage);
+            filteredProducts = [...allProducts];
+            renderProducts();
+            console.log(`⚡ ${allProducts.length} ürün yüklendi (1. sayfa)`);
+        }, 1);
+        
+        // ⚡ 10MS SONRA: Tüm ürünleri yükle
         setTimeout(() => {
             console.log('📦 Arka plan: Tüm ürünler yükleniyor...');
             allProducts = allCategoryProducts;
@@ -971,10 +979,7 @@ async function initializeCategoryPage(categorySlug, categoryName) {
             
             // Sayfalama butonlarını güncelle
             updatePagination();
-            
-            // Render'ı tekrar çağır (tüm ürünlerle)
-            renderProducts();
-        }, 5); // 5ms - SÜPER HIZLI!
+        }, 10);
         
         console.log('✅ Kategori sayfası başlatıldı!');
         

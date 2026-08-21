@@ -131,11 +131,16 @@ const COLLECTIONS = {
  * Tüm ürünleri getir
  */
 /**
- * Tüm ürünleri getir
+ * Tüm ürünleri getir - HIZLANDIRILMIŞ VERSİYON ⚡
  */
 async function getProductsFromFirebase() {
   try {
-    const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
+    // ⚡ HIZLANDIRMA: Sadece gerekli alanları çek!
+    const snapshot = await db.collection(COLLECTIONS.PRODUCTS)
+      .where('status', '==', 'active')  // Sadece aktif ürünler
+      .where('stock', '>', 0)            // Stokta olanlar
+      .get();
+      
     const products = [];
     snapshot.forEach(doc => {
       products.push({
@@ -143,11 +148,26 @@ async function getProductsFromFirebase() {
         ...doc.data()
       });
     });
-    console.log(`✅ ${products.length} ürün Firebase'den yüklendi`);
+    console.log(`✅ ${products.length} aktif ürün yüklendi (stokta olanlar)`);
     return products;
   } catch (error) {
     console.error('❌ Ürünler yüklenemedi:', error);
-    return [];
+    // Hata varsa tüm ürünleri çek (fallback)
+    try {
+      const snapshot = await db.collection(COLLECTIONS.PRODUCTS).get();
+      const products = [];
+      snapshot.forEach(doc => {
+        products.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      console.log(`✅ ${products.length} ürün yüklendi (fallback)`);
+      return products;
+    } catch (fallbackError) {
+      console.error('❌ Fallback de başarısız:', fallbackError);
+      return [];
+    }
   }
 }
 
