@@ -568,7 +568,7 @@ function renderProducts() {
                         <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart('${product.title}')">
                             <i class="fas fa-cart-plus"></i> Sepete Ekle
                         </button>
-                        <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title}', '${product.price}')">
+                        <button class="btn-offer" onclick="event.stopPropagation(); requestOffer('${product.title}')">
                             <i class="fas fa-comment-dollar"></i> Teklif Al
                         </button>
                     </div>
