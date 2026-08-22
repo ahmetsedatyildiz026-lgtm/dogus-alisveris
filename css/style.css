@@ -3721,3 +3721,22 @@ select:focus {
         transform: rotate(360deg);
     }
 }
+
+/* ===== UZUN ÜRÜNLER İÇİN ZORLA CSS - HİÇBİR ŞEY EZEMEYEN ===== */
+.product-card .product-image img,
+.bestsellers-grid .product-card .product-image img,
+.category-products-grid .product-card .product-image img,
+.products-grid .product-card .product-image img {
+    width: 35% !important; /* AŞIRI KÜÇÜK - ÇAMAŞIR MAKİNESİ SIĞAR */
+    height: 98% !important; /* AŞIRI UZUN - TAMAMI GÖRÜNÜR */
+    object-fit: contain !important;
+    object-position: center !important;
+    transition: transform 0.3s ease !important;
+    padding: 0 !important;
+    max-width: 35% !important;
+    max-height: 98% !important;
+    min-width: 35% !important;
+    min-height: 98% !important;
+}
+
+/* HİÇBİR ŞEY BU CSS'İ EZEMEYECEKŞİMDİ */
