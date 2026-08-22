@@ -3727,15 +3727,15 @@ select:focus {
 .bestsellers-grid .product-card .product-image img,
 .category-products-grid .product-card .product-image img,
 .products-grid .product-card .product-image img {
-    width: 35% !important; /* AŞIRI KÜÇÜK - ÇAMAŞIR MAKİNESİ SIĞAR */
-    height: 98% !important; /* AŞIRI UZUN - TAMAMI GÖRÜNÜR */
+    width: 95% !important; /* MAKSİMUM GENİŞLİK */
+    height: 98% !important; /* MAKSİMUM YÜKSEKLİK */
     object-fit: contain !important;
     object-position: center !important;
     transition: transform 0.3s ease !important;
     padding: 0 !important;
-    max-width: 35% !important;
+    max-width: 95% !important;
     max-height: 98% !important;
-    min-width: 35% !important;
+    min-width: 95% !important;
     min-height: 98% !important;
 }
 
