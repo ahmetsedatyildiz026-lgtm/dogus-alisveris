@@ -1355,3 +1355,68 @@ window.requestOffer = function(productName, price) {
     const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 };
+
+// ===== OTOMATİK SAĞDIRMA SİSTEMİ - UZUN ÜRÜNLER İÇİN =====
+function autoResizeProductImages() {
+    console.log('🔄 Otomatik sığdırma başlatılıyor...');
+    
+    const productImages = document.querySelectorAll('.product-card .product-image img');
+    
+    productImages.forEach((img, index) => {
+        img.onload = function() {
+            const container = this.parentElement;
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            
+            // Görsel orijinal boyutları
+            const imgWidth = this.naturalWidth;
+            const imgHeight = this.naturalHeight;
+            
+            // Aspect ratio hesapla
+            const imgRatio = imgWidth / imgHeight;
+            const containerRatio = containerWidth / containerHeight;
+            
+            console.log(`📐 Ürün ${index}: ${imgWidth}x${imgHeight} (ratio: ${imgRatio.toFixed(2)})`);
+            
+            // Uzun ürünler için (yükseklik > genişlik)
+            if (imgRatio < 0.8) { // Uzun ürün (çamaşır makinesi, buzdolabı)
+                this.style.width = '30% !important';
+                this.style.height = '95% !important';
+                console.log(`✅ Uzun ürün: ${this.alt} - 30% x 95%`);
+            }
+            // Geniş ürünler için (genişlik > yükseklik) 
+            else if (imgRatio > 1.5) { // Geniş ürün (TV, monitor)
+                this.style.width = '80% !important';
+                this.style.height = '60% !important';
+                console.log(`✅ Geniş ürün: ${this.alt} - 80% x 60%`);
+            }
+            // Kare ürünler için
+            else { // Normal ürün
+                this.style.width = '70% !important';
+                this.style.height = '80% !important';
+                console.log(`✅ Normal ürün: ${this.alt} - 70% x 80%`);
+            }
+            
+            // Zorla uygula
+            this.style.objectFit = 'contain';
+            this.style.objectPosition = 'center';
+        };
+        
+        // Eğer görsel zaten yüklüyse
+        if (img.complete) {
+            img.onload();
+        }
+    });
+}
+
+// Sayfa yüklendiğinde ve ürünler render edildiğinde çalıştır
+document.addEventListener('DOMContentLoaded', autoResizeProductImages);
+
+// renderProducts fonksiyonundan sonra da çalıştır
+const originalRenderProducts = window.renderProducts;
+if (originalRenderProducts) {
+    window.renderProducts = function() {
+        originalRenderProducts();
+        setTimeout(autoResizeProductImages, 500); // 500ms sonra çalıştır
+    };
+}
