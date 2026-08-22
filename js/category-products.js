@@ -1380,21 +1380,21 @@ function autoResizeProductImages() {
             
             // Uzun ürünler için (yükseklik > genişlik)
             if (imgRatio < 0.8) { // Uzun ürün (çamaşır makinesi, buzdolabı)
-                this.style.width = '55% !important';
-                this.style.height = '95% !important';
-                console.log(`✅ Uzun ürün: ${this.alt} - 55% x 95%`);
+                this.style.width = '75% !important';
+                this.style.height = '98% !important';
+                console.log(`✅ Uzun ürün: ${this.alt} - 75% x 98%`);
             }
             // Geniş ürünler için (genişlik > yükseklik) 
             else if (imgRatio > 1.5) { // Geniş ürün (TV, monitor)
-                this.style.width = '90% !important';
-                this.style.height = '75% !important';
-                console.log(`✅ Geniş ürün: ${this.alt} - 90% x 75%`);
+                this.style.width = '95% !important';
+                this.style.height = '85% !important';
+                console.log(`✅ Geniş ürün: ${this.alt} - 95% x 85%`);
             }
             // Kare ürünler için
             else { // Normal ürün
-                this.style.width = '85% !important';
-                this.style.height = '85% !important';
-                console.log(`✅ Normal ürün: ${this.alt} - 85% x 85%`);
+                this.style.width = '90% !important';
+                this.style.height = '95% !important';
+                console.log(`✅ Normal ürün: ${this.alt} - 90% x 95%`);
             }
             
             // Zorla uygula
