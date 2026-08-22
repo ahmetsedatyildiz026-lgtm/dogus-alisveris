@@ -1356,9 +1356,13 @@ window.requestOffer = function(productName, price) {
     window.open(whatsappUrl, '_blank');
 };
 
-// ===== OTOMATİK SAĞDIRMA SİSTEMİ - UZUN ÜRÜNLER İÇİN =====
+// ===== OTOMATİK SAĞDIRMA SİSTEMİ - GEÇİCİ OLARAK KAPALI =====
 function autoResizeProductImages() {
-    console.log('🔄 Otomatik sığdırma başlatılıyor...');
+    console.log('🔄 Otomatik sığdırma geçici olarak devre dışı - CSS kontrol ediyor');
+    
+    // JavaScript boyut ayarını devre dışı bırak
+    // CSS'teki 95% x 98% değerleri kullanılacak
+    return;
     
     const productImages = document.querySelectorAll('.product-card .product-image img');
     
