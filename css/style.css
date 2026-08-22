@@ -2833,8 +2833,8 @@ body {
 }
 
 .product-image img {
-    width: 55% !important; /* 75% → 55%: ÇOK DAHA DAR - yanlarda boşluk */
-    height: 90% !important; /* 85% → 90%: ÇOK DAHA UZUN - uzun ürünler sığar */
+    width: 45% !important; /* 55% → 45%: DAHA DA DAR */
+    height: 95% !important; /* 90% → 95%: MAKSİMUM YÜKSEK */
     object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
@@ -2926,8 +2926,8 @@ body {
 }
 
 .product-image img {
-    width: 55% !important; /* 75% → 55%: ÇOK DAHA DAR - yanlarda boşluk */
-    height: 90% !important; /* 85% → 90%: ÇOK DAHA UZUN - uzun ürünler sığar */
+    width: 45% !important; /* 55% → 45%: DAHA DA DAR */
+    height: 95% !important; /* 90% → 95%: MAKSİMUM YÜKSEK */
     object-fit: contain !important;
     object-position: center;
     transition: var(--transition);
@@ -3098,8 +3098,8 @@ body {
 }
 
 .product-image img {
-    width: 55% !important; /* UZUN ÜRÜNLER İÇİN DAR */
-    height: 90% !important; /* UZUN ÜRÜNLER İÇİN YÜKSEK */
+    width: 45% !important; /* DAHA DA DAR */
+    height: 95% !important; /* MAKSİMUM YÜKSEK */
     object-fit: contain !important;
     object-position: center !important;
     transition: transform 0.3s ease;
