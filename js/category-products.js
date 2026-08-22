@@ -817,7 +817,7 @@ function sortProducts() {
 }
 
 function requestOffer(productName, price) {
-    const message = `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`;
+    const message = `Merhaba, ${productName} ürünü için teklif almak istiyorum. Fiyat bilgisi alabilir miyim?`;
     const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }

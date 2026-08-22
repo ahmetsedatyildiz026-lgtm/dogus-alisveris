@@ -526,9 +526,7 @@
 
         // Teklif al - WhatsApp'a yönlendir
         function requestOffer(productName, price) {
-            const message = price 
-                ? `Merhaba, ${productName} (${price}) ürünü için teklif almak istiyorum. Daha uygun bir fiyat verebilir misiniz?`
-                : `Merhaba, ${productName} ürünü için fiyat bilgisi almak istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
+            const message = `Merhaba, ${productName} ürünü için fiyat bilgisi almak istiyorum. En uygun fiyat nedir? Taksit seçenekleri var mı?`;
             const whatsappUrl = `https://wa.me/905379429437?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         }
