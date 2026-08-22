@@ -709,6 +709,10 @@
                 let allProducts = await getProductsFromFirebase();
                 console.log(`📦 ${allProducts.length} ürün Firebase'dan yüklendi`);
                 
+                // SKELETON LOADING'U GİZLE
+                const skeletonCards = grid.querySelectorAll('.skeleton-card');
+                skeletonCards.forEach(card => card.style.display = 'none');
+                
                 // Sadece aktif ve stokta olanları filtrele
                 allProducts = allProducts.filter(p => 
                     p.status === 'active' && (p.stock || 0) > 0
